@@ -194,7 +194,7 @@ function baseofgame() {
     }
   });
   function exception(changechar) {
-    newcharspan = changechar.split("");
+    let newcharspan = changechar.split("");
     charDisplay.innerText = "";
     newcharspan.forEach((newcharacter) => {
       const newcharacterspan = document.createElement("span");
