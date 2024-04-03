@@ -1,47 +1,53 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
+console.log('sex')
 
+</script>
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
+    <h1>just typing</h1>
   </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <button id="sex"></button>
 </template>
 
 <style scoped>
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #20ecff;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  overflow: hidden;
+  padding: 0 20px;
+}
 header {
-  line-height: 1.5;
+  background-color: #6d6d6d;
+  color: #fff;
+  padding: 10px 0;
+  text-align: center;
 }
-
-.logo {
+h1 {
+  font-size: 3rem;
+}
+#sex {
+  background-color: #7c7c7c;
+  color: #b30000;
+  padding: 10px 0;
+  text-align: center;
+  margin: 20px auto;
   display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+  width: 200px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>
