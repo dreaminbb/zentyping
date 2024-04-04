@@ -6,7 +6,7 @@ const displayText = ref('')
 
 onMounted(() => {
   let index = 0
-  const intervalId = setInterval(() => {
+  setInterval(() => {
     if (index < writting.length) {
       displayText.value += writting.charAt(index)
       index++
@@ -32,6 +32,20 @@ onMounted(() => {
     <header>
       <h1>justy typing</h1>
     </header>
+    <div id="tools">
+      <div class="tool">
+        <span id="terminal" class="material-symbols-outlined">terminal</span>
+      </div>
+      <div class="tool">
+        <span id="settings" class="material-symbols-outlined">settings</span>
+      </div>
+      <div class="tool">
+        <span id="about" class="material-symbols-outlined">Exclamation</span>
+      </div>
+      <div class="tool">
+        <span id="help" class="material-symbols-outlined">Help</span>
+      </div>
+    </div>
     <div class="card" id="left">
       <p id="rankingCaracter">Ranking</p>
       <button class="button" id="checkButton">check</button>
@@ -39,12 +53,15 @@ onMounted(() => {
     <div class="card" id="center">
       <button class="button" id="writeButton">write</button>
       <span id="writtingAnimetion">{{ displayText }}</span>
-      <img src="..\iconandpic\paint-brush.png" alt="" id="writtingicon" />
+      <span id="writting" class="material-symbols-outlined">Brush</span>
     </div>
-    <div class="card" id="right">
-      <div class="card__content"></div>
-      <span class="material-symbols-outlined" id="keyboardicon"> keyboard </span>
-      <button class="button" id="playButton">play</button>
+    <div id="cardframe">
+      <div id="right">
+        <div class="card__content"></div>
+        <div id="cardhover"></div>
+        <span class="material-symbols-outlined" id="keyboardicon"> keyboard </span>
+        <button class="button" id="playButton">play</button>
+      </div>
     </div>
   </body>
 </template>
@@ -64,6 +81,7 @@ onMounted(() => {
   font-weight: 400;
   font-style: normal;
 }
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -89,18 +107,72 @@ header {
   top: 0%;
   position: absolute;
   display: flex;
-  background: linear-gradient(to right, rgb(196, 101, 101), rgb(136, 111, 111));
+  background-color: transparent;
   filter: brightness(120%); /* 光度を20%上げる */
-
   border-radius: 10px;
 }
 h1 {
-  font-family: 'Yuji Hentaigana Akari', cursive;
+  position: absolute;
+  left: 5%;
+  font-family: cursive;
   font-size: 3rem;
-  color: #00eeff;
+  color: #ebebeb;
   text-align: left;
 }
+#tools {
+  position: absolute;
+  display: flex;
+  top: 10%;
+  width: 20%;
+  height: 4%;
+  right: 10%;
+  background-color: rgb(255, 255, 255);
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(17px);
+  backdrop-filter: blur(17px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.tool {
+  display: flex;
+  flex: 1;
+  background-color: #ffffff;
+  width: 25%;
+  height: 100%;
+  border-radius: 900px;
+  filter: brightness(130%);
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+#settings,
+#terminal,
+#about,
+#help {
+  width: 33%;
+  height: 100%;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: #b981ca;
+}
 
+#settings:hover,
+#terminal:hover,
+#about:hover,
+#help:hover,
+.tool:hover {
+  transition: 0.5s;
+  transform: translateY(-1px);
+  color: #dabfbf;
+  filter: brightness(150%);
+  box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+}
 .card {
   display: flex;
   position: absolute;
@@ -108,6 +180,7 @@ h1 {
   height: 50%;
   bottom: 14%;
   padding: 20px;
+  filter: brightness(130%);
 }
 
 .button {
@@ -173,7 +246,7 @@ h1 {
 }
 
 #writeButton {
-  background-color: #e6e6e6;
+  background-color: #a0a0a0;
   position: absolute;
   left: 35%;
 }
@@ -218,25 +291,60 @@ h1 {
   word-wrap: break-word;
 }
 
-#right {
-  filter: brightness(130%); /* 光度を20%上げる */
+#cardframe {
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  display: flex;
   right: 10%;
+  width: 400px;
+  height: 50%;
+  bottom: 14%;
+}
+#right {
+  position: absolute;
+  display: flex;
+  filter: brightness(130%); /* 光度を20%上げる */
+  width: 100%;
+  height: 100%;
   border-radius: 20px;
   padding: 3px;
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
-  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00b6d6);
 }
 .card__content {
-  background: rgb(17, 19, 82);
+  background: rgb(17, 19, 75);
   border-radius: 17px;
   width: 100%;
   height: 100%;
 }
 #right:hover {
   transition: 0.7s;
-  filter: brightness(150%);
-  transform: translateY(10%);
+  filter: brightness(130%);
+  animation: contraction 1s infinite;
+  height: 90%;
+  bottom: 0;
 }
+#right:hover::after {
+  content: 'play ?';
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  position: absolute;
+  filter: brightness(150%);
+  color: rgb(80, 80, 80);
+  font-size: 3rem;
+}
+
+#right:hover #cardhover {
+  height: 109%;
+  width: 100%;
+  left: 0%;
+  top: -8%;
+  border-radius: 28px;
+  transition: 0.7s;
+  box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+  border-color: red;
+}
+
 #playButton {
   background: linear-gradient(144deg, #6f4d8a, #414294 60%, #11555a);
   border: 1px solid #ffffff;
@@ -245,11 +353,26 @@ h1 {
 #keyboardicon {
   position: absolute;
   display: flex;
-  color: #00ddeb;
   bottom: 40%;
   font-size: 8rem;
   color: #525b8a;
 }
+#cardhover {
+  position: absolute;
+  top: 0%;
+  background-color: #00ddeb;
+  border: none;
+  border-radius: 40px 40px 0px 0px;
+  border-radius: 20px;
+  width: 400px;
+  height: 0%;
+  text-align: center;
+  background-color: #00ddeb;
+  color: #00ddeb;
+  bottom: 10%;
+  font-size: 2rem;
+}
+
 #playButton:hover {
   background: linear-gradient(144deg, #6f4d8a, #4245f3 40%, #db2222);
   box-shadow: 1px 30px 40px rgba(233, 233, 233, 0.1);
