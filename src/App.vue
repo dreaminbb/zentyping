@@ -34,10 +34,10 @@ onMounted(() => {
     </header>
     <div id="tools">
       <div class="tool">
-        <span id="terminal" class="material-symbols-outlined">terminal</span>
+        <span to="/Getq" id="terminal" class="material-symbols-outlined">terminal</span>
       </div>
       <div class="tool">
-        <span id="settings" class="material-symbols-outlined">settings</span>
+        <router-link to="" id="settings" class="material-symbols-outlined">settings</router-link>
       </div>
       <div class="tool">
         <span id="about" class="material-symbols-outlined">Exclamation</span>
