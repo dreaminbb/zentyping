@@ -1,6 +1,5 @@
 <script>
 import { ref, onMounted } from 'vue'
-
 export default {
   setup() {
     const writting = 'おだいをかいてみよう'
@@ -71,6 +70,10 @@ export default {
         <router-link to="/play" class="button" id="playButton">play</router-link>
       </div>
     </div>
+    <span id="scut"
+      >crlr + c <br />
+      command line
+    </span>
   </body>
 </template>
 
@@ -385,5 +388,17 @@ h1 {
   background: linear-gradient(144deg, #6f4d8a, #4245f3 40%, #db2222);
   box-shadow: 1px 30px 40px rgba(233, 233, 233, 0.1);
   /* transform: translateY(-10px); */
+}
+#scut {
+  position: absolute;
+  bottom: 2%;
+  left: 46%;
+  color: #ffffff;
+  font-size: 1rem;
+  font-family: cursive;
+  text-align: right;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
 }
 </style>
