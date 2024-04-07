@@ -1,8 +1,195 @@
-<script></script>
+<script>
+
+</script>
 <template>
-  <div>
-    <div></div>
-  </div>
+  <body>
+    <div id="buttons" class="buttons">
+      <button id="short" class="level">short</button>
+      <button id="normal" class="level">normal</button>
+      <button id="long" class="level">long</button>
+      <button id="pun" class="level">pun</button>
+    </div>
+    <div id="counter" class="counter">
+      <div id="correct" class="correct"></div>
+      <div id="incorrect" class="incorrect"></div>
+      <div id="timer" class="timer"></div>
+    </div>
+    <div id="container" class="container">
+      <div id="typeDisplay" class="typeDisplay">{{ sentence }}</div>
+      <div id="charDisplay" class="charDisplay">{{ type }}</div>
+    </div>
+    <textarea id="typeInput" class="typeInput" autocomplete="off" autofocus></textarea>
+  </body>
 </template>
 
-<style scoped></style>
+<style scoped>
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  user-select: none;
+}
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'poppins', sans-serif;
+}
+
+#buttons {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: space-around;
+  transform: translate(-50%, -50%);
+  align-items: center;
+  width: 30%;
+  height: 5%;
+  border-radius: 80px;
+  background-color: rgb(255, 255, 255);
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(17px);
+  backdrop-filter: blur(17px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.level {
+  width: 20%;
+  height: 100%;
+  border: none;
+  color: #b981ca;
+  border-radius: 1px;
+  border-radius: 900px;
+  filter: brightness(130%);
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 1rem;
+  letter-spacing: 3px;
+}
+.level:hover {
+  transition: 0.5s;
+  transform: translateY(-1px);
+  color: #dabfbf;
+  filter: brightness(150%);
+  box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+}
+
+.buttons .short:hover {
+  transition: box-shadow 1s;
+  box-shadow: 0 5px 20px rgba(138, 168, 125, 0.7); /*上下右左?*/
+  border-color: transparent;
+}
+.buttons .normal:hover {
+  transition: box-shadow 1s;
+  box-shadow: 0 5px 20px rgba(185, 255, 252, 0.7);
+  border-color: transparent;
+}
+
+.buttons .long:hover {
+  transition: box-shadow 1s;
+  box-shadow: 0 5px 20px rgba(252, 164, 164, 0.7);
+  border-color: transparent;
+}
+
+.container {
+  position: absolute;
+  align-items: center;
+  top: 30%;
+  background-color: rgb(238, 238, 238);
+  width: 70%;
+  height: 40%;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+}
+
+.container .typeDisplay {
+  flex: 1;
+  background-color: tomato;
+  white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
+  word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  position: relative;
+  outline: none;
+  height: 40%;
+  width: 100%;
+  overflow-wrap: break-word; /* 途中で改行する */
+  font-size: 3.5rem;
+}
+
+/* 文字（ローマ字を表示させるところ） */
+.container .charDisplay {
+  flex: 1;
+  background-color: #c2aac9;
+  align-items: center;
+  position: absolute;
+  bottom: 0%;
+  height: 20%;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
+  word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
+  color: #ffffff;
+  position: relative;
+  outline: none;
+  padding: 0;
+  height: 20%;
+  font-size: 2.5rem;
+  width: 100%;
+  overflow-wrap: break-word; /* 途中で改行する */
+  letter-spacing: 3px;
+}
+
+.current::after {
+  content: '|';
+  margin: -7px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  51% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.typeinput:focus {
+  outline: none;
+}
+
+.correct {
+  color: #ffffff;
+}
+
+.incorrect {
+  color: #ff0000;
+}
+
+.typeInput {
+  position: absolute;
+  top: -1000px;
+  background: transparent;
+  text-decoration: none;
+  outline: none;
+  border: none;
+  resize: none; /* テキストエリアのリサイズを禁止 */
+  width: 100%;
+  height: 200px;
+}
+</style>
