@@ -1,5 +1,5 @@
 function playlong() {
-  typeDisplay.innerText = ''
+  typeDisplay.
   function gettingfromlongjson() {
     return fetch('../odai/long.json')
       .then((Response) => Response.json())

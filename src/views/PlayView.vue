@@ -1,13 +1,29 @@
 <script>
+import { ref } from 'vue'
 
+export default {
+  setup() {
+    const typeInput = ref('')
+
+    function logtype() {
+      const topchar = typeInput.value[typeInput.value.length - 1]
+      console.log(topchar)
+    }
+
+    return {
+      typeInput,
+      logtype
+    }
+  }
+}
 </script>
 <template>
   <body>
     <div id="buttons" class="buttons">
-      <button id="short" class="level">short</button>
-      <button id="normal" class="level">normal</button>
-      <button id="long" class="level">long</button>
-      <button id="pun" class="level">pun</button>
+      <button @click="short" class="level">short</button>
+      <button @click="normal" class="level">normal</button>
+      <button @click="long" class="level">long</button>
+      <button @click="pun" class="level">pun</button>
     </div>
     <div id="counter" class="counter">
       <div id="correct" class="correct"></div>
@@ -15,10 +31,17 @@
       <div id="timer" class="timer"></div>
     </div>
     <div id="container" class="container">
-      <div id="typeDisplay" class="typeDisplay">{{ sentence }}</div>
-      <div id="charDisplay" class="charDisplay">{{ type }}</div>
+      <div id="typeDisplay" class="typeDisplay">{{}}</div>
+      <div id="charDisplay" class="charDisplay">{{}}</div>
     </div>
-    <textarea id="typeInput" class="typeInput" autocomplete="off" autofocus></textarea>
+    <textarea
+      id="typeInput"
+      class="typeInput"
+      autocomplete="off"
+      v-model="typeInput"
+      autofocus
+      @input="logtype"
+    ></textarea>
   </body>
 </template>
 

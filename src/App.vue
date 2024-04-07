@@ -14,7 +14,7 @@ import { RouterView } from 'vue-router'
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,-25"
     />
     <header>
-      <h1>justy typing</h1>
+      <h1>mode typing</h1>
     </header>
     <div id="tools">
       <div class="tool">
