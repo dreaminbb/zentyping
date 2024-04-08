@@ -1,10 +1,34 @@
 <template>
   <body>
     <div id="buttons" class="buttons">
-      <button @click="activete('short')" class="level">short</button>
-      <button @click="activete('normal')" class="level">normal</button>
-      <button @click="activete('long')" class="level">long</button>
-      <button @click="activete('pun')" class="level">pun</button>
+      <button
+        @click="activate('level1')"
+        :class="{ active: activeteButton === 'level1' }"
+        class="level"
+      >
+        short
+      </button>
+      <button
+        @click="activate('level2')"
+        :class="{ active: activeteButton === 'level2' }"
+        class="level"
+      >
+        normal
+      </button>
+      <button
+        @click="activate('level3')"
+        :class="{ active: activeteButton === 'level3' }"
+        class="level"
+      >
+        long
+      </button>
+      <button
+        @click="activate('level4')"
+        :class="{ active: activeteButton === 'level4' }"
+        class="level"
+      >
+        pun
+      </button>
     </div>
     <div id="counter" class="counter">
       <div id="correct" class="correct"></div>
@@ -30,6 +54,7 @@
 .active {
   background-color: #000000;
   color: #000000;
+  font-size: 9rem;
 }
 * {
   box-sizing: border-box;
@@ -246,14 +271,13 @@ export default {
   },
   data() {
     return {
-      activeteButton: null
+      // activeteButton: null
     }
   },
   methods: {
-    activete(button) {
-      this.activeteButton = button
-      console.log(this.activeteButton)
-    }
+    // activate(level) {
+    //   this.activeteButton = level
+    // }
   }
 }
 </script>
