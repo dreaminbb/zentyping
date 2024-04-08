@@ -1,29 +1,10 @@
-<script>
-import { ref } from 'vue'
-
-export default {
-  setup() {
-    const typeInput = ref('')
-
-    function logtype() {
-      const topchar = typeInput.value[typeInput.value.length - 1]
-      console.log(topchar)
-    }
-
-    return {
-      typeInput,
-      logtype
-    }
-  }
-}
-</script>
 <template>
   <body>
     <div id="buttons" class="buttons">
-      <button @click="short" class="level">short</button>
-      <button @click="normal" class="level">normal</button>
-      <button @click="long" class="level">long</button>
-      <button @click="pun" class="level">pun</button>
+      <button @click="activete('short')" class="level">short</button>
+      <button @click="activete('normal')" class="level">normal</button>
+      <button @click="activete('long')" class="level">long</button>
+      <button @click="activete('pun')" class="level">pun</button>
     </div>
     <div id="counter" class="counter">
       <div id="correct" class="correct"></div>
@@ -31,7 +12,7 @@ export default {
       <div id="timer" class="timer"></div>
     </div>
     <div id="container" class="container">
-      <div id="typeDisplay" class="typeDisplay">{{}}</div>
+      <div id="typeDisplay" class="typeDisplay">{{ sentence }}</div>
       <div id="charDisplay" class="charDisplay">{{}}</div>
     </div>
     <textarea
@@ -46,6 +27,10 @@ export default {
 </template>
 
 <style scoped>
+.active {
+  background-color: #000000;
+  color: #000000;
+}
 * {
   box-sizing: border-box;
   padding: 0;
@@ -98,9 +83,7 @@ body {
 }
 .level:hover {
   transition: 0.5s;
-  transform: translateY(-1px);
   color: #dabfbf;
-  filter: brightness(150%);
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
 }
 
@@ -216,3 +199,61 @@ body {
   height: 200px;
 }
 </style>
+
+<script>
+// import { ref } from 'vue'
+
+export default {
+  setup() {
+    function shortjson() {
+      return fetch('../problems/nopun/short.json')
+        .then((res) => res.json())
+        .then((data) => {
+          const ids = Object.keys(data)
+          const randomId = ids[Math.floor(Math.random() * ids.length)]
+          const sentence = data[randomId].sentence
+          const char = data[randomId].char
+          return { sentence, char }
+        })
+        .catch((err) => console.log(err))
+    }
+
+    function normaljson() {
+      return fetch('../problems/nopun/normal.json')
+        .then((res) => res.json())
+        .then((data) => {
+          const ids = Object.keys(data)
+          const randomId = ids[Math.floor(Math.random() * ids.length)]
+          const sentence = data[randomId].sentence
+          const char = data[randomId].char
+          return { sentence, char }
+        })
+        .catch((err) => console.log(err))
+
+      function longjson() {
+        return fetch('../problems/nopun/long.json')
+          .then((res) => res.json())
+          .then((data) => {
+            const ids = Object.keys(data)
+            const randomId = ids[Math.floor(Math.random() * ids.length)]
+            const sentence = data[randomId].sentence
+            const char = data[randomId].char
+            return { sentence, char }
+          })
+          .catch((err) => console.log(err))
+      }
+    }
+  },
+  data() {
+    return {
+      activeteButton: null
+    }
+  },
+  methods: {
+    activete(button) {
+      this.activeteButton = button
+      console.log(this.activeteButton)
+    }
+  }
+}
+</script>
