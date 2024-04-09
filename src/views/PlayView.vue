@@ -223,46 +223,8 @@ export default {
     this.activepun = false
   },
   setup() {
-    function shortjson() {
-      return fetch('../problems/nopun/short.json')
-        .then((res) => res.json())
-        .then((data) => {
-          const ids = Object.keys(data)
-          const randomId = ids[Math.floor(Math.random() * ids.length)]
-          const sentence = data[randomId].sentence
-          const char = data[randomId].char
-          console.log(sentence, char)
-          return { sentence, char }
-        })
-        .catch((err) => console.log(err))
-    }
-    shortjson()
-
-    function normaljson() {
-      return fetch('../problems/nopun/normal.json')
-        .then((res) => res.json())
-        .then((data) => {
-          const ids = Object.keys(data)
-          const randomId = ids[Math.floor(Math.random() * ids.length)]
-          const sentence = data[randomId].sentence
-          const char = data[randomId].char
-          return { sentence, char }
-        })
-        .catch((err) => console.log(err))
-
-      function longjson() {
-        return fetch('../problems/nopun/long.json')
-          .then((res) => res.json())
-          .then((data) => {
-            const ids = Object.keys(data)
-            const randomId = ids[Math.floor(Math.random() * ids.length)]
-            const sentence = data[randomId].sentence
-            const char = data[randomId].char
-            return { sentence, char }
-          })
-          .catch((err) => console.log(err))
-      }
-    }
+    const logtype = ref('')
+    return { logtype }
   },
   methods: {
     activate(level) {
