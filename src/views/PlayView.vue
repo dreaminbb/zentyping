@@ -205,7 +205,7 @@ body {
 </style>
 
 <script>
-// import { ref } from 'vue'
+import { ref } from 'vue'
 
 export default {
   data() {
@@ -231,10 +231,12 @@ export default {
           const randomId = ids[Math.floor(Math.random() * ids.length)]
           const sentence = data[randomId].sentence
           const char = data[randomId].char
+          console.log(sentence, char)
           return { sentence, char }
         })
         .catch((err) => console.log(err))
     }
+    shortjson()
 
     function normaljson() {
       return fetch('../problems/nopun/normal.json')
