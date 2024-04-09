@@ -1,34 +1,16 @@
 <template>
   <body>
     <div id="buttons" class="buttons">
-      <button
-        @click="activate('level1')"
-        :class="{ active: activeteButton === 'level1' }"
-        class="level"
-      >
+      <button @click="activate('short')" :class="{ active: activeButtons.short }" class="level">
         short
       </button>
-      <button
-        @click="activate('level2')"
-        :class="{ active: activeteButton === 'level2' }"
-        class="level"
-      >
+      <button @click="activate('normal')" :class="{ active: activeButtons.normal }" class="level">
         normal
       </button>
-      <button
-        @click="activate('level3')"
-        :class="{ active: activeteButton === 'level3' }"
-        class="level"
-      >
+      <button @click="activate('long')" :class="{ active: activeButtons.long }" class="level">
         long
       </button>
-      <button
-        @click="activate('level4')"
-        :class="{ active: activeteButton === 'level4' }"
-        class="level"
-      >
-        pun
-      </button>
+      <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
     </div>
     <div id="counter" class="counter">
       <div id="correct" class="correct"></div>
@@ -36,14 +18,13 @@
       <div id="timer" class="timer"></div>
     </div>
     <div id="container" class="container">
-      <div id="typeDisplay" class="typeDisplay">{{ sentence }}</div>
-      <div id="charDisplay" class="charDisplay">{{}}</div>
+      <div id="typeDisplay" class="typeDisplay"></div>
+      <div id="charDisplay" class="charDisplay"></div>
     </div>
     <textarea
       id="typeInput"
       class="typeInput"
       autocomplete="off"
-      v-model="typeInput"
       autofocus
       @input="logtype"
     ></textarea>
@@ -51,11 +32,6 @@
 </template>
 
 <style scoped>
-.active {
-  background-color: #000000;
-  color: #000000;
-  font-size: 9rem;
-}
 * {
   box-sizing: border-box;
   padding: 0;
@@ -223,12 +199,29 @@ body {
   width: 100%;
   height: 200px;
 }
+.active {
+  color: #fcfcfc;
+}
 </style>
 
 <script>
 // import { ref } from 'vue'
 
 export default {
+  data() {
+    return {
+      activeButtons: {
+        short: false,
+        normal: false,
+        long: false
+      },
+      activepun: false
+    }
+  },
+  mounted() {
+    this.activeButtons.normal = true
+    this.activepun = false
+  },
   setup() {
     function shortjson() {
       return fetch('../problems/nopun/short.json')
@@ -269,15 +262,20 @@ export default {
       }
     }
   },
-  data() {
-    return {
-      // activeteButton: null
-    }
-  },
   methods: {
-    // activate(level) {
-    //   this.activeteButton = level
-    // }
+    activate(level) {
+      const levels = ['short', 'normal', 'long']
+      for (const key in this.activeButtons) {
+        if (key === level) {
+          this.activeButtons[key] = true
+        } else if (levels.includes(key)) {
+          this.activeButtons[key] = false
+        }
+      }
+    },
+    punactivate() {
+      this.activepun = !this.activepun
+    }
   }
 }
 </script>

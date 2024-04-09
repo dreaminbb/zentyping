@@ -75,7 +75,7 @@ h1 {
 #tools {
   position: absolute;
   display: flex;
-  top: 10%;
+  top: 8.5%;
   width: 20%;
   height: 4%;
   right: 10%;
