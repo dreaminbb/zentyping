@@ -10,8 +10,6 @@ COPY ./backend/requirements.txt .
 # Pythonの依存関係をインストール
 RUN pip install -r requirements.txt
 
-# バックエンドのコードをコピー
-COPY ./backend .
 
 # ビルドステージ
 FROM node:14 as frontend
@@ -26,6 +24,7 @@ RUN npm install
 
 # フロントエンドのコードをコピー
 COPY ./src .
+COPY ./backend .
 
 # ビルドコマンドを実行
 RUN npm run build
