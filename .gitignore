@@ -12,6 +12,11 @@ dist
 dist-ssr
 coverage
 *.local
+<<<<<<< HEAD
+=======
+.env.local
+.venv
+>>>>>>> bdc9dbf (edited gitignore)
 venv/
 
 /cypress/videos/
@@ -25,4 +30,9 @@ venv/
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< HEAD
 *.tsbuildinfo
+=======
+
+*.tsbuildinfo
+>>>>>>> bdc9dbf (edited gitignore)
