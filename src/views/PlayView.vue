@@ -209,7 +209,7 @@ export default {
   async mounted() {
     this.activeButtons.normal = true
     this.activepun = false
-    const response = await fetch('http://localhost:5000/')
+    const response = await fetch('http://localhost:1919/')
     const data = await response.json()
     this.ShortProblem = data[0]
     this.NormalProblem = data[1]
