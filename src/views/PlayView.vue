@@ -18,8 +18,10 @@
       <div id="timer" class="timer"></div>
     </div>
     <div id="container" class="container">
-      <div id="typeDisplay" class="typeDisplay"></div>
-      <div id="charDisplay" class="charDisplay"></div>
+      <div id="typeDisplay" class="typeDisplay">{{ type }}</div>
+      <div id="charDisplay" class="charDisplay">
+        <span class="char" v-for="(character, index) in char" :key="index">{{ character }}</span>
+      </div>
     </div>
     <textarea
       id="typeInput"
@@ -88,28 +90,11 @@ body {
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
 }
 
-.buttons .short:hover {
-  transition: box-shadow 1s;
-  box-shadow: 0 5px 20px rgba(138, 168, 125, 0.7); /*上下右左?*/
-  border-color: transparent;
-}
-.buttons .normal:hover {
-  transition: box-shadow 1s;
-  box-shadow: 0 5px 20px rgba(185, 255, 252, 0.7);
-  border-color: transparent;
-}
-
-.buttons .long:hover {
-  transition: box-shadow 1s;
-  box-shadow: 0 5px 20px rgba(252, 164, 164, 0.7);
-  border-color: transparent;
-}
-
 .container {
   position: absolute;
   align-items: center;
+  background-color: transparent;
   top: 30%;
-  background-color: rgb(238, 238, 238);
   width: 70%;
   height: 40%;
   font-weight: 400;
@@ -119,7 +104,6 @@ body {
 
 .container .typeDisplay {
   flex: 1;
-  background-color: tomato;
   white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
   word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
   display: flex;
@@ -138,7 +122,6 @@ body {
 /* 文字（ローマ字を表示させるところ） */
 .container .charDisplay {
   flex: 1;
-  background-color: #c2aac9;
   align-items: center;
   position: absolute;
   bottom: 0%;
@@ -215,12 +198,24 @@ export default {
         normal: false,
         long: false
       },
-      activepun: false
+      activepun: false,
+      type: '',
+      char: '',
+      ShortProblem: null,
+      NormalProblem: null,
+      LongProblem: null
     }
   },
-  mounted() {
+  async mounted() {
     this.activeButtons.normal = true
     this.activepun = false
+    const response = await fetch('http://localhost:5000/')
+    const data = await response.json()
+    this.ShortProblem = data[0]
+    this.NormalProblem = data[1]
+    this.LongProblem = data[2]
+    this.type = this.NormalProblem[1].type
+    this.char = this.NormalProblem[1].char.split('')
   },
   setup() {
     const logtype = ref('')
