@@ -36,7 +36,6 @@
 <style scoped>
 * {
   box-sizing: border-box;
-  padding: 0;
   margin: 0;
   user-select: none;
 }
@@ -95,7 +94,7 @@ body {
   align-items: center;
   background-color: transparent;
   top: 30%;
-  width: 70%;
+  width: 80%;
   height: 40%;
   font-weight: 400;
   display: flex;
@@ -198,30 +197,28 @@ export default {
         normal: false,
         long: false
       },
+      data: null,
       activepun: false,
       type: '',
       char: '',
       ShortProblem: null,
       NormalProblem: null,
-      LongProblem: null
+      LongProblem: null,
+      shortCount: 0,
+      normalCount: 0,
+      longCount: 0
     }
-  },
-  async mounted() {
-    this.activeButtons.normal = true
-    this.activepun = false
-    const response = await fetch('http://localhost:1919/')
-    const data = await response.json()
-    this.ShortProblem = data[0]
-    this.NormalProblem = data[1]
-    this.LongProblem = data[2]
-    this.type = this.NormalProblem[1].type
-    this.char = this.NormalProblem[1].char.split('')
   },
   setup() {
     const logtype = ref('')
     return { logtype }
   },
   methods: {
+    //選択されたボタンのをアクティブの状態にする
+    async getFromAPI() {
+      const response = await fetch('http://localhost:1919/')
+      return await response.json()
+    },
     activate(level) {
       const levels = ['short', 'normal', 'long']
       for (const key in this.activeButtons) {
@@ -231,10 +228,55 @@ export default {
           this.activeButtons[key] = false
         }
       }
+      const idenifylevel = (level) => {
+        if (level === 'short') {
+          const positionShort = this.ShortProblem[this.shortCount]
+          this.type = positionShort.type
+          this.char = positionShort.char
+          this.shortCount++
+        }
+        if (level === 'normal') {
+          const positionNormal = this.NormalProblem[this.normalCount]
+          this.type = positionNormal.type
+          this.char = positionNormal.char
+          this.normalCount++
+        }
+        if (level === 'long') {
+          const positionLong = this.LongProblem[this.longCount]
+          this.type = positionLong.type
+          this.char = positionLong.char
+          this.longCount++
+        }
+      }
+      idenifylevel(level)
+      if (
+        ['shortCount', 'normalCount', 'longCount'].some(
+          (count) => this[count] === this.NormalProblem.length
+        )
+      ) {
+        this.shortCount = this.normalCount = this.longCount = 0
+        console.log(this.shortCount)
+        this.data = null
+        const data = this.getFromAPI()
+        this.ShortProblem = data[0]
+        this.NormalProblem = data[1]
+        this.LongProblem = data[2]
+        this.idenifylevel(level)
+      }
     },
     punactivate() {
       this.activepun = !this.activepun
     }
+  },
+  async mounted() {
+    this.activeButtons.normal = true
+    this.activepun = false
+    const data = await this.getFromAPI()
+    this.ShortProblem = data[0]
+    this.NormalProblem = data[1]
+    this.LongProblem = data[2]
+    this.type = this.NormalProblem[0].type
+    this.char = this.NormalProblem[0].char.split('')
   }
 }
 </script>
