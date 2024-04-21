@@ -24,34 +24,21 @@
       </div>
     </div>
     <textarea
+      ref="typeInput"
       id="typeInput"
       class="typeInput"
       autocomplete="off"
       autofocus
-      @input="logtype"
+      v-model="inputValue"
+      @input="typing"
     ></textarea>
   </body>
 </template>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  user-select: none;
-}
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  justify-content: center;
-  overflow: hidden;
-  font-family: 'poppins', sans-serif;
-}
-
 #buttons {
   position: absolute;
-  top: 10%;
+  top: 22%;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -93,7 +80,7 @@ body {
   position: absolute;
   align-items: center;
   background-color: transparent;
-  top: 30%;
+  top: 35%;
   width: 80%;
   height: 40%;
   font-weight: 400;
@@ -206,66 +193,8 @@ export default {
       LongProblem: null,
       shortCount: 0,
       normalCount: 0,
-      longCount: 0
-    }
-  },
-  setup() {
-    const logtype = ref('')
-    return { logtype }
-  },
-  methods: {
-    //選択されたボタンのをアクティブの状態にする
-    async getFromAPI() {
-      const response = await fetch('http://localhost:1919/')
-      return await response.json()
-    },
-    activate(level) {
-      const levels = ['short', 'normal', 'long']
-      for (const key in this.activeButtons) {
-        if (key === level) {
-          this.activeButtons[key] = true
-        } else if (levels.includes(key)) {
-          this.activeButtons[key] = false
-        }
-      }
-      const idenifylevel = (level) => {
-        if (level === 'short') {
-          const positionShort = this.ShortProblem[this.shortCount]
-          this.type = positionShort.type
-          this.char = positionShort.char
-          this.shortCount++
-        }
-        if (level === 'normal') {
-          const positionNormal = this.NormalProblem[this.normalCount]
-          this.type = positionNormal.type
-          this.char = positionNormal.char
-          this.normalCount++
-        }
-        if (level === 'long') {
-          const positionLong = this.LongProblem[this.longCount]
-          this.type = positionLong.type
-          this.char = positionLong.char
-          this.longCount++
-        }
-      }
-      idenifylevel(level)
-      if (
-        ['shortCount', 'normalCount', 'longCount'].some(
-          (count) => this[count] === this.NormalProblem.length
-        )
-      ) {
-        this.shortCount = this.normalCount = this.longCount = 0
-        console.log(this.shortCount)
-        this.data = null
-        const data = this.getFromAPI()
-        this.ShortProblem = data[0]
-        this.NormalProblem = data[1]
-        this.LongProblem = data[2]
-        this.idenifylevel(level)
-      }
-    },
-    punactivate() {
-      this.activepun = !this.activepun
+      longCount: 0,
+      inputValue: ''
     }
   },
   async mounted() {
@@ -277,6 +206,70 @@ export default {
     this.LongProblem = data[2]
     this.type = this.NormalProblem[0].type
     this.char = this.NormalProblem[0].char.split('')
+  },
+  setup() {
+    const logtype = ref('')
+    return { logtype }
+  },
+  methods: {
+    async getFromAPI() {
+      const response = await fetch('http://localhost:1919/')
+      return await response.json()
+    },
+    async activate(level) {
+      const levels = ['short', 'normal', 'long']
+      for (const key in this.activeButtons) {
+        if (key === level) {
+          this.activeButtons[key] = true
+        } else if (levels.includes(key)) {
+          this.activeButtons[key] = false
+        }
+      }
+
+      if (level === 'short') {
+        const positionShort = this.ShortProblem[this.shortCount]
+        this.type = positionShort.type
+        this.char = positionShort.char
+        this.shortCount++
+      }
+      if (level === 'normal') {
+        const positionNormal = this.NormalProblem[this.normalCount]
+        this.type = positionNormal.type
+        this.char = positionNormal.char
+        this.normalCount++
+      }
+      if (level === 'long') {
+        const positionLong = this.LongProblem[this.longCount]
+        this.type = positionLong.type
+        this.char = positionLong.char
+        this.longCount++
+      }
+
+      if (
+        ['shortCount', 'normalCount', 'longCount'].some(
+          (count) => this[count] === this.NormalProblem.length
+        )
+      ) {
+        this.shortCount = this.normalCount = this.longCount = 0
+        this.data = null
+        const data = await this.getFromAPI()
+        this.ShortProblem = data[0]
+        this.NormalProblem = data[1]
+        this.LongProblem = data[2]
+        this.activate(level)
+      }
+      this.inputValue = ''
+      this.$refs.typeInput.focus()
+    },
+    punactivate() {
+      this.activepun = !this.activepun
+    },
+    typing() {
+      // if (this.char[this.inputValue.length] === ) {
+      //   console.log('penis')
+      // }
+      console.log(this.char)
+    }
   }
 }
 </script>
