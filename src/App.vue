@@ -46,9 +46,10 @@ import { RouterView } from 'vue-router'
   user-select: none;
 }
 body {
-  background-color: rgb(54, 54, 54);
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(#652bc2, #000000);
   display: flex;
-  justify-content: center;
   align-items: center;
   height: 100vh;
   justify-content: center;

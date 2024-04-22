@@ -19,7 +19,7 @@
     </div>
     <div id="container" class="container">
       <div id="typeDisplay" class="typeDisplay">{{ type }}</div>
-      <div id="charDisplay" class="charDisplay">
+      <div id="charDisplay" class="charDisplay" ref="spans">
         <span class="char" v-for="(character, index) in char" :key="index">{{ character }}</span>
       </div>
     </div>
@@ -29,7 +29,8 @@
       class="typeInput"
       autocomplete="off"
       autofocus
-      v-model="inputValue"
+      v-model="typeInput"
+      refs="typeInput"
       @input="typing"
     ></textarea>
   </body>
@@ -38,9 +39,8 @@
 <style scoped>
 #buttons {
   position: absolute;
-  top: 22%;
+  top: 10%;
   left: 50%;
-  transform: translateX(-50%);
   display: flex;
   justify-content: space-around;
   transform: translate(-50%, -50%);
@@ -48,7 +48,7 @@
   width: 30%;
   height: 5%;
   border-radius: 80px;
-  background-color: rgb(255, 255, 255);
+  background: rgb(255, 255, 255);
   background: rgba(255, 255, 255, 0.3);
   -webkit-backdrop-filter: blur(17px);
   backdrop-filter: blur(17px);
@@ -61,7 +61,6 @@
   border: none;
   color: #b981ca;
   border-radius: 1px;
-  border-radius: 900px;
   filter: brightness(130%);
   background-color: transparent;
   justify-content: center;
@@ -70,6 +69,7 @@
   font-size: 1rem;
   letter-spacing: 3px;
 }
+
 .level:hover {
   transition: 0.5s;
   color: #dabfbf;
@@ -80,52 +80,39 @@
   position: absolute;
   align-items: center;
   background-color: transparent;
-  top: 35%;
+  top: 25%;
   width: 80%;
   height: 40%;
   font-weight: 400;
   display: flex;
   flex-direction: column;
 }
-
-.container .typeDisplay {
-  flex: 1;
-  white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
-  word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
+.typeDisplay,
+.charDisplay {
+  position: absolute;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #ffffff;
-  position: relative;
-  outline: none;
-  height: 40%;
   width: 100%;
-  overflow-wrap: break-word; /* 途中で改行する */
-  font-size: 3.5rem;
+  height: 50%;
+  padding: 0;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  color: #ffffff;
+  align-items: center;
+  text-align: center;
 }
 
-/* 文字（ローマ字を表示させるところ） */
-.container .charDisplay {
-  flex: 1;
-  align-items: center;
-  position: absolute;
-  bottom: 0%;
-  height: 20%;
-  width: 100%;
-  justify-content: center;
-  text-align: center;
-  white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
-  word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
-  color: #ffffff;
-  position: relative;
-  outline: none;
-  padding: 0;
-  height: 20%;
-  font-size: 2.5rem;
-  width: 100%;
-  overflow-wrap: break-word; /* 途中で改行する */
+.container .typeDisplay {
   letter-spacing: 3px;
+  top: 0%;
+  font-size: 3rem;
+}
+
+.container .charDisplay {
+  letter-spacing: 6px;
+  bottom: 0;
+  font-size: 2.5rem;
 }
 
 .current::after {
@@ -145,6 +132,7 @@
     opacity: 1;
   }
 }
+
 .typeinput:focus {
   outline: none;
 }
@@ -164,12 +152,19 @@
   text-decoration: none;
   outline: none;
   border: none;
-  resize: none; /* テキストエリアのリサイズを禁止 */
+  resize: none;
   width: 100%;
   height: 200px;
 }
+
 .active {
   color: #fcfcfc;
+}
+.correct {
+  color: #9a9a9a;
+}
+.incorrect {
+  color: #f25353;
 }
 </style>
 
@@ -185,6 +180,7 @@ export default {
         long: false
       },
       data: null,
+      character: '',
       activepun: false,
       type: '',
       char: '',
@@ -194,10 +190,13 @@ export default {
       shortCount: 0,
       normalCount: 0,
       longCount: 0,
-      inputValue: ''
+      typeInput: '',
+      correctCount: 0,
+      incorrectCount: 0
     }
   },
   async mounted() {
+    this.$refs.typeInput.focus()
     this.activeButtons.normal = true
     this.activepun = false
     const data = await this.getFromAPI()
@@ -256,19 +255,38 @@ export default {
         this.ShortProblem = data[0]
         this.NormalProblem = data[1]
         this.LongProblem = data[2]
-        this.activate(level)
+        await this.activate(level)
       }
-      this.inputValue = ''
+      this.typeInput = ''
       this.$refs.typeInput.focus()
     },
     punactivate() {
       this.activepun = !this.activepun
     },
     typing() {
-      // if (this.char[this.inputValue.length] === ) {
-      //   console.log('penis')
-      // }
-      console.log(this.char)
+      const input = this.typeInput.split('')
+      const typeFront = input[this.typeInput.length - 1]
+      const allchart = Array.from(this.$refs.spans.querySelectorAll('span')).map(
+        (span) => span.textContent
+      )
+      const charFront = allchart[this.typeInput.length - 1]
+      const spanFront = this.$refs.spans.querySelectorAll('span')[this.typeInput.length - 1]
+      if (typeFront === charFront) {
+        spanFront.classList.add('correct')
+        spanFront.classList.remove('incorrect')
+        this.correctCount++
+        // if (this.correctCount === this.typeInput.length) {
+        //   console.log('penis')
+        // }
+      } else {
+        spanFront.classList.add('incorrect')
+        spanFront.classList.remove('correct')
+      }
+      if (typeFront === null) {
+        spanFront.classList.remove('incorrect')
+        spanFront.classList.remove('correct')
+        console.log('penis')
+      }
     }
   }
 }

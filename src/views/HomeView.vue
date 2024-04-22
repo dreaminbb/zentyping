@@ -80,17 +80,6 @@ export default {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   justify-content: center;
 }
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(#652bc2, #000000);
-  display: flex;
-  align-items: center;
-  height: 100vh;
-  justify-content: center;
-  overflow: hidden;
-  font-family: 'poppins', sans-serif;
-}
 
 .card {
   display: flex;
@@ -121,7 +110,7 @@ body {
 
 #left {
   filter: brightness(130%);
-  left: 10%;
+  left: 5%;
   border-radius: 20px;
   padding: 3px;
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
@@ -215,7 +204,7 @@ body {
   justify-content: center;
   align-items: center;
   display: flex;
-  right: 10%;
+  right: 5%;
   width: 400px;
   height: 50%;
   bottom: 14%;
