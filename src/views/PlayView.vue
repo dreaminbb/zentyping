@@ -97,7 +97,7 @@
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: break-word;
-  color: #ffffff;
+  color: #8b8b8b;
   align-items: center;
   text-align: center;
 }
@@ -109,14 +109,15 @@
 }
 
 .container .charDisplay {
-  letter-spacing: 9px;
+  letter-spacing: 1px;
   bottom: 0;
   font-size: 2.5rem;
 }
 
 .current::after {
   content: '|';
-  margin: -7px;
+  padding: 0;
+  margin: 0;
   animation: blink 1s infinite;
 }
 
@@ -138,21 +139,20 @@
 
 .typeInput {
   position: absolute;
-  top: -1000px;
   background: transparent;
   text-decoration: none;
   outline: none;
   border: none;
   resize: none;
-  width: 100%;
-  height: 200px;
+  width: 0;
+  height: 0;
 }
 
 .active {
-  color: #fcfcfc;
+  color: #ffffff;
 }
 .correct {
-  color: #9a9a9a;
+  color: #ffffff;
 }
 .incorrect {
   color: #f25353;
@@ -185,10 +185,10 @@ export default {
     }
   },
   async mounted() {
+    const data = await this.getFromAPI()
     this.$refs.typeInput.focus()
     this.activeButtons.normal = true
     this.activepun = false
-    const data = await this.getFromAPI()
     this.ShortProblem = data[0]
     this.NormalProblem = data[1]
     this.LongProblem = data[2]
@@ -209,7 +209,9 @@ export default {
           this.activeButtons[key] = false
         }
       }
-
+      this.$refs.spans.querySelectorAll('span').forEach((span) => {
+        span.classList.remove('correct', 'incorrect', 'current')
+      })
       if (level === 'short') {
         const positionShort = this.ShortProblem[this.shortCount]
         this.type = positionShort.type
@@ -244,16 +246,12 @@ export default {
       }
       this.typeInput = ''
       this.$refs.typeInput.focus()
-      this.$refs.spans.querySelectorAll('span').forEach((span) => {
-        span.classList.remove('correct', 'incorrect')
-      })
     },
     punactivate() {
       this.activepun = !this.activepun
     },
     typing() {
-      // const input = this.typeInput.split('') //配列
-      console.log(this.$refs.spans.querySelectorAll('span'))
+      const inputLength = this.typeInput.length
       const spanFromChar = this.$refs.spans.querySelectorAll('span')
       spanFromChar.forEach((span, index) => {
         if (index < this.typeInput.length) {
@@ -266,6 +264,11 @@ export default {
           }
         } else {
           span.classList.remove('correct', 'incorrect')
+        }
+        if (index === inputLength - 1) {
+          span.classList.add('current')
+        } else {
+          span.classList.remove('current')
         }
       })
     }
