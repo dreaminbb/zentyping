@@ -160,10 +160,6 @@
 </style>
 
 <script>
-import { TimeScale } from 'chart.js'
-import { ref } from 'vue'
-import { compileScript } from 'vue/compiler-sfc'
-
 export default {
   data() {
     return {
@@ -212,8 +208,6 @@ export default {
         } else if (levels.includes(key)) {
           this.activeButtons[key] = false
         }
-        this.typeInput = ''
-        this.$refs.typeInput.focus()
       }
 
       if (level === 'short') {
@@ -248,33 +242,30 @@ export default {
         this.LongProblem = data[2]
         await this.activate(level)
       }
+      this.typeInput = ''
+      this.$refs.typeInput.focus()
+      this.$refs.spans.querySelectorAll('span').forEach((span) => {
+        span.classList.remove('correct', 'incorrect')
+      })
     },
     punactivate() {
       this.activepun = !this.activepun
     },
     typing() {
-      console.log('⌨️')
-      const input = this.typeInput.split('') //配列
-      const typeFront = input[this.typeInput.length - 1] //一文字
-      const allchart = Array.from(this.$refs.spans.querySelectorAll('span')).map(
-        (span) => span.textContent
-      ) //配列
-      const spanFromChar = this.$refs.spans.querySelectorAll('span') //node list
-      console.log(spanFromChar[this.typeInput.length - 1])
+      // const input = this.typeInput.split('') //配列
+      console.log(this.$refs.spans.querySelectorAll('span'))
+      const spanFromChar = this.$refs.spans.querySelectorAll('span')
       spanFromChar.forEach((span, index) => {
         if (index < this.typeInput.length) {
           if (span.textContent === this.typeInput[index]) {
             span.classList.add('correct')
             span.classList.remove('incorrect')
-            console.log('correct')
           } else {
             span.classList.remove('correct')
             span.classList.add('incorrect')
-            console.log('incorrect')
           }
         } else {
           span.classList.remove('correct', 'incorrect')
-          console.log('null')
         }
       })
     }
