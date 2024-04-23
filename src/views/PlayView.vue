@@ -30,7 +30,6 @@
       autocomplete="off"
       autofocus
       v-model="typeInput"
-      refs="typeInput"
       @input="typing"
     ></textarea>
   </body>
@@ -105,12 +104,12 @@
 
 .container .typeDisplay {
   letter-spacing: 3px;
-  top: 0%;
+  top: 0;
   font-size: 3rem;
 }
 
 .container .charDisplay {
-  letter-spacing: 6px;
+  letter-spacing: 9px;
   bottom: 0;
   font-size: 2.5rem;
 }
@@ -133,16 +132,8 @@
   }
 }
 
-.typeinput:focus {
+.typeInput:focus {
   outline: none;
-}
-
-.correct {
-  color: #ffffff;
-}
-
-.incorrect {
-  color: #ff0000;
 }
 
 .typeInput {
@@ -169,7 +160,9 @@
 </style>
 
 <script>
+import { TimeScale } from 'chart.js'
 import { ref } from 'vue'
+import { compileScript } from 'vue/compiler-sfc'
 
 export default {
   data() {
@@ -204,11 +197,7 @@ export default {
     this.NormalProblem = data[1]
     this.LongProblem = data[2]
     this.type = this.NormalProblem[0].type
-    this.char = this.NormalProblem[0].char.split('')
-  },
-  setup() {
-    const logtype = ref('')
-    return { logtype }
+    this.char = this.NormalProblem[0].char
   },
   methods: {
     async getFromAPI() {
@@ -223,6 +212,8 @@ export default {
         } else if (levels.includes(key)) {
           this.activeButtons[key] = false
         }
+        this.typeInput = ''
+        this.$refs.typeInput.focus()
       }
 
       if (level === 'short') {
@@ -257,36 +248,35 @@ export default {
         this.LongProblem = data[2]
         await this.activate(level)
       }
-      this.typeInput = ''
-      this.$refs.typeInput.focus()
     },
     punactivate() {
       this.activepun = !this.activepun
     },
     typing() {
-      const input = this.typeInput.split('')
-      const typeFront = input[this.typeInput.length - 1]
+      console.log('⌨️')
+      const input = this.typeInput.split('') //配列
+      const typeFront = input[this.typeInput.length - 1] //一文字
       const allchart = Array.from(this.$refs.spans.querySelectorAll('span')).map(
         (span) => span.textContent
-      )
-      const charFront = allchart[this.typeInput.length - 1]
-      const spanFront = this.$refs.spans.querySelectorAll('span')[this.typeInput.length - 1]
-      if (typeFront === charFront) {
-        spanFront.classList.add('correct')
-        spanFront.classList.remove('incorrect')
-        this.correctCount++
-        // if (this.correctCount === this.typeInput.length) {
-        //   console.log('penis')
-        // }
-      } else {
-        spanFront.classList.add('incorrect')
-        spanFront.classList.remove('correct')
-      }
-      if (typeFront === null) {
-        spanFront.classList.remove('incorrect')
-        spanFront.classList.remove('correct')
-        console.log('penis')
-      }
+      ) //配列
+      const spanFromChar = this.$refs.spans.querySelectorAll('span') //node list
+      console.log(spanFromChar[this.typeInput.length - 1])
+      spanFromChar.forEach((span, index) => {
+        if (index < this.typeInput.length) {
+          if (span.textContent === this.typeInput[index]) {
+            span.classList.add('correct')
+            span.classList.remove('incorrect')
+            console.log('correct')
+          } else {
+            span.classList.remove('correct')
+            span.classList.add('incorrect')
+            console.log('incorrect')
+          }
+        } else {
+          span.classList.remove('correct', 'incorrect')
+          console.log('null')
+        }
+      })
     }
   }
 }
