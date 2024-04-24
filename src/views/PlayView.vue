@@ -20,7 +20,9 @@
     <div id="container" class="container">
       <div id="typeDisplay" class="typeDisplay">{{ type }}</div>
       <div id="charDisplay" class="charDisplay" ref="spans">
-        <span class="char" v-for="(character, index) in char" :key="index">{{ character }}</span>
+        <span class="char" v-for="(character, index) in char" :key="index">
+          {{ character }}
+        </span>
       </div>
     </div>
     <textarea
@@ -31,11 +33,12 @@
       autofocus
       v-model="typeInput"
       @input="typing"
+      @keydown="inputKeydown"
     ></textarea>
   </body>
 </template>
 
-<style scoped>
+<style>
 #buttons {
   position: absolute;
   top: 10%;
@@ -55,6 +58,7 @@
 }
 
 .level {
+  content: 'penis';
   width: 20%;
   height: 100%;
   border: none;
@@ -114,7 +118,8 @@
   font-size: 2.5rem;
 }
 
-.current::after {
+.current-after::after,
+.current-before::before {
   content: '|';
   padding: 0;
   margin: 0;
@@ -194,6 +199,9 @@ export default {
     this.LongProblem = data[2]
     this.type = this.NormalProblem[0].type
     this.char = this.NormalProblem[0].char
+    this.$nextTick(() => {
+      this.$refs.spans.querySelector('span').classList.add('current-before')
+    })
   },
   methods: {
     async getFromAPI() {
@@ -210,7 +218,7 @@ export default {
         }
       }
       this.$refs.spans.querySelectorAll('span').forEach((span) => {
-        span.classList.remove('correct', 'incorrect', 'current')
+        span.classList.remove('correct', 'incorrect', 'current-after')
       })
       if (level === 'short') {
         const positionShort = this.ShortProblem[this.shortCount]
@@ -250,7 +258,9 @@ export default {
     punactivate() {
       this.activepun = !this.activepun
     },
-    typing() {
+
+    typing(event) {
+      this.$refs.spans.querySelector('span').classList.remove('current-before')
       const inputLength = this.typeInput.length
       const spanFromChar = this.$refs.spans.querySelectorAll('span')
       spanFromChar.forEach((span, index) => {
@@ -258,6 +268,9 @@ export default {
           if (span.textContent === this.typeInput[index]) {
             span.classList.add('correct')
             span.classList.remove('incorrect')
+            if (event.key === 'Backspace') {
+              event.preventDefault()
+            }
           } else {
             span.classList.remove('correct')
             span.classList.add('incorrect')
@@ -266,11 +279,21 @@ export default {
           span.classList.remove('correct', 'incorrect')
         }
         if (index === inputLength - 1) {
-          span.classList.add('current')
+          span.classList.add('current-after')
         } else {
-          span.classList.remove('current')
+          span.classList.remove('current-after')
         }
       })
+    },
+    inputKeydown(event) {
+      if (
+        event.key === 'Backspace' &&
+        Array.from(this.$refs.spans.querySelectorAll('span'))
+          .slice(0, this.typeInput.length)
+          .every((span) => span.classList.contains('correct'))
+      ) {
+        event.preventDefault()
+      }
     }
   }
 }
