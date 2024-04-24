@@ -192,13 +192,26 @@ export default {
   async mounted() {
     const data = await this.getFromAPI()
     this.$refs.typeInput.focus()
-    this.activeButtons.normal = true
-    this.activepun = false
     this.ShortProblem = data[0]
     this.NormalProblem = data[1]
     this.LongProblem = data[2]
-    this.type = this.NormalProblem[0].type
-    this.char = this.NormalProblem[0].char
+    try {
+      if (localStorage.getItem('activeButtons')) {
+        this.activeButtons = JSON.parse(localStorage.getItem('activeButtons'))
+      } else {
+        this.type = this.NormalProblem[0].type
+        this.char = this.NormalProblem[0].char
+      }
+      if (localStorage.getItem('activepun')) {
+        this.activepun = JSON.parse(localStorage.getItem('activepun'))
+      } else {
+        this.activepun = false
+        this.activeButtons.normal = true
+        console.log('activepun is not set in localStorage')
+      }
+    } catch (error) {
+      console.error('Error parsing JSON from localStorage:', error)
+    }
     this.$nextTick(() => {
       this.$refs.spans.querySelector('span').classList.add('current-before')
     })
@@ -217,6 +230,7 @@ export default {
           this.activeButtons[key] = false
         }
       }
+      localStorage.setItem('activeButtons', this.activeButtons)
       this.$refs.spans.querySelectorAll('span').forEach((span) => {
         span.classList.remove('correct', 'incorrect', 'current-after')
       })
@@ -257,9 +271,10 @@ export default {
     },
     punactivate() {
       this.activepun = !this.activepun
+      localStorage.setItem('activepun', this.activeButtons)
     },
 
-    typing(event) {
+    typing() {
       this.$refs.spans.querySelector('span').classList.remove('current-before')
       const inputLength = this.typeInput.length
       const spanFromChar = this.$refs.spans.querySelectorAll('span')
@@ -268,9 +283,6 @@ export default {
           if (span.textContent === this.typeInput[index]) {
             span.classList.add('correct')
             span.classList.remove('incorrect')
-            if (event.key === 'Backspace') {
-              event.preventDefault()
-            }
           } else {
             span.classList.remove('correct')
             span.classList.add('incorrect')
