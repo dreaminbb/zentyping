@@ -25,15 +25,35 @@
         </span>
       </div>
     </div>
+    <div class="aleat" id="japaneseInput" v-if="japaneseInput">
+      <svg
+        id="lock"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24"
+        viewBox="0 -960 960 960"
+        width="24"
+      >
+        <path
+          d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
+        />
+      </svg>
+      <div id="japanesealert">日本語入力がオンになっています</div>
+    </div>
+
     <textarea
       ref="typeInput"
       id="typeInput"
       class="typeInput"
       autocomplete="off"
+      spellcheck="false"
+      autocapitalize="none"
+      autocorrect="off"
       autofocus
       v-model="typeInput"
       @input="typing"
       @keydown="inputKeydown"
+      @compositionstart="compositionStart"
+      @compositionend="compositionEnd"
     ></textarea>
   </body>
 </template>
@@ -153,6 +173,30 @@
   height: 0;
 }
 
+.aleat {
+  position: absolute;
+  display: flex;
+  top: 15%;
+  left: 0;
+  width: 18%;
+  background-color: rgba(255, 80, 80, 0.2);
+  height: 8%;
+  padding: 13px;
+  border-radius: 30px;
+}
+.lock {
+  align-items: center;
+  position: absolute;
+}
+.japanesealert {
+  position: absolute;
+  display: flex;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 .active {
   color: #ffffff;
 }
@@ -181,12 +225,14 @@ export default {
       ShortProblem: null,
       NormalProblem: null,
       LongProblem: null,
-      shortCount: 0,
-      normalCount: 0,
-      longCount: 0,
+      shortCount: 1,
+      normalCount: 1,
+      longCount: 1,
       typeInput: '',
       correctCount: 0,
-      incorrectCount: 0
+      incorrectCount: 0,
+      isComposing: false,
+      japaneseInput: false
     }
   },
   async mounted() {
@@ -198,7 +244,21 @@ export default {
     try {
       if (localStorage.getItem('activeButtons')) {
         this.activeButtons = JSON.parse(localStorage.getItem('activeButtons'))
+        if (this.activeButtons.short === true) {
+          this.type = this.ShortProblem[0].type
+          this.char = this.ShortProblem[0].char
+        }
+        if (this.activeButtons.normal === true) {
+          this.type = this.NormalProblem[0].type
+          this.char = this.NormalProblem[0].char
+        }
+        if (this.activeButtons.long === true) {
+          this.type = this.LongProblem[0].type
+          this.char = this.LongProblem[0].char
+        }
       } else {
+        console.log('there are no data like you visit this webpage')
+        this.activeButtons.normal = true
         this.type = this.NormalProblem[0].type
         this.char = this.NormalProblem[0].char
       }
@@ -206,7 +266,6 @@ export default {
         this.activepun = JSON.parse(localStorage.getItem('activepun'))
       } else {
         this.activepun = false
-        this.activeButtons.normal = true
         console.log('activepun is not set in localStorage')
       }
     } catch (error) {
@@ -230,7 +289,7 @@ export default {
           this.activeButtons[key] = false
         }
       }
-      localStorage.setItem('activeButtons', this.activeButtons)
+      localStorage.setItem('activeButtons', JSON.stringify(this.activeButtons))
       this.$refs.spans.querySelectorAll('span').forEach((span) => {
         span.classList.remove('correct', 'incorrect', 'current-after')
       })
@@ -271,7 +330,7 @@ export default {
     },
     punactivate() {
       this.activepun = !this.activepun
-      localStorage.setItem('activepun', this.activeButtons)
+      localStorage.setItem('activepun', JSON.stringify(this.activepun))
     },
 
     typing() {
@@ -298,6 +357,9 @@ export default {
       })
     },
     inputKeydown(event) {
+      if (this.isComposing) {
+        this.japaneseInput = true
+      }
       if (
         event.key === 'Backspace' &&
         Array.from(this.$refs.spans.querySelectorAll('span'))
@@ -306,6 +368,13 @@ export default {
       ) {
         event.preventDefault()
       }
+    },
+    compositionStart() {
+      this.isComposing = true
+      this.japaneseInput = false
+    },
+    compositionEnd() {
+      this.isComposing = false
     }
   }
 }

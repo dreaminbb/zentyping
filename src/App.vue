@@ -54,7 +54,7 @@ body {
   height: 100vh;
   justify-content: center;
   overflow: hidden;
-  font-family: 'poppins', sans-serif;
+  /* font-family: 'poppins', sans-serif; */
 }
 header {
   width: 100%;
@@ -68,7 +68,7 @@ header {
 h1 {
   position: absolute;
   left: 5%;
-  font-family: cursive;
+  /* font-family: cursive; */
   font-size: 3rem;
   color: #ebebeb;
   text-align: left;
