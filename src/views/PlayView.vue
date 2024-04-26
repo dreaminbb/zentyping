@@ -12,10 +12,12 @@
       </button>
       <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
     </div>
-    <div id="counter" class="counter">
-      <div id="correct" class="correct"></div>
-      <div id="incorrect" class="incorrect"></div>
-      <div id="timer" class="timer"></div>
+    <div id="counter">
+      <div id="correct" class="playdetail">{{ correct_count }}</div>
+      <div id="incorrect" class="playdetail">{{ this.typeInput.length - this.correct_count }}</div>
+      <div id="rest_character" class="playdetail">
+        {{ this.typeInput.length }} / {{ this.char.length }}
+      </div>
     </div>
     <div id="container" class="container">
       <div id="typeDisplay" class="typeDisplay">{{ type }}</div>
@@ -25,19 +27,33 @@
         </span>
       </div>
     </div>
-    <div class="aleat" id="japaneseInput" v-if="japaneseInput">
+    <div class="japaneseInputAleat" v-if="japaneseInput">
       <svg
-        id="lock"
+        class="aleatIcon"
         xmlns="http://www.w3.org/2000/svg"
-        height="24"
+        height="40"
         viewBox="0 -960 960 960"
-        width="24"
+        width="40"
       >
         <path
           d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
         />
       </svg>
-      <div id="japanesealert">日本語入力がオンになっています</div>
+      <div class="aleatSentence">日本語入力がオンになっています</div>
+    </div>
+    <div class="capslockInputAleat" v-if="capslockchecker">
+      <svg
+        class="aleatIcon"
+        xmlns="http://www.w3.org/2000/svg"
+        height="40"
+        viewBox="0 -960 960 960"
+        width="40"
+      >
+        <path
+          d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
+        />
+      </svg>
+      <div class="aleatSentence">capslockがオンになっています</div>
     </div>
 
     <textarea
@@ -58,7 +74,8 @@
   </body>
 </template>
 
-<style>
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 #buttons {
   position: absolute;
   top: 10%;
@@ -97,6 +114,31 @@
   transition: 0.5s;
   color: #dabfbf;
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+}
+
+#counter {
+  background-color: transparent;
+  color: rgb(135, 177, 255);
+  position: absolute;
+  display: flex;
+  width: 15%;
+  height: 7%;
+  top: 20%;
+  left: 10%;
+  justify-content: space-evenly;
+}
+.playdetail {
+  height: 100%;
+  padding: 2px;
+  font-size: 2rem;
+  font-family: 'Roboto Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
+  font-optical-sizing: auto;
+  font-size: 1.6rem;
+}
+
+#rest_character{
+  padding-left: 18px;
 }
 
 .container {
@@ -172,31 +214,58 @@
   width: 0;
   height: 0;
 }
-
-.aleat {
+.japaneseInputAleat {
+  top: 15%;
+  background-color: rgba(255, 80, 80, 0.2);
+}
+.capslockInputAleat {
+  top: 27%;
+  background-color: rgb(70, 144, 147);
+}
+.japaneseInputAleat,
+.capslockInputAleat {
   position: absolute;
   display: flex;
-  top: 15%;
   left: 0;
   width: 18%;
-  background-color: rgba(255, 80, 80, 0.2);
   height: 8%;
   padding: 13px;
   border-radius: 30px;
+  letter-spacing: 2px;
+  animation: appear 0.5s;
 }
-.lock {
+.aleatIcon {
   align-items: center;
   position: absolute;
+  bottom: 0;
+  font-size: 4rem;
+  fill: #b4b4b4;
 }
-.japanesealert {
+.aleatSentence {
   position: absolute;
   display: flex;
-
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: break-word;
 }
 
+@keyframes appear {
+  0% {
+    left: -50%;
+  }
+  30% {
+    left: -40%;
+  }
+  50% {
+    left: -20%;
+  }
+  70% {
+    left: -10%;
+  }
+  100% {
+    left: 0;
+  }
+}
 .active {
   color: #ffffff;
 }
@@ -207,7 +276,6 @@
   color: #f25353;
 }
 </style>
-
 <script>
 export default {
   data() {
@@ -229,8 +297,6 @@ export default {
       normalCount: 1,
       longCount: 1,
       typeInput: '',
-      correctCount: 0,
-      incorrectCount: 0,
       isComposing: false,
       japaneseInput: false
     }
@@ -274,11 +340,17 @@ export default {
     this.$nextTick(() => {
       this.$refs.spans.querySelector('span').classList.add('current-before')
     })
+    this.correct_count = 0
   },
   methods: {
     async getFromAPI() {
-      const response = await fetch('http://localhost:1919/')
-      return await response.json()
+      try {
+        const response = await fetch('http://localhost:1919/')
+        return await response.json()
+      } catch (error) {
+        this.type = 'something went wrong (:'
+        this.type = '>_<'
+      }
     },
     async activate(level) {
       const levels = ['short', 'normal', 'long']
@@ -337,6 +409,8 @@ export default {
       this.$refs.spans.querySelector('span').classList.remove('current-before')
       const inputLength = this.typeInput.length
       const spanFromChar = this.$refs.spans.querySelectorAll('span')
+
+      console.log(Array.from(this.$refs.spans.querySelectorAll('span')))
       spanFromChar.forEach((span, index) => {
         if (index < this.typeInput.length) {
           if (span.textContent === this.typeInput[index]) {
@@ -355,6 +429,9 @@ export default {
           span.classList.remove('current-after')
         }
       })
+      this.correct_count = Array.from(this.$refs.spans.querySelectorAll('span'))
+        .slice(0, this.typeInput.length)
+        .filter((span) => span.classList.contains('correct')).length
     },
     inputKeydown(event) {
       if (this.isComposing) {
@@ -368,6 +445,9 @@ export default {
       ) {
         event.preventDefault()
       }
+      if (event.getModifierState('CapsLock')) {
+        this.capslockchecker = true
+      }
     },
     compositionStart() {
       this.isComposing = true
@@ -376,6 +456,7 @@ export default {
     compositionEnd() {
       this.isComposing = false
     }
-  }
+  },
+  watch: {}
 }
 </script>
