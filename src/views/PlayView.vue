@@ -12,7 +12,7 @@
       </button>
       <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
     </div>
-    <div id="counter">
+    <div id="counters">
       <div id="correct" class="playdetail">{{ correct_count }}</div>
       <div id="incorrect" class="playdetail">{{ this.typeInput.length - this.correct_count }}</div>
       <div id="rest_character" class="playdetail">
@@ -116,15 +116,16 @@
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
 }
 
-#counter {
+#counters {
   background-color: transparent;
   color: rgb(135, 177, 255);
   position: absolute;
   display: flex;
   width: 15%;
-  height: 7%;
+  height: 5%;
   top: 20%;
   left: 10%;
+  align-items: center;
   justify-content: space-evenly;
 }
 .playdetail {
@@ -137,7 +138,7 @@
   font-size: 1.6rem;
 }
 
-#rest_character{
+#rest_character {
   padding-left: 18px;
 }
 
