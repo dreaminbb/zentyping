@@ -1,13 +1,34 @@
 <template>
   <body>
     <div id="buttons" class="buttons">
-      <button @click="activate('short')" :class="{ active: activeButtons.short }" class="level">
+      <button
+        @click="
+          activate('short');
+          shortCount++
+        "
+        :class="{ active: activeButtons.short }"
+        class="level"
+      >
         short
       </button>
-      <button @click="activate('normal')" :class="{ active: activeButtons.normal }" class="level">
+      <button
+        @click="
+          activate('normal');
+          normalCount++
+        "
+        :class="{ active: activeButtons.normal }"
+        class="level"
+      >
         normal
       </button>
-      <button @click="activate('long')" :class="{ active: activeButtons.long }" class="level">
+      <button
+        @click="
+          activate('long');
+          longCount++
+        "
+        :class="{ active: activeButtons.long }"
+        class="level"
+      >
         long
       </button>
       <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
@@ -367,19 +388,16 @@ export default {
         const positionShort = this.ShortProblem[this.shortCount]
         this.type = positionShort.type
         this.char = positionShort.char
-        this.shortCount++
       }
       if (level === 'normal') {
         const positionNormal = this.NormalProblem[this.normalCount]
         this.type = positionNormal.type
         this.char = positionNormal.char
-        this.normalCount++
       }
       if (level === 'long') {
         const positionLong = this.LongProblem[this.longCount]
         this.type = positionLong.type
         this.char = positionLong.char
-        this.longCount++
       }
 
       if (
