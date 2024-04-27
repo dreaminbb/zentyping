@@ -415,11 +415,9 @@ export default {
           if (span.textContent === this.typeInput[index]) {
             span.classList.add('correct')
             span.classList.remove('incorrect')
-            console.log('コレクト')
           } else {
             span.classList.remove('correct')
             span.classList.add('incorrect')
-            console.log('インコレクト')
           }
         } else {
           span.classList.remove('correct', 'incorrect')
