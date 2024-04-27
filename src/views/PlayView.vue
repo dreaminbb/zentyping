@@ -18,41 +18,31 @@
       <div id="timer" class="timer"></div>
     </div>
     <div id="container" class="container">
-      <div id="typeDisplay" class="typeDisplay"></div>
-      <div id="charDisplay" class="charDisplay"></div>
+      <div id="typeDisplay" class="typeDisplay">{{ type }}</div>
+      <div id="charDisplay" class="charDisplay" ref="spans">
+        <span class="char" v-for="(character, index) in char" :key="index">
+          {{ character }}
+        </span>
+      </div>
     </div>
     <textarea
+      ref="typeInput"
       id="typeInput"
       class="typeInput"
       autocomplete="off"
       autofocus
-      @input="logtype"
+      v-model="typeInput"
+      @input="typing"
+      @keydown="inputKeydown"
     ></textarea>
   </body>
 </template>
 
-<style scoped>
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-  user-select: none;
-}
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  justify-content: center;
-  overflow: hidden;
-  font-family: 'poppins', sans-serif;
-}
-
+<style>
 #buttons {
   position: absolute;
   top: 10%;
   left: 50%;
-  transform: translateX(-50%);
   display: flex;
   justify-content: space-around;
   transform: translate(-50%, -50%);
@@ -60,7 +50,7 @@ body {
   width: 30%;
   height: 5%;
   border-radius: 80px;
-  background-color: rgb(255, 255, 255);
+  background: rgb(255, 255, 255);
   background: rgba(255, 255, 255, 0.3);
   -webkit-backdrop-filter: blur(17px);
   backdrop-filter: blur(17px);
@@ -68,12 +58,12 @@ body {
 }
 
 .level {
+  content: 'penis';
   width: 20%;
   height: 100%;
   border: none;
   color: #b981ca;
   border-radius: 1px;
-  border-radius: 900px;
   filter: brightness(130%);
   background-color: transparent;
   justify-content: center;
@@ -82,86 +72,57 @@ body {
   font-size: 1rem;
   letter-spacing: 3px;
 }
+
 .level:hover {
   transition: 0.5s;
   color: #dabfbf;
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
 }
 
-.buttons .short:hover {
-  transition: box-shadow 1s;
-  box-shadow: 0 5px 20px rgba(138, 168, 125, 0.7); /*上下右左?*/
-  border-color: transparent;
-}
-.buttons .normal:hover {
-  transition: box-shadow 1s;
-  box-shadow: 0 5px 20px rgba(185, 255, 252, 0.7);
-  border-color: transparent;
-}
-
-.buttons .long:hover {
-  transition: box-shadow 1s;
-  box-shadow: 0 5px 20px rgba(252, 164, 164, 0.7);
-  border-color: transparent;
-}
-
 .container {
   position: absolute;
   align-items: center;
-  top: 30%;
-  background-color: rgb(238, 238, 238);
-  width: 70%;
+  background-color: transparent;
+  top: 25%;
+  width: 80%;
   height: 40%;
   font-weight: 400;
   display: flex;
   flex-direction: column;
 }
+.typeDisplay,
+.charDisplay {
+  position: absolute;
+  display: flex;
+  width: 100%;
+  height: 50%;
+  padding: 0;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  color: #8b8b8b;
+  align-items: center;
+  text-align: center;
+}
 
 .container .typeDisplay {
-  flex: 1;
-  background-color: tomato;
-  white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
-  word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #ffffff;
-  position: relative;
-  outline: none;
-  height: 40%;
-  width: 100%;
-  overflow-wrap: break-word; /* 途中で改行する */
-  font-size: 3.5rem;
-}
-
-/* 文字（ローマ字を表示させるところ） */
-.container .charDisplay {
-  flex: 1;
-  background-color: #c2aac9;
-  align-items: center;
-  position: absolute;
-  bottom: 0%;
-  height: 20%;
-  width: 100%;
-  justify-content: center;
-  text-align: center;
-  white-space: pre-wrap; /* 改行と空白を保持し、必要に応じて改行 */
-  word-break: break-word; /* 単語が要素の幅を超える場合に改行 */
-  color: #ffffff;
-  position: relative;
-  outline: none;
-  padding: 0;
-  height: 20%;
-  font-size: 2.5rem;
-  width: 100%;
-  overflow-wrap: break-word; /* 途中で改行する */
   letter-spacing: 3px;
+  top: 0;
+  font-size: 3rem;
 }
 
-.current::after {
+.container .charDisplay {
+  letter-spacing: 1px;
+  bottom: 0;
+  font-size: 2.5rem;
+}
+
+.current-after::after,
+.current-before::before {
   content: '|';
-  margin: -7px;
+  padding: 0;
+  margin: 0;
   animation: blink 1s infinite;
 }
 
@@ -176,37 +137,34 @@ body {
     opacity: 1;
   }
 }
-.typeinput:focus {
+
+.typeInput:focus {
   outline: none;
-}
-
-.correct {
-  color: #ffffff;
-}
-
-.incorrect {
-  color: #ff0000;
 }
 
 .typeInput {
   position: absolute;
-  top: -1000px;
   background: transparent;
   text-decoration: none;
   outline: none;
   border: none;
-  resize: none; /* テキストエリアのリサイズを禁止 */
-  width: 100%;
-  height: 200px;
+  resize: none;
+  width: 0;
+  height: 0;
 }
+
 .active {
-  color: #fcfcfc;
+  color: #ffffff;
+}
+.correct {
+  color: #ffffff;
+}
+.incorrect {
+  color: #f25353;
 }
 </style>
 
 <script>
-import { ref } from 'vue'
-
 export default {
   data() {
     return {
@@ -215,19 +173,55 @@ export default {
         normal: false,
         long: false
       },
-      activepun: false
+      data: null,
+      character: '',
+      activepun: false,
+      type: '',
+      char: '',
+      ShortProblem: null,
+      NormalProblem: null,
+      LongProblem: null,
+      shortCount: 0,
+      normalCount: 0,
+      longCount: 0,
+      typeInput: '',
+      correctCount: 0,
+      incorrectCount: 0
     }
   },
-  mounted() {
-    this.activeButtons.normal = true
-    this.activepun = false
-  },
-  setup() {
-    const logtype = ref('')
-    return { logtype }
+  async mounted() {
+    const data = await this.getFromAPI()
+    this.$refs.typeInput.focus()
+    this.ShortProblem = data[0]
+    this.NormalProblem = data[1]
+    this.LongProblem = data[2]
+    try {
+      if (localStorage.getItem('activeButtons')) {
+        this.activeButtons = JSON.parse(localStorage.getItem('activeButtons'))
+      } else {
+        this.type = this.NormalProblem[0].type
+        this.char = this.NormalProblem[0].char
+      }
+      if (localStorage.getItem('activepun')) {
+        this.activepun = JSON.parse(localStorage.getItem('activepun'))
+      } else {
+        this.activepun = false
+        this.activeButtons.normal = true
+        console.log('activepun is not set in localStorage')
+      }
+    } catch (error) {
+      console.error('Error parsing JSON from localStorage:', error)
+    }
+    this.$nextTick(() => {
+      this.$refs.spans.querySelector('span').classList.add('current-before')
+    })
   },
   methods: {
-    activate(level) {
+    async getFromAPI() {
+      const response = await fetch('http://localhost:1919/')
+      return await response.json()
+    },
+    async activate(level) {
       const levels = ['short', 'normal', 'long']
       for (const key in this.activeButtons) {
         if (key === level) {
@@ -236,9 +230,82 @@ export default {
           this.activeButtons[key] = false
         }
       }
+      localStorage.setItem('activeButtons', this.activeButtons)
+      this.$refs.spans.querySelectorAll('span').forEach((span) => {
+        span.classList.remove('correct', 'incorrect', 'current-after')
+      })
+      if (level === 'short') {
+        const positionShort = this.ShortProblem[this.shortCount]
+        this.type = positionShort.type
+        this.char = positionShort.char
+        this.shortCount++
+      }
+      if (level === 'normal') {
+        const positionNormal = this.NormalProblem[this.normalCount]
+        this.type = positionNormal.type
+        this.char = positionNormal.char
+        this.normalCount++
+      }
+      if (level === 'long') {
+        const positionLong = this.LongProblem[this.longCount]
+        this.type = positionLong.type
+        this.char = positionLong.char
+        this.longCount++
+      }
+
+      if (
+        ['shortCount', 'normalCount', 'longCount'].some(
+          (count) => this[count] === this.NormalProblem.length
+        )
+      ) {
+        this.shortCount = this.normalCount = this.longCount = 0
+        this.data = null
+        const data = await this.getFromAPI()
+        this.ShortProblem = data[0]
+        this.NormalProblem = data[1]
+        this.LongProblem = data[2]
+        await this.activate(level)
+      }
+      this.typeInput = ''
+      this.$refs.typeInput.focus()
     },
     punactivate() {
       this.activepun = !this.activepun
+      localStorage.setItem('activepun', this.activeButtons)
+    },
+
+    typing() {
+      this.$refs.spans.querySelector('span').classList.remove('current-before')
+      const inputLength = this.typeInput.length
+      const spanFromChar = this.$refs.spans.querySelectorAll('span')
+      spanFromChar.forEach((span, index) => {
+        if (index < this.typeInput.length) {
+          if (span.textContent === this.typeInput[index]) {
+            span.classList.add('correct')
+            span.classList.remove('incorrect')
+          } else {
+            span.classList.remove('correct')
+            span.classList.add('incorrect')
+          }
+        } else {
+          span.classList.remove('correct', 'incorrect')
+        }
+        if (index === inputLength - 1) {
+          span.classList.add('current-after')
+        } else {
+          span.classList.remove('current-after')
+        }
+      })
+    },
+    inputKeydown(event) {
+      if (
+        event.key === 'Backspace' &&
+        Array.from(this.$refs.spans.querySelectorAll('span'))
+          .slice(0, this.typeInput.length)
+          .every((span) => span.classList.contains('correct'))
+      ) {
+        event.preventDefault()
+      }
     }
   }
 }

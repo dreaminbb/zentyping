@@ -1,10 +1,11 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import PlayView from '@/views/PlayView.vue'
-import GetqView from '@/views/WriteqView.vue'
+// import GetqView from '@/views/WriteqView.vue'
 
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
+  mode:'history',
   routes: [
     {
       path: '/',
@@ -16,11 +17,6 @@ const router = createRouter({
       name: 'play',
       component: PlayView
     },
-    {
-      path: '/write',
-      name: 'write',
-      component: GetqView
-    }
   ]
 })
 
