@@ -294,7 +294,7 @@
   color: #f25353;
 }
 </style>
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
