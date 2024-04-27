@@ -39,6 +39,7 @@ import { RouterView } from 'vue-router'
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 * {
   box-sizing: border-box;
   padding: 0;
@@ -54,7 +55,6 @@ body {
   height: 100vh;
   justify-content: center;
   overflow: hidden;
-  /* font-family: 'poppins', sans-serif; */
 }
 header {
   width: 100%;
@@ -62,13 +62,14 @@ header {
   position: absolute;
   display: flex;
   background-color: transparent;
-  filter: brightness(120%); /* 光度を20%上げる */
+  filter: brightness(120%);
   border-radius: 10px;
+  font-family: 'Roboto Mono', monospace;
+  font-optical-sizing: auto;
 }
 h1 {
   position: absolute;
   left: 5%;
-  /* font-family: cursive; */
   font-size: 3rem;
   color: #ebebeb;
   text-align: left;
@@ -133,7 +134,6 @@ h1 {
   left: 46%;
   color: #ffffff;
   font-size: 1rem;
-  font-family: cursive;
   text-align: right;
   padding: 10px;
   margin: 10px;

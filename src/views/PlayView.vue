@@ -20,8 +20,8 @@
       </div>
     </div>
     <div id="container" class="container">
-      <div id="typeDisplay" class="typeDisplay">{{ type }}</div>
-      <div id="charDisplay" class="charDisplay" ref="spans">
+      <div id="typeDisplay" class="typeDisplay" ref="type_display">{{ type }}</div>
+      <div id="charDisplay" class="charDisplay" ref="char_display">
         <span class="char" v-for="(character, index) in char" :key="index">
           {{ character }}
         </span>
@@ -121,7 +121,7 @@
   color: rgb(135, 177, 255);
   position: absolute;
   display: flex;
-  width: 15%;
+  width: 18%;
   height: 5%;
   top: 20%;
   left: 10%;
@@ -129,10 +129,9 @@
   justify-content: space-evenly;
 }
 .playdetail {
+  padding-left: 10px;
   height: 100%;
-  padding: 2px;
   font-size: 2rem;
-  font-family: 'Roboto Mono', monospace;
   font-family: 'Roboto Mono', monospace;
   font-optical-sizing: auto;
   font-size: 1.6rem;
@@ -159,11 +158,6 @@
   display: flex;
   width: 100%;
   height: 50%;
-  padding: 0;
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: break-word;
   color: #8b8b8b;
   align-items: center;
   text-align: center;
@@ -176,16 +170,18 @@
 }
 
 .container .charDisplay {
-  letter-spacing: 1px;
   bottom: 0;
   font-size: 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(35, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-column-gap: 0;
+  grid-row-gap: -10px;
 }
 
 .current-after::after,
 .current-before::before {
   content: '|';
-  padding: 0;
-  margin: 0;
   animation: blink 1s infinite;
 }
 
@@ -217,11 +213,11 @@
 }
 .japaneseInputAleat {
   top: 15%;
-  background-color: rgba(255, 80, 80, 0.2);
+  background-color: rgba(97, 255, 142, 0.2);
 }
 .capslockInputAleat {
   top: 27%;
-  background-color: rgb(70, 144, 147);
+  background-color: rgba(97, 255, 142, 0.2);
 }
 .japaneseInputAleat,
 .capslockInputAleat {
@@ -240,7 +236,7 @@
   position: absolute;
   bottom: 0;
   font-size: 4rem;
-  fill: #b4b4b4;
+  fill: #b7b7b7;
 }
 .aleatSentence {
   position: absolute;
@@ -324,7 +320,6 @@ export default {
           this.char = this.LongProblem[0].char
         }
       } else {
-        console.log('there are no data like you visit this webpage')
         this.activeButtons.normal = true
         this.type = this.NormalProblem[0].type
         this.char = this.NormalProblem[0].char
@@ -339,8 +334,10 @@ export default {
       console.error('Error parsing JSON from localStorage:', error)
     }
     this.$nextTick(() => {
-      this.$refs.spans.querySelector('span').classList.add('current-before')
+      this.$refs.char_display.querySelector('span').classList.add('current-before')
     })
+    console.log(this.type.length)
+    console.log(this.char.length)
     this.correct_count = 0
   },
   methods: {
@@ -363,7 +360,7 @@ export default {
         }
       }
       localStorage.setItem('activeButtons', JSON.stringify(this.activeButtons))
-      this.$refs.spans.querySelectorAll('span').forEach((span) => {
+      this.$refs.char_display.querySelectorAll('span').forEach((span) => {
         span.classList.remove('correct', 'incorrect', 'current-after')
       })
       if (level === 'short') {
@@ -400,6 +397,7 @@ export default {
       }
       this.typeInput = ''
       this.$refs.typeInput.focus()
+      this.correct_count = 0
     },
     punactivate() {
       this.activepun = !this.activepun
@@ -407,19 +405,21 @@ export default {
     },
 
     typing() {
-      this.$refs.spans.querySelector('span').classList.remove('current-before')
+      this.$refs.char_display.querySelector('span').classList.remove('current-before')
       const inputLength = this.typeInput.length
-      const spanFromChar = this.$refs.spans.querySelectorAll('span')
+      const spanFromChar = this.$refs.char_display.querySelectorAll('span')
 
-      console.log(Array.from(this.$refs.spans.querySelectorAll('span')))
+      console.log(Array.from(this.$refs.char_display.querySelectorAll('span')))
       spanFromChar.forEach((span, index) => {
         if (index < this.typeInput.length) {
           if (span.textContent === this.typeInput[index]) {
             span.classList.add('correct')
             span.classList.remove('incorrect')
+            console.log('コレクト')
           } else {
             span.classList.remove('correct')
             span.classList.add('incorrect')
+            console.log('インコレクト')
           }
         } else {
           span.classList.remove('correct', 'incorrect')
@@ -430,7 +430,7 @@ export default {
           span.classList.remove('current-after')
         }
       })
-      this.correct_count = Array.from(this.$refs.spans.querySelectorAll('span'))
+      this.correct_count = Array.from(this.$refs.char_display.querySelectorAll('span'))
         .slice(0, this.typeInput.length)
         .filter((span) => span.classList.contains('correct')).length
     },
@@ -440,7 +440,7 @@ export default {
       }
       if (
         event.key === 'Backspace' &&
-        Array.from(this.$refs.spans.querySelectorAll('span'))
+        Array.from(this.$refs.char_display.querySelectorAll('span'))
           .slice(0, this.typeInput.length)
           .every((span) => span.classList.contains('correct'))
       ) {
