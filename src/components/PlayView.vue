@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, nextTick, reactive, onMounted } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 let short_count: number = 1
@@ -8,7 +8,7 @@ let long_count: number = 1
 const activepun = ref(false)
 const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
-let correct_count = ref(0)
+let correct_count: number = 0
 const type_input = ref('')
 const char = ref('')
 const type = ref('')
@@ -47,13 +47,17 @@ onMounted(async () => {
         char.value = get_problem_data_from_api.value[2][0].char
       }
     } catch (error) {
-      console.error('Error parsing active_buttons from localStorage:', error)    //ローカルストレージから読み込めなかったごめんぴょ❤️ちゅ♡ちゅ♡って表示させる
+      console.error('Error parsing active_buttons from localStorage:', error) //ローカルストレージから読み込めなかったごめんぴょ❤️ちゅ♡ちゅ♡って表示させる
     }
   } else {
     active_buttons.normal = true
     type.value = get_problem_data_from_api.value[1][0].type
     char.value = get_problem_data_from_api.value[1][0].char
   }
+
+  await nextTick()
+  const first_span_from_char_display = char_display.value?.querySelector('span')
+  first_span_from_char_display?.classList.add('cursor_before')
 })
 
 async function identify_level(level: 'short' | 'normal' | 'long') {
@@ -89,23 +93,40 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
   type_input.value = ''
-  correct_count.value = 0
+  correct_count = 0
 }
 
 function punactivate() {
   activepun.value = !activepun.value
   localStorage.setItem('activepun', JSON.stringify(activepun.value))
   type_input.value = ''
-  correct_count.value = 0
+  correct_count = 0
 }
 
 function typing() {
-  // console.log(char_display.value("span"))
   if (char_display.value) {
     const span_from_char_display = Array.from(char_display.value.querySelectorAll('span'))
+    const type_input_length = type_input.value.length
+    const char_length = char_display.value.querySelectorAll('span').length
+    const cursor_span = span_from_char_display[type_input_length - 1]
 
+    //入力カーソル
+    if (type_input_length === 1) {
+      if (char_display.value) {
+        char_display.value.querySelector('span')?.classList.remove('cursor_before')
+      }
+    } else {
+      const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
+        (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
+      )
+      export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
+
+      cursor_span.classList.add('cursor_after')
+    }
+
+    //正誤判定
     span_from_char_display.forEach((span, index) => {
-      if (index < type_input.value.length) {
+      if (index < type_input_length) {
         if (span.textContent === type_input.value[index]) {
           span.classList.add('correct')
           span.classList.remove('incorrect')
@@ -114,14 +135,14 @@ function typing() {
           span.classList.add('incorrect')
         }
       } else {
-        span.classList.remove('correct')
-        span.classList.remove('incorrect')
+        span.classList.remove('correct', 'incorrect')
       }
     })
-    const correct_count: number = span_from_char_display
-      .slice(0, type_input.value.length)
+
+    //合っている数を表示
+    correct_count = span_from_char_display
+      .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
-    console.log(correct_count)
   }
 }
 // inputKeydown(event) {
@@ -177,22 +198,13 @@ function typing() {
     </div>
     <div id="counters">
       <div id="correct" class="playdetail">{{ correct_count }}</div>
-      <div id="incorrect" class="playdetail">{{ type_input.length - Number(correct_count) }}</div>
+      <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
       <div id="rest_character" class="playdetail">{{ type_input.length }} / {{ char.length }}</div>
     </div>
     <div id="container" class="container">
       <div id="type_display" class="type_display" ref="type_display">{{ type }}</div>
       <div id="char_display" class="char_display" ref="char_display">
-        <span
-          class="char"
-          :class="{
-            cursor_before: index === 0 && type_input.length === 0,
-            cursor_after: index === type_input.length - 1 && type_input.length > 0
-          }"
-          ref="char_span"
-          v-for="(character, index) in char"
-          :key="index"
-        >
+        <span class="char" ref="char_span" v-for="(character, index) in char" :key="index">
           {{ character }}
         </span>
       </div>
@@ -351,6 +363,7 @@ function typing() {
 .cursor_before::before {
   content: '|';
   animation: blink 1s infinite;
+  margin: -5px;
 }
 
 @keyframes blink {
