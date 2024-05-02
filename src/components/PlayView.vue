@@ -114,6 +114,7 @@ function typing() {
     if (type_input_length === 1) {
       if (char_display.value) {
         char_display.value.querySelector('span')?.classList.remove('cursor_before')
+        char_display.value.querySelector('span')?.classList.add('cursor_after')
       }
     } else {
       const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
