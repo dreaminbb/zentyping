@@ -108,7 +108,7 @@ function punactivate() {
   correct_count = 0
 }
 
-function typing(event: KeyboardEvent) {
+function typing() {
   const type_input_length: number = type_input.value.length
   if (char_display.value) {
     const span_from_char_display = Array.from(char_display.value.querySelectorAll('span'))
@@ -127,7 +127,6 @@ function typing(event: KeyboardEvent) {
       span_from_char_display[0].classList.remove('cursor_before')
     }
 
-    //正誤判定
     span_from_char_display.forEach((span: HTMLElement, index: number) => {
       if (index < type_input_length) {
         if (span.textContent === type_input.value[index]) {
@@ -146,19 +145,15 @@ function typing(event: KeyboardEvent) {
       .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
   }
-  //合っている数を表示
-  if (correct_count === type_input_length && event.key === 'Backspace') {
-    console.log('おねショタ逆レイプ搾精セックス')
-    event.preventDefault()
-  }
 }
 
-// function typing_keydown(event: KeyboardEvent) {
-//   if (event.key === 'Backspace') {
-//     console.log(correct_count , 'penis')
-//   }
-// }
-
+function typing_keydown(event: KeyboardEvent) {
+  if (char_display.value) {
+    if (correct_count === type_input.value.length && event.key === 'Backspace') {
+      event.preventDefault()
+    }
+  }
+}
 // if (isComposing) {
 //   japaneseInput = true
 // }
