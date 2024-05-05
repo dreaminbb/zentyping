@@ -17,7 +17,7 @@ const capslockchecker = ref(false)
 
 async function get_from_api() {
   try {
-    const response = await fetch('http://localhost:1919/')
+    const response = await fetch('http://localhost:4545/')
     const problem_data_from_api = await response.json()
     return problem_data_from_api
   } catch (error) {
@@ -94,6 +94,11 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
   }
   type_input.value = ''
   correct_count = 0
+  type_input.value = ''
+  type_input.value.focus()
+  char_display.value
+    ?.querySelectorAll('span')
+    .forEach((span) => span.classList.remove('correct', 'incorrect', 'cursor_after'))
 }
 
 function punactivate() {
@@ -103,30 +108,27 @@ function punactivate() {
   correct_count = 0
 }
 
-function typing() {
+function typing(event: KeyboardEvent) {
+  const type_input_length: number = type_input.value.length
   if (char_display.value) {
     const span_from_char_display = Array.from(char_display.value.querySelectorAll('span'))
-    const type_input_length = type_input.value.length
-    const char_length = char_display.value.querySelectorAll('span').length
-    const cursor_span = span_from_char_display[type_input_length - 1]
+    const char_length: number = char_display.value.querySelectorAll('span').length
 
-    //入力カーソル
-    if (type_input_length === 1) {
-      if (char_display.value) {
-        char_display.value.querySelector('span')?.classList.remove('cursor_before')
-        char_display.value.querySelector('span')?.classList.add('cursor_after')
-      }
-    } else {
-      const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
-        (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
-      )
-      export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
+    const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
+      (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
+    )
 
-      cursor_span.classList.add('cursor_after')
+    export_cursor_span.forEach((span) => span.classList.remove('cursor_after', 'cursor_before'))
+    if (type_input_length === 0) {
+      char_display.value.querySelector('span')?.classList.add('cursor_before')
+    }
+    if (type_input_length > 0) {
+      span_from_char_display[type_input_length - 1].classList.add('cursor_after')
+      span_from_char_display[0].classList.remove('cursor_before')
     }
 
     //正誤判定
-    span_from_char_display.forEach((span, index) => {
+    span_from_char_display.forEach((span: HTMLElement, index: number) => {
       if (index < type_input_length) {
         if (span.textContent === type_input.value[index]) {
           span.classList.add('correct')
@@ -140,34 +142,42 @@ function typing() {
       }
     })
 
-    //合っている数を表示
     correct_count = span_from_char_display
       .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
   }
+  //合っている数を表示
+  if (correct_count === type_input_length && event.key === 'Backspace') {
+    console.log('おねショタ逆レイプ搾精セックス')
+    event.preventDefault()
+  }
 }
-// inputKeydown(event) {
-//   if (this.isComposing) {
-//     this.japaneseInput = true
-//   }
-//   if (
-//     event.key === 'Backspace' &&
-//     Array.from(this.$refs.char_display.querySelectorAll('span'))
-//       .slice(0, this.type_input.length)
-//       .every((span) => span.classList.contains('correct'))
-//   ) {
-//     event.preventDefault()
-//   }
-//   if (event.getModifierState('CapsLock')) {
-//     this.capslockchecker = true
+
+// function typing_keydown(event: KeyboardEvent) {
+//   if (event.key === 'Backspace') {
+//     console.log(correct_count , 'penis')
 //   }
 // }
+
+// if (isComposing) {
+//   japaneseInput = true
+// }
+// if (
+//   event.key === 'Backspace' &&
+// $refs.char_display.querySelectorAll('span'))
+//     .slice(0, type_input.value.length)
+//     .every((span) => span.classList.contains('correct'))
+// ) {
+//   event.preventDefault()
+// }
+// if (event.getModifierState('CapsLock')) {
+//   this.capslockchecker = true
 // compositionStart() {
-//   this.isComposing = true
-//   this.japaneseInput = false
+//   isComposing = true
+//   japaneseInput = false
 // }
 // compositionEnd() {
-//   this.isComposing = false
+// isComposing = false
 // }
 </script>
 
@@ -249,6 +259,7 @@ function typing() {
       autofocus
       v-model="type_input"
       @input="typing"
+      @keydown="typing_keydown"
       @compositionstart="compositionStart"
       @compositionend="compositionEnd"
     ></textarea>
