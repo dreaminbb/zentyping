@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted } from 'vue'
+import { ref, nextTick, reactive, onMounted, watch } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 let short_count: number = 1
@@ -9,9 +9,11 @@ const activepun = ref(false)
 const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
 let correct_count: number = 0
+const textarea = ref<HTMLElement | null>(null)
 const type_input = ref('')
 const char = ref('')
 const type = ref('')
+const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
 
@@ -58,6 +60,9 @@ onMounted(async () => {
   await nextTick()
   const first_span_from_char_display = char_display.value?.querySelector('span')
   first_span_from_char_display?.classList.add('cursor_before')
+  if (textarea.value) {
+    textarea.value.focus()
+  }
 })
 
 async function identify_level(level: 'short' | 'normal' | 'long') {
@@ -95,10 +100,14 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
   type_input.value = ''
   correct_count = 0
   type_input.value = ''
-  type_input.value.focus()
-  char_display.value
-    ?.querySelectorAll('span')
-    .forEach((span) => span.classList.remove('correct', 'incorrect', 'cursor_after'))
+  if (char_display.value) {
+    Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
+      span.classList.remove('correct', 'incorrect', 'cursor_after')
+    })
+  }
+  if (textarea.value) {
+    textarea.value.focus()
+  }
 }
 
 function punactivate() {
@@ -106,25 +115,35 @@ function punactivate() {
   localStorage.setItem('activepun', JSON.stringify(activepun.value))
   type_input.value = ''
   correct_count = 0
+  if (char_display.value)
+    Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
+      span.classList.remove('correct', 'incorrect', 'cursor_after')
+    })
+  if (textarea.value) {
+    textarea.value.focus()
+  }
 }
 
+watch(type_input, () => {
+  if (type_input.value.length === 0) {
+    char_display.value?.querySelector('span')?.classList.add('cursor_before')
+  } else {
+    char_display.value?.querySelector('span')?.classList.remove('cursor_before')
+  }
+})
+
 function typing() {
-  const type_input_length: number = type_input.value.length
   if (char_display.value) {
+    const type_input_length: number = type_input.value.length
     const span_from_char_display = Array.from(char_display.value.querySelectorAll('span'))
-    const char_length: number = char_display.value.querySelectorAll('span').length
 
     const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
       (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
     )
+    export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
 
-    export_cursor_span.forEach((span) => span.classList.remove('cursor_after', 'cursor_before'))
-    if (type_input_length === 0) {
-      char_display.value.querySelector('span')?.classList.add('cursor_before')
-    }
     if (type_input_length > 0) {
       span_from_char_display[type_input_length - 1].classList.add('cursor_after')
-      span_from_char_display[0].classList.remove('cursor_before')
     }
 
     span_from_char_display.forEach((span: HTMLElement, index: number) => {
@@ -153,27 +172,24 @@ function typing_keydown(event: KeyboardEvent) {
       event.preventDefault()
     }
   }
+  if (isComposing.value) {
+    japaneseInput.value = true
+  }
+  if (event.getModifierState('CapsLock')) {
+    capslockchecker.value = true
+  } else {
+    capslockchecker.value = false
+  }
 }
-// if (isComposing) {
-//   japaneseInput = true
-// }
-// if (
-//   event.key === 'Backspace' &&
-// $refs.char_display.querySelectorAll('span'))
-//     .slice(0, type_input.value.length)
-//     .every((span) => span.classList.contains('correct'))
-// ) {
-//   event.preventDefault()
-// }
-// if (event.getModifierState('CapsLock')) {
-//   this.capslockchecker = true
-// compositionStart() {
-//   isComposing = true
-//   japaneseInput = false
-// }
-// compositionEnd() {
-// isComposing = false
-// }
+
+function compositionStart() {
+  isComposing.value = true
+  japaneseInput.value = true
+}
+
+function compositionEnd() {
+  isComposing.value = false
+}
 </script>
 
 <template>
@@ -253,6 +269,7 @@ function typing_keydown(event: KeyboardEvent) {
       autocorrect="off"
       autofocus
       v-model="type_input"
+      ref="textarea"
       @input="typing"
       @keydown="typing_keydown"
       @compositionstart="compositionStart"
@@ -436,10 +453,10 @@ function typing_keydown(event: KeyboardEvent) {
 
 @keyframes appear {
   0% {
-    left: -50%;
+    left: -40%;
   }
   30% {
-    left: -40%;
+    left: -30%;
   }
   50% {
     left: -20%;
