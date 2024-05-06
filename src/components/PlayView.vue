@@ -107,7 +107,7 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
   correct_count = 0
-  time = 0
+  time.value = 0
   type_input.value = ''
   if (char_display.value) {
     Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
