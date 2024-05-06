@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { convertToObject } from 'typescript'
 import { ref, nextTick, reactive, onMounted, watch } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
@@ -7,12 +8,14 @@ let normal_count: number = 1
 let long_count: number = 1
 const activepun = ref(false)
 const char_display = ref<HTMLElement | null>(null)
-const char_span = ref<HTMLElement | null>(null)
-let correct_count: number = 0
-const textarea = ref<HTMLElement | null>(null)
-const type_input = ref('')
 const char = ref('')
+const type_input = ref('')
 const type = ref('')
+const char_span = ref<HTMLElement | null>(null)
+const textarea = ref<HTMLElement | null>(null)
+let correct_count: number = 0
+let type_count: number = 0
+const time = ref(0)
 const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
@@ -25,6 +28,12 @@ async function get_from_api() {
   } catch (error) {
     char.value = '(: something went wrong ....'
   }
+}
+
+function start_timer() {
+  setInterval(() => {
+    time.value++
+  }, 100)
 }
 
 onMounted(async () => {
@@ -97,8 +106,8 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
-  type_input.value = ''
   correct_count = 0
+  time = 0
   type_input.value = ''
   if (char_display.value) {
     Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
@@ -124,16 +133,18 @@ function punactivate() {
   }
 }
 
-watch(type_input, () => {
-  if (type_input.value.length === 0) {
-    char_display.value?.querySelector('span')?.classList.add('cursor_before')
-  } else {
-    char_display.value?.querySelector('span')?.classList.remove('cursor_before')
-  }
-})
-
 function typing() {
   if (char_display.value) {
+    type_count++
+    if (type_count === 1) {
+      start_timer()
+    }
+    if (type_input.value.length === 0) {
+      char_display.value?.querySelector('span')?.classList.add('cursor_before')
+    } else {
+      char_display.value?.querySelector('span')?.classList.remove('cursor_before')
+    }
+
     const type_input_length: number = type_input.value.length
     const span_from_char_display = Array.from(char_display.value.querySelectorAll('span'))
 
@@ -222,6 +233,7 @@ function compositionEnd() {
       <div id="correct" class="playdetail">{{ correct_count }}</div>
       <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
       <div id="rest_character" class="playdetail">{{ type_input.length }} / {{ char.length }}</div>
+      <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
     </div>
     <div id="container" class="container">
       <div id="type_display" class="type_display" ref="type_display">{{ type }}</div>
@@ -299,7 +311,6 @@ function compositionEnd() {
 }
 
 .level {
-  content: 'penis';
   width: 20%;
   height: 100%;
   border: none;
@@ -325,7 +336,7 @@ function compositionEnd() {
   color: rgb(135, 177, 255);
   position: absolute;
   display: flex;
-  width: 18%;
+  width: 24%;
   height: 5%;
   top: 20%;
   left: 10%;
@@ -367,6 +378,10 @@ function compositionEnd() {
   text-align: center;
 }
 
+.char {
+  font-size: 2rem;
+}
+
 .container .type_display {
   letter-spacing: 3px;
   top: 0;
@@ -378,9 +393,9 @@ function compositionEnd() {
   font-size: 2.5rem;
   display: grid;
   grid-template-columns: repeat(35, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-  grid-column-gap: 0;
-  grid-row-gap: -10px;
+  grid-template-rows: repeat(20, 1fr);
+  column-gap: 0px;
+  grid-row-gap: -20px;
 }
 
 .cursor_after::after,
