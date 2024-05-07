@@ -42,28 +42,22 @@ function start_timer() {
 function click_to_focus() {
   if (textarea.value) {
     textarea.value.focus()
-
   }
 }
 
 function type_input_lost_focus() {
-  setTimeout(() => {
-    lost_focus.value = true
-  }, 1000)
+  lost_focus.value = true
   focus_alert.value = true
   click_sentence.value = true
   focus_svg.value = true
 }
-
 
 function type_input_focus() {
   lost_focus.value = false
   focus_alert.value = false
   click_sentence.value = false
   focus_svg.value = false
-
 }
-
 onMounted(async () => {
   get_problem_data_from_api.value = await get_from_api()
   const active_buttons_item = localStorage.getItem('active_buttons')
@@ -455,7 +449,7 @@ function compositionEnd() {
   animation-iteration-count: infinite;
 }
 @keyframes spin_type {
-  0% {
+  50% {
     transform: rotate(10deg);
   }
   100% {
@@ -464,7 +458,7 @@ function compositionEnd() {
 }
 
 @keyframes spin_char {
-  0% {
+  50% {
     transform: rotate(10deg);
   }
   100% {
@@ -518,7 +512,7 @@ function compositionEnd() {
   }
 }
 
-@keyframes .cursor_after::after,
+.cursor_after::after,
 .cursor_before::before {
   content: '|';
   animation: blink 1s infinite;
