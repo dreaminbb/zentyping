@@ -33,6 +33,23 @@ async function get_from_api() {
   }
 }
 
+async function play_init() {
+  if (textarea.value) {
+    textarea.value.focus()
+  }
+
+  await nextTick()
+  if (char_display.value) {
+    Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
+      span.classList.remove('correct', 'incorrect', 'cursor_after')
+    })
+    char_display.value?.querySelector('span')?.classList.add('cursor_before')
+  }
+  type_input.value = ''
+  correct_count = 0
+  time.value = 0
+}
+
 function start_timer() {
   setInterval(() => {
     time.value++
@@ -40,9 +57,7 @@ function start_timer() {
 }
 
 function click_to_focus() {
-  if (textarea.value) {
-    textarea.value.focus()
-  }
+  play_init()
 }
 
 function type_input_lost_focus() {
@@ -58,6 +73,7 @@ function type_input_focus() {
   click_sentence.value = false
   focus_svg.value = false
 }
+
 onMounted(async () => {
   get_problem_data_from_api.value = await get_from_api()
   const active_buttons_item = localStorage.getItem('active_buttons')
@@ -80,20 +96,14 @@ onMounted(async () => {
         char.value = get_problem_data_from_api.value[2][0].char
       }
     } catch (error) {
-      console.error('Error parsing active_buttons from localStorage:', error) //ローカルストレージから読み込めなかったごめんぴょ❤️ちゅ♡ちゅ♡って表示させる
+      console.error('Error parsing active_buttons from localStorage:', error)
     }
   } else {
     active_buttons.normal = true
     type.value = get_problem_data_from_api.value[1][0].type
     char.value = get_problem_data_from_api.value[1][0].char
   }
-
-  await nextTick()
-  const first_span_from_char_display = char_display.value?.querySelector('span')
-  first_span_from_char_display?.classList.add('cursor_before')
-  if (textarea.value) {
-    textarea.value.focus()
-  }
+  play_init()
 })
 
 async function identify_level(level: 'short' | 'normal' | 'long') {
@@ -128,17 +138,8 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
-  correct_count = 0
-  time.value = 0
-  type_input.value = ''
-  if (char_display.value) {
-    Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
-      span.classList.remove('correct', 'incorrect', 'cursor_after')
-    })
-  }
-  if (textarea.value) {
-    textarea.value.focus()
-  }
+
+  play_init()
 }
 
 function punactivate() {
