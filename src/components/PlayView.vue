@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { convertToObject } from 'typescript'
 import { ref, nextTick, reactive, onMounted, watch } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
@@ -16,13 +15,17 @@ const textarea = ref<HTMLElement | null>(null)
 let correct_count: number = 0
 let type_count: number = 0
 const time = ref(0)
+const lost_focus = ref(false)
+const focus_alert = ref(false)
+const click_sentence = ref(false)
+const focus_svg = ref(false)
 const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
 
 async function get_from_api() {
   try {
-    const response = await fetch('http://localhost:4545/')
+    const response = await fetch('http://localhost:8000/')
     const problem_data_from_api = await response.json()
     return problem_data_from_api
   } catch (error) {
@@ -34,6 +37,31 @@ function start_timer() {
   setInterval(() => {
     time.value++
   }, 100)
+}
+
+function click_to_focus() {
+  if (textarea.value) {
+    textarea.value.focus()
+
+  }
+}
+
+function type_input_lost_focus() {
+  setTimeout(() => {
+    lost_focus.value = true
+  }, 1000)
+  focus_alert.value = true
+  click_sentence.value = true
+  focus_svg.value = true
+}
+
+
+function type_input_focus() {
+  lost_focus.value = false
+  focus_alert.value = false
+  click_sentence.value = false
+  focus_svg.value = false
+
 }
 
 onMounted(async () => {
@@ -235,12 +263,29 @@ function compositionEnd() {
       <div id="rest_character" class="playdetail">{{ type_input.length }} / {{ char.length }}</div>
       <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
     </div>
-    <div id="container" class="container">
-      <div id="type_display" class="type_display" ref="type_display">{{ type }}</div>
+    <div id="container" class="container" @click="click_to_focus">
+      <div id="type_display" class="type_display" ref="type_display">
+        <span :class="{ lost_focus: lost_focus }" v-for="(type, index) in type" :key="index">
+          {{ type }}</span
+        >
+      </div>
       <div id="char_display" class="char_display" ref="char_display">
-        <span class="char" ref="char_span" v-for="(character, index) in char" :key="index">
+        <span
+          :class="{ char: true, lost_focus: lost_focus }"
+          ref="char_span"
+          v-for="(character, index) in char"
+          :key="index"
+        >
           {{ character }}
         </span>
+      </div>
+      <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
+        <p class="click_here">クリックしてフォーカス。。。</p>
+        <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path
+            d="m320-410 79-110h170L320-716v306ZM551-80 406-392 240-160v-720l560 440H516l144 309-109 51ZM399-520Z"
+          />
+        </svg>
       </div>
     </div>
     <div class="japaneseInputAleat" v-if="japaneseInput">
@@ -259,11 +304,11 @@ function compositionEnd() {
     </div>
     <div class="capslockInputAleat" v-if="capslockchecker">
       <svg
-        class="aleatIcon"
         xmlns="http://www.w3.org/2000/svg"
-        height="40"
+        height="24px"
         viewBox="0 -960 960 960"
-        width="40"
+        width="24px"
+        fill="#e8eaed"
       >
         <path
           d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
@@ -284,6 +329,8 @@ function compositionEnd() {
       ref="textarea"
       @input="typing"
       @keydown="typing_keydown"
+      @focus="type_input_focus"
+      @blur="type_input_lost_focus"
       @compositionstart="compositionStart"
       @compositionend="compositionEnd"
     ></textarea>
@@ -378,14 +425,15 @@ function compositionEnd() {
   text-align: center;
 }
 
-.char {
-  font-size: 2rem;
-}
-
 .container .type_display {
   letter-spacing: 3px;
   top: 0;
   font-size: 3rem;
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  column-gap: 0px;
+  grid-row-gap: -20px;
 }
 
 .container .char_display {
@@ -393,12 +441,84 @@ function compositionEnd() {
   font-size: 2.5rem;
   display: grid;
   grid-template-columns: repeat(35, 1fr);
-  grid-template-rows: repeat(20, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   column-gap: 0px;
   grid-row-gap: -20px;
 }
+.char {
+  font-size: 2rem;
+}
 
-.cursor_after::after,
+.lost_focus {
+  animation-name: spin_char;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+@keyframes spin_type {
+  0% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(370deg);
+  }
+}
+
+@keyframes spin_char {
+  0% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(370deg);
+  }
+}
+
+.focus_alert {
+  width: 100%;
+  height: 100%;
+  animation: focus_apper_contaienr forwards ease 5s;
+}
+
+.click_here {
+  position: absolute;
+  top: 45%;
+  left: 40%;
+  animation: focus_apper_sentence_and_svg forwards ease 6s;
+}
+
+.focus_alert_svg {
+  position: absolute;
+  top: 45%;
+  left: 35%;
+  width: 30px;
+  animation: focus_apper_sentence_and_svg forwards ease 5s;
+}
+
+@keyframes focus_apper_contaienr {
+  100% {
+    background: rgba(255, 255, 255, 0.42);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+}
+
+@keyframes focus_apper_sentence_and_svg {
+  0% {
+    color: transparent;
+    fill: transparent;
+  }
+  50% {
+    color: #8b8b8b;
+    fill: #8b8b8b;
+  }
+  100% {
+    color: #ffffff;
+    fill: #ffffff;
+  }
+}
+
+@keyframes .cursor_after::after,
 .cursor_before::before {
   content: '|';
   animation: blink 1s infinite;
