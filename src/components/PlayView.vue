@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted, watch } from 'vue'
+import { ref, nextTick, reactive, onMounted } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 let short_count: number = 1
@@ -7,14 +7,16 @@ let normal_count: number = 1
 let long_count: number = 1
 const activepun = ref(false)
 const char_display = ref<HTMLElement | null>(null)
-const char = ref('')
 const type_input = ref('')
+const char = ref('')
 const type = ref('')
 const char_span = ref<HTMLElement | null>(null)
 const textarea = ref<HTMLElement | null>(null)
 let correct_count: number = 0
 let type_count: number = 0
 const time = ref(0)
+let timer: number | undefined
+// let char_change_count: number = 0
 const lost_focus = ref(false)
 const focus_alert = ref(false)
 const click_sentence = ref(false)
@@ -47,11 +49,13 @@ async function play_init() {
   }
   type_input.value = ''
   correct_count = 0
+  clearInterval(timer)
   time.value = 0
+  type_count = 0
 }
 
 function start_timer() {
-  setInterval(() => {
+  timer = setInterval(() => {
     time.value++
   }, 100)
 }
@@ -138,30 +142,22 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
-
   play_init()
 }
 
 function punactivate() {
   activepun.value = !activepun.value
   localStorage.setItem('activepun', JSON.stringify(activepun.value))
-  type_input.value = ''
-  correct_count = 0
-  if (char_display.value)
-    Array.from(char_display.value.querySelectorAll('span')).forEach((span: HTMLElement) => {
-      span.classList.remove('correct', 'incorrect', 'cursor_after')
-    })
-  if (textarea.value) {
-    textarea.value.focus()
-  }
 }
 
 function typing() {
   if (char_display.value) {
     type_count++
+
     if (type_count === 1) {
       start_timer()
     }
+
     if (type_input.value.length === 0) {
       char_display.value?.querySelector('span')?.classList.add('cursor_before')
     } else {
@@ -169,7 +165,9 @@ function typing() {
     }
 
     const type_input_length: number = type_input.value.length
-    const span_from_char_display = Array.from(char_display.value.querySelectorAll('span'))
+    const span_from_char_display: HTMLElement[] = Array.from(
+      char_display.value.querySelectorAll('span')
+    )
 
     const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
       (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
@@ -180,6 +178,20 @@ function typing() {
       span_from_char_display[type_input_length - 1].classList.add('cursor_after')
     }
 
+    if (type_input_length >= 2) {
+      const type_second: string = type_input.value[type_input_length - 2]
+      const char_second: string | null = span_from_char_display[type_input_length - 2].textContent
+      const type_first: string = type_input.value[type_input_length - 1]
+      const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
+      if (type_second === 's' && char_second === 's' && type_first === 'h' && char_first === 'i') {
+        change_midlle_method(type_input_length, type_first)
+        return
+      }
+      if (type_second === 's' && char_second === 's' && type_first === 'y' && char_first === 'h') {
+        change_midlle_method(type_input_length, type_first)
+        return
+      }
+    }
     span_from_char_display.forEach((span: HTMLElement, index: number) => {
       if (index < type_input_length) {
         if (span.textContent === type_input.value[index]) {
@@ -197,6 +209,16 @@ function typing() {
     correct_count = span_from_char_display
       .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
+  }
+}
+
+function change_midlle_method(type_input_length: number, type_first: string) {
+  if (char_display.value) {
+    char.value =
+      char.value.slice(0, type_input_length - 1) +
+      type_first +
+      char.value.slice(type_input_length - 1, char.value.length)
+    char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
 
@@ -227,109 +249,128 @@ function compositionEnd() {
 </script>
 
 <template>
-  <body>
-    <div id="buttons" class="buttons">
-      <button
-        @click="identify_level('short'), short_count++"
-        :class="{ active: active_buttons.short }"
-        class="level"
-      >
-        short
-      </button>
-      <button
-        @click="identify_level('normal'), normal_count++"
-        :class="{ active: active_buttons.normal }"
-        class="level"
-      >
-        normal
-      </button>
-      <button
-        @click="identify_level('long'), long_count++"
-        :class="{ active: active_buttons.long }"
-        class="level"
-      >
-        long
-      </button>
-      <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
-    </div>
-    <div id="counters">
-      <div id="correct" class="playdetail">{{ correct_count }}</div>
-      <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
-      <div id="rest_character" class="playdetail">{{ type_input.length }} / {{ char.length }}</div>
-      <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
-    </div>
-    <div id="container" class="container" @click="click_to_focus">
-      <div id="type_display" class="type_display" ref="type_display">
-        <span :class="{ lost_focus: lost_focus }" v-for="(type, index) in type" :key="index">
-          {{ type }}</span
+  <main id="play">
+    <body>
+      <div id="buttons" class="buttons">
+        <button
+          @click="identify_level('short'), play_init(), short_count++"
+          :class="{ active: active_buttons.short }"
+          class="level"
         >
-      </div>
-      <div id="char_display" class="char_display" ref="char_display">
-        <span
-          :class="{ char: true, lost_focus: lost_focus }"
-          ref="char_span"
-          v-for="(character, index) in char"
-          :key="index"
+          short
+        </button>
+        <button
+          @click="identify_level('normal'), play_init(), normal_count++"
+          :class="{ active: active_buttons.normal }"
+          class="level"
         >
-          {{ character }}
-        </span>
+          normal
+        </button>
+        <button
+          @click="identify_level('long'), play_init(), long_count++"
+          :class="{ active: active_buttons.long }"
+          class="level"
+        >
+          long
+        </button>
+        <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
       </div>
-      <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
-        <p class="click_here">クリックしてフォーカス。。。</p>
-        <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <div id="counters">
+        <div id="correct" class="playdetail">{{ correct_count }}</div>
+        <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
+        <div id="rest_character" class="playdetail">
+          {{ type_input.length }} / {{ char.length }}
+        </div>
+        <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
+      </div>
+      <div id="container" class="container" @click="click_to_focus">
+        <div id="type_display" class="type_display" ref="type_display">
+          <span :class="{ lost_focus: lost_focus }" v-for="(type, index) in type" :key="index">
+            {{ type }}</span
+          >
+        </div>
+        <div id="char_display" class="char_display" ref="char_display">
+          <span
+            :class="{ char: true, lost_focus: lost_focus }"
+            ref="char_span"
+            v-for="(character, index) in char"
+            :key="index"
+          >
+            {{ character }}
+          </span>
+        </div>
+        <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
+          <p class="click_here">クリックしてフォーカス。。。</p>
+          <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
+              d="m320-410 79-110h170L320-716v306ZM551-80 406-392 240-160v-720l560 440H516l144 309-109 51ZM399-520Z"
+            />
+          </svg>
+        </div>
+      </div>
+      <button @click="play_init" id="restart">
+        <svg
+          id="restart_svg"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#e8eaed"
+        >
           <path
-            d="m320-410 79-110h170L320-716v306ZM551-80 406-392 240-160v-720l560 440H516l144 309-109 51ZM399-520Z"
+            d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
           />
         </svg>
+      </button>
+      <div class="japaneseInputAleat" v-if="japaneseInput">
+        <svg
+          class="aleatIcon"
+          xmlns="http://www.w3.org/2000/svg"
+          height="40"
+          viewBox="0 -960 960 960"
+          width="40"
+        >
+          <path
+            d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
+          />
+        </svg>
+        <div class="aleatSentence">日本語入力がオンになっています</div>
       </div>
-    </div>
-    <div class="japaneseInputAleat" v-if="japaneseInput">
-      <svg
-        class="aleatIcon"
-        xmlns="http://www.w3.org/2000/svg"
-        height="40"
-        viewBox="0 -960 960 960"
-        width="40"
-      >
-        <path
-          d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
-        />
-      </svg>
-      <div class="aleatSentence">日本語入力がオンになっています</div>
-    </div>
-    <div class="capslockInputAleat" v-if="capslockchecker">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        height="24px"
-        viewBox="0 -960 960 960"
-        width="24px"
-        fill="#e8eaed"
-      >
-        <path
-          d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
-        />
-      </svg>
-      <div class="aleatSentence">capslockがオンになっています</div>
-    </div>
+      <div class="capslockInputAleat" v-if="capslockchecker">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#e8eaed"
+        >
+          <path
+            d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
+          />
+        </svg>
+        <div class="aleatSentence">capslockがオンになっています</div>
+      </div>
 
-    <textarea
-      id="type_input"
-      class="type_input"
-      autocomplete="off"
-      spellcheck="false"
-      autocapitalize="none"
-      autocorrect="off"
-      autofocus
-      v-model="type_input"
-      ref="textarea"
-      @input="typing"
-      @keydown="typing_keydown"
-      @focus="type_input_focus"
-      @blur="type_input_lost_focus"
-      @compositionstart="compositionStart"
-      @compositionend="compositionEnd"
-    ></textarea>
-  </body>
+      <textarea
+        id="type_input"
+        class="type_input"
+        autocomplete="off"
+        spellcheck="false"
+        autocapitalize="none"
+        autocorrect="off"
+        autofocus
+        v-model="type_input"
+        ref="textarea"
+        @input="typing"
+        @keydown="typing_keydown"
+        @focus="type_input_focus"
+        @blur="type_input_lost_focus"
+        @compositionstart="compositionStart"
+        @compositionend="compositionEnd"
+      ></textarea>
+    </body>
+  </main>
+  <main id="result"></main>
 </template>
 
 <style scoped>
@@ -442,6 +483,19 @@ function compositionEnd() {
 }
 .char {
   font-size: 2rem;
+}
+
+#restart {
+  position: absolute;
+  background-color: transparent;
+  border-radius: 90px;
+  display: flex;
+  border: none;
+  top: 70%;
+  width: 10%;
+  height: 10%;
+  justify-content: center;
+  align-items: center;
 }
 
 .lost_focus {

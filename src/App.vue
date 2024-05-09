@@ -53,6 +53,17 @@ body {
   justify-content: center;
   overflow: hidden;
 }
+
+main {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(#652bc2, #000000);
+  display: flex;
+  align-items: center;
+  height: 100vh;
+  justify-content: center;
+  overflow: hidden;
+}
 header {
   width: 100%;
   top: 0%;

@@ -17,7 +17,6 @@ venv/
 /cypress/videos/
 /cypress/screenshots/
 
-# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -26,5 +25,4 @@ venv/
 *.njsproj
 *.sln
 *.sw?
-
 *.tsbuildinfo
