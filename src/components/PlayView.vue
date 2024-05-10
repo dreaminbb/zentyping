@@ -156,7 +156,6 @@ function typing() {
     if (type_count === 1) {
       start_timer()
     }
-
     if (type_input.value.length === 0) {
       char_display.value?.querySelector('span')?.classList.add('cursor_before')
     } else {
@@ -171,32 +170,44 @@ function typing() {
     const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
       (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
     )
-    const type_first: string = type_input.value[type_input_length - 1]
-    const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
-    const char_front: string | null = span_from_char_display[type_input_length].textContent
-
     export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
     if (type_input_length > 0) {
       span_from_char_display[type_input_length - 1].classList.add('cursor_after')
     }
 
-    if (type_input_length >= 2) {
-      const type_before: string = type_input.value[type_input_length - 2]
-      const char_before: string | null = span_from_char_display[type_input_length - 2].textContent
+    const type_first: string = type_input.value[type_input_length - 1]
+    if (type_input.value.length < char.value.length) {
+      const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
+      const char_front: string | null = span_from_char_display[type_input_length].textContent
 
-      if (type_before === 's' && char_before === 's' && type_first === 'h' && char_first === 'i') {
-        add_middle_method(type_input_length, type_first)
+      if (type_input_length >= 2) {
+        const type_before: string = type_input.value[type_input_length - 2]
+        const char_before: string | null = span_from_char_display[type_input_length - 2].textContent
+
+        if (
+          type_before === 's' &&
+          char_before === 's' &&
+          type_first === 'h' &&
+          char_first === 'i'
+        ) {
+          add_middle_method(type_input_length, type_first)
+          return
+        }
+        if (
+          type_before === 's' &&
+          char_before === 's' &&
+          type_first === 'y' &&
+          char_first === 'h'
+        ) {
+          change_middle_method(type_input_length, type_first)
+          return
+        }
+      }
+
+      if (type_first === 'c' && char_first === 't' && char_front === 'i') {
+        ti_to_chi(type_input_length)
         return
       }
-      if (type_before === 's' && char_before === 's' && type_first === 'y' && char_first === 'h') {
-        change_middle_method(type_input_length, type_first)
-        return
-      }
-    }
-
-    if (type_first === 'c' && char_first === 't' && char_front === 'i') {
-      ti_to_chi(type_input_length)
-      return
     }
 
     span_from_char_display.forEach((span: HTMLElement, index: number) => {
