@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
@@ -140,7 +141,7 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     active_buttons.long = true
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
-  }
+ } 
   play_init()
 }
 
