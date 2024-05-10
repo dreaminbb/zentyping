@@ -16,7 +16,6 @@ let correct_count: number = 0
 let type_count: number = 0
 const time = ref(0)
 let timer: number | undefined
-// let char_change_count: number = 0
 const lost_focus = ref(false)
 const focus_alert = ref(false)
 const click_sentence = ref(false)
@@ -172,26 +171,34 @@ function typing() {
     const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
       (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
     )
-    export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
+    const type_first: string = type_input.value[type_input_length - 1]
+    const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
+    const char_front: string | null = span_from_char_display[type_input_length].textContent
 
+    export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
     if (type_input_length > 0) {
       span_from_char_display[type_input_length - 1].classList.add('cursor_after')
     }
 
     if (type_input_length >= 2) {
-      const type_second: string = type_input.value[type_input_length - 2]
-      const char_second: string | null = span_from_char_display[type_input_length - 2].textContent
-      const type_first: string = type_input.value[type_input_length - 1]
-      const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
-      if (type_second === 's' && char_second === 's' && type_first === 'h' && char_first === 'i') {
-        change_midlle_method(type_input_length, type_first)
+      const type_before: string = type_input.value[type_input_length - 2]
+      const char_before: string | null = span_from_char_display[type_input_length - 2].textContent
+
+      if (type_before === 's' && char_before === 's' && type_first === 'h' && char_first === 'i') {
+        add_middle_method(type_input_length, type_first)
         return
       }
-      if (type_second === 's' && char_second === 's' && type_first === 'y' && char_first === 'h') {
-        change_midlle_method(type_input_length, type_first)
+      if (type_before === 's' && char_before === 's' && type_first === 'y' && char_first === 'h') {
+        change_middle_method(type_input_length, type_first)
         return
       }
     }
+
+    if (type_first === 'c' && char_first === 't' && char_front === 'i') {
+      ti_to_chi(type_input_length)
+      return
+    }
+
     span_from_char_display.forEach((span: HTMLElement, index: number) => {
       if (index < type_input_length) {
         if (span.textContent === type_input.value[index]) {
@@ -205,19 +212,39 @@ function typing() {
         span.classList.remove('correct', 'incorrect')
       }
     })
-
     correct_count = span_from_char_display
       .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
   }
 }
 
-function change_midlle_method(type_input_length: number, type_first: string) {
+function add_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
       char.value.slice(0, type_input_length - 1) +
       type_first +
       char.value.slice(type_input_length - 1, char.value.length)
+    char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
+  }
+}
+
+function change_middle_method(type_input_length: number, type_first: string) {
+  if (char_display.value) {
+    char.value =
+      char.value.slice(0, type_input_length - 1) +
+      type_first +
+      char.value.slice(type_input_length, char.value.length)
+    char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
+  }
+}
+
+function ti_to_chi(type_input_length: number) {
+  if (char_display.value) {
+    char.value =
+      char.value.slice(0, type_input_length - 1) +
+      'c' +
+      'h' +
+      char.value.slice(type_input_length, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -249,7 +276,7 @@ function compositionEnd() {
 </script>
 
 <template>
-  <main id="play">
+  <main id="play" ref="play">
     <body>
       <div id="buttons" class="buttons">
         <button
