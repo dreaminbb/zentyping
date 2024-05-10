@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <script lang="ts">
 import { ref, onMounted } from 'vue'
 export default {
@@ -16,7 +15,7 @@ export default {
           index = 0
           displayText.value = ''
         }
-      }, 300) // 1秒ごとに文字を追加
+      }, 300)
     })
 
     return {

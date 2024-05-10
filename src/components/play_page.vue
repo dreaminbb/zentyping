@@ -1,12 +1,10 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted } from 'vue'
+import { ref, nextTick, reactive, onMounted, watch } from 'vue'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 let short_count: number = 1
 let normal_count: number = 1
 let long_count: number = 1
-const activepun = ref(false)
 const char_display = ref<HTMLElement | null>(null)
 const type_input = ref('')
 const char = ref('')
@@ -17,6 +15,9 @@ let correct_count: number = 0
 let type_count: number = 0
 const time = ref(0)
 let timer: number | undefined
+const play_ditail = ref(false)
+const level_buttons = ref(true)
+const activepun = ref(false)
 const lost_focus = ref(false)
 const focus_alert = ref(false)
 const click_sentence = ref(false)
@@ -141,7 +142,7 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     active_buttons.long = true
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
- } 
+  }
   play_init()
 }
 
@@ -150,10 +151,9 @@ function punactivate() {
   localStorage.setItem('activepun', JSON.stringify(activepun.value))
 }
 
-function typing() {
+function typing(event: KeyboardEvent) {
   if (char_display.value) {
     type_count++
-
     if (type_count === 1) {
       start_timer()
     }
@@ -230,6 +230,10 @@ function typing() {
   }
 }
 
+if (type_input.value.length > 0) {
+  console.log('penis')
+  level_buttons.value = false
+}
 function add_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
@@ -240,6 +244,15 @@ function add_middle_method(type_input_length: number, type_first: string) {
   }
 }
 
+watch(
+  () => type_input.value.length,
+  (type_count) => {
+    if (type_count > 0) {
+      level_buttons.value = false
+      play_ditail.value = true
+    }
+  }
+)
 function change_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
@@ -288,9 +301,9 @@ function compositionEnd() {
 </script>
 
 <template>
-  <main id="play" ref="play">
-    <body>
-      <div id="buttons" class="buttons">
+  <body>
+    <main id="play" ref="play">
+      <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
         <button
           @click="identify_level('short'), play_init(), short_count++"
           :class="{ active: active_buttons.short }"
@@ -314,7 +327,7 @@ function compositionEnd() {
         </button>
         <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
       </div>
-      <div id="counters">
+      <div id="counters" v-if="play_ditail">
         <div id="correct" class="playdetail">{{ correct_count }}</div>
         <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
         <div id="rest_character" class="playdetail">
@@ -407,8 +420,8 @@ function compositionEnd() {
         @compositionstart="compositionStart"
         @compositionend="compositionEnd"
       ></textarea>
-    </body>
-  </main>
+    </main>
+  </body>
   <main id="result"></main>
 </template>
 

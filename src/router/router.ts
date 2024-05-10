@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import home from '@/components/home.vue'
-import play from '@/components/play.vue'
+import home from '@/components/home_page.vue'
+import play from '@/components/play_page.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
