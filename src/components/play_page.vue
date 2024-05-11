@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted, watch } from 'vue'
+import { ref, nextTick, reactive, onMounted, watch, inject, type Ref } from 'vue'
+
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
+
 let short_count: number = 1
 let normal_count: number = 1
 let long_count: number = 1
-const char_display = ref<HTMLElement | null>(null)
-const type_input = ref('')
-const char = ref('')
-const type = ref('')
-const char_span = ref<HTMLElement | null>(null)
-const textarea = ref<HTMLElement | null>(null)
+let timer: number | undefined
 let correct_count: number = 0
 let type_count: number = 0
 const time = ref(0)
-let timer: number | undefined
+const type_input = ref('')
+const char = ref('')
+const type = ref('')
+
+const char_display = ref<HTMLElement | null>(null)
+const char_span = ref<HTMLElement | null>(null)
+const textarea = ref<HTMLElement | null>(null)
+
+const tools = inject('tools') as Ref<boolean>
+const header_focus_class = inject('header_focus_class') as Ref<boolean>
+const header_normal_class = inject('header_normal_class') as Ref<boolean>
 const play_ditail = ref(false)
 const level_buttons = ref(true)
 const activepun = ref(false)
@@ -49,6 +56,7 @@ async function play_init() {
     char_display.value?.querySelector('span')?.classList.add('cursor_before')
   }
   type_input.value = ''
+  header_normal_class.value = true
   correct_count = 0
   clearInterval(timer)
   time.value = 0
@@ -70,6 +78,10 @@ function type_input_lost_focus() {
   focus_alert.value = true
   click_sentence.value = true
   focus_svg.value = true
+  level_buttons.value = true
+  tools.value = true
+  header_normal_class.value = true
+  header_focus_class.value = false
 }
 
 function type_input_focus() {
@@ -151,7 +163,7 @@ function punactivate() {
   localStorage.setItem('activepun', JSON.stringify(activepun.value))
 }
 
-function typing(event: KeyboardEvent) {
+function typing() {
   if (char_display.value) {
     type_count++
     if (type_count === 1) {
@@ -230,10 +242,6 @@ function typing(event: KeyboardEvent) {
   }
 }
 
-if (type_input.value.length > 0) {
-  console.log('penis')
-  level_buttons.value = false
-}
 function add_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
@@ -250,6 +258,8 @@ watch(
     if (type_count > 0) {
       level_buttons.value = false
       play_ditail.value = true
+      tools.value = false
+      header_focus_class.value = true
     }
   }
 )
@@ -337,7 +347,11 @@ function compositionEnd() {
       </div>
       <div id="container" class="container" @click="click_to_focus">
         <div id="type_display" class="type_display" ref="type_display">
-          <span :class="{ lost_focus: lost_focus }" v-for="(type, index) in type" :key="index">
+          <span
+            :class="{ type: true, lost_focus: lost_focus }"
+            v-for="(type, index) in type"
+            :key="index"
+          >
             {{ type }}</span
           >
         </div>
@@ -427,6 +441,18 @@ function compositionEnd() {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+main {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(#652bc2, #000000);
+  display: flex;
+  align-items: center;
+  height: 100vh;
+  justify-content: center;
+  overflow: hidden;
+}
+
 #buttons {
   position: absolute;
   top: 10%;
@@ -533,8 +559,14 @@ function compositionEnd() {
   column-gap: 0px;
   grid-row-gap: -20px;
 }
+.type {
+  font-family: 'Roboto Mono', monospace;
+  font-optical-sizing: auto;
+}
 .char {
   font-size: 2rem;
+  font-family: 'Roboto Mono', monospace;
+  font-optical-sizing: auto;
 }
 
 #restart {

@@ -1,3 +1,14 @@
+<script lang="ts" setup>
+import { provide, ref } from 'vue'
+import { RouterView } from 'vue-router'
+
+const tools = ref(true)
+const header_focus_class = ref(false)
+const header_normal_class = ref(false)
+provide('tools', tools)
+provide('header_focus_class', header_focus_class)
+</script>
+
 <template>
   <body>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,9 +22,16 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,-25"
     />
     <header>
-      <h1>mode typing</h1>
+      <h1
+        :class="{
+          header_focus_class: header_focus_class,
+          header_normal_class: header_normal_class
+        }"
+      >
+        mode typing
+      </h1>
     </header>
-    <div id="tools">
+    <div :tools="tools" id="tools" ref="tools" v-if="tools">
       <div class="tool">
         <span to="/Getq" id="terminal" class="material-symbols-outlined">terminal</span>
       </div>
@@ -27,10 +45,6 @@
         <span id="help" class="material-symbols-outlined">Help</span>
       </div>
     </div>
-    <span id="scut"
-      >crlr + c <br />
-      command line
-    </span>
     <RouterView />
   </body>
 </template>
@@ -39,14 +53,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 * {
   box-sizing: border-box;
+  user-select: none;
   padding: 0;
   margin: 0;
-  user-select: none;
+}
+
+div {
+  font-family: 'Roboto Mono', monospace;
+  font-optical-sizing: auto;
 }
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(#652bc2, #000000);
+  background: linear-gradient(#7a61c5, #000000);
   display: flex;
   align-items: center;
   height: 100vh;
@@ -54,34 +73,33 @@ body {
   overflow: hidden;
 }
 
-main {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(#652bc2, #000000);
-  display: flex;
-  align-items: center;
-  height: 100vh;
-  justify-content: center;
-  overflow: hidden;
-}
 header {
+  height: 10%;
   width: 100%;
   top: 0%;
   position: absolute;
   display: flex;
   background-color: transparent;
   filter: brightness(120%);
-  border-radius: 10px;
-  font-family: 'Roboto Mono', monospace;
-  font-optical-sizing: auto;
 }
 h1 {
   position: absolute;
-  left: 5%;
+  letter-spacing: 7px;
   font-size: 3rem;
-  color: #ebebeb;
-  text-align: left;
+  bottom: 0%;
+  left: 5%;
+  border-radius: 16px;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.28);
 }
+
+.header_focus_class {
+  color: rgba(170, 170, 170, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
 #tools {
   position: absolute;
   display: flex;
@@ -138,17 +156,13 @@ h1 {
 }
 #scut {
   position: absolute;
-  bottom: 2%;
+  display: flex;
+  bottom: 10%;
   left: 46%;
   color: #ffffff;
   font-size: 1rem;
-  text-align: right;
   padding: 10px;
   margin: 10px;
   text-align: center;
 }
 </style>
-
-<script lang="ts" setup>
-import { RouterView } from 'vue-router'
-</script>

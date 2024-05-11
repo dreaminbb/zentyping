@@ -38,21 +38,18 @@ export default {
     />
     <div class="card" id="left">
       <p id="rankingCaracter">Ranking</p>
-      <button class="button" id="checkButton">check</button>
     </div>
-    <div class="card" id="center">
+    <router-link to="/write" class="card" id="center">
       <span id="writtingAnimetion">{{ displayText }}</span>
       <span id="writting" class="material-symbols-outlined">Brush</span>
-      <router-link to="/write" class="button" id="writeButton">write</router-link>
-    </div>
-    <div id="cardframe">
+    </router-link>
+    <router-link to="/play" id="cardframe">
       <div id="right">
         <div class="card__content"></div>
         <div id="cardhover"></div>
         <span class="material-symbols-outlined" id="keyboardicon"> keyboard </span>
-        <router-link to="/play" class="button" id="playButton">play</router-link>
       </div>
-    </div>
+    </router-link>
   </body>
 </template>
 
@@ -133,7 +130,6 @@ export default {
 #checkButton:hover {
   background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
   box-shadow: 1px 30px 40px rgba(233, 233, 233, 0.1);
-  /* transform: translateY(-10px); */
 }
 
 #center {
@@ -162,7 +158,6 @@ export default {
   background-color: #a5a5a5;
   box-shadow: 10px 50px rgba(194, 194, 194, 0.1);
   transition: 0.5s;
-  /* transform: translateY(-10px); */
 }
 #writtingicon {
   padding: 0;
@@ -212,7 +207,7 @@ export default {
 #right {
   position: absolute;
   display: flex;
-  filter: brightness(130%); /* 光度を20%上げる */
+  filter: brightness(130%);
   width: 100%;
   height: 100%;
   border-radius: 20px;
