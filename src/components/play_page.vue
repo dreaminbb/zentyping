@@ -21,7 +21,6 @@ const textarea = ref<HTMLElement | null>(null)
 
 const tools = inject('tools') as Ref<boolean>
 const header_focus_class = inject('header_focus_class') as Ref<boolean>
-const header_normal_class = inject('header_normal_class') as Ref<boolean>
 const play_ditail = ref(false)
 const level_buttons = ref(true)
 const activepun = ref(false)
@@ -56,7 +55,6 @@ async function play_init() {
     char_display.value?.querySelector('span')?.classList.add('cursor_before')
   }
   type_input.value = ''
-  header_normal_class.value = true
   correct_count = 0
   clearInterval(timer)
   time.value = 0
@@ -80,7 +78,6 @@ function type_input_lost_focus() {
   focus_svg.value = true
   level_buttons.value = true
   tools.value = true
-  header_normal_class.value = true
   header_focus_class.value = false
 }
 
@@ -189,8 +186,9 @@ function typing() {
     }
 
     const type_first: string = type_input.value[type_input_length - 1]
-    if (type_input.value.length < char.value.length) {
+    if (type_input.value.length < char.value.length && type_input_length > 0) {
       const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
+
       const char_front: string | null = span_from_char_display[type_input_length].textContent
 
       if (type_input_length >= 2) {
