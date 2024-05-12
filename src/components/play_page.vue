@@ -445,17 +445,17 @@ function compositionEnd() {
       ></textarea>
     </main>
   </body>
-  <main id="result"></main>
+  <!-- <main id="result"></main> -->
 </template>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 main {
-  background: linear-gradient(#652bc2, #000000);
   display: flex;
   align-items: center;
   height: 100vh;
+  width: 100vw;
   justify-content: center;
   overflow: hidden;
 }
@@ -577,11 +577,13 @@ main {
 
 #play_init {
   background-color: transparent;
-  position: absolute;
+  padding: 0;
+  margin: 0;
+  position: relative;
   display: flex;
-  top: 70%;
-  height: 10%;
-  width: 10%;
+  bottom: -280px;
+  height: 100px;
+  width: 150px;
   border-color: transparent;
   border-radius: 30px;
   border-width: 1px;
@@ -593,6 +595,23 @@ main {
   fill: rgb(179, 179, 179);
 }
 
+#play_init::after {
+  content: 'reset?';
+  position: absolute;
+  top: -30px;
+  width: 100%;
+  height: 20%;
+  letter-spacing: 3px;
+  display: none;
+  border-radius: 10px;
+  background-color:#b9b9b9 ;
+  color:#333 ;
+}
+
+#play_init:hover::after,
+#play_init:focus::after {
+  display: block;
+}
 #play_init:focus,
 #play_init:hover {
   outline: none;

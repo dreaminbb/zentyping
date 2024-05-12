@@ -63,7 +63,7 @@ provide('header_focus_class', header_focus_class)
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(#7a61c5, #000000);
+  background: linear-gradient(#865ffb, #000000);
   display: flex;
   align-items: center;
   height: 100vh;
