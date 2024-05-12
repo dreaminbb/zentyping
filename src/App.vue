@@ -56,12 +56,10 @@ provide('header_focus_class', header_focus_class)
   user-select: none;
   padding: 0;
   margin: 0;
-}
-
-div {
   font-family: 'Roboto Mono', monospace;
   font-optical-sizing: auto;
 }
+
 body {
   margin: 0;
   padding: 0;
@@ -89,15 +87,24 @@ h1 {
   bottom: 0%;
   left: 5%;
   border-radius: 16px;
-  border-radius: 16px;
+  background-color: transparent;
   color: rgba(255, 255, 255, 0.28);
 }
 
 .header_focus_class {
   color: rgba(170, 170, 170, 0.2);
+  background-color: transparent;
   border-radius: 16px;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  animation: header_down_animetion ease 0.3s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes header_down_animetion {
+  100% {
+    bottom: -10%;
+  }
 }
 
 #tools {

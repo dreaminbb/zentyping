@@ -70,12 +70,10 @@ export default {
 }
 
 * {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
   user-select: none;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   justify-content: center;
+  font-family: 'Roboto Mono', monospace;
+  font-optical-sizing: auto;
 }
 
 .card {
@@ -86,23 +84,6 @@ export default {
   bottom: 14%;
   padding: 20px;
   filter: brightness(130%);
-}
-
-.button {
-  position: absolute;
-  border: none;
-  border-radius: 30px;
-  bottom: 10%;
-  width: 35%;
-  height: 10%;
-  align-items: center;
-  color: #808080;
-  cursor: pointer;
-  font-size: 1.5rem;
-  text-align: center;
-  text-decoration: none;
-  display: flex;
-  transition-duration: 0.4s;
 }
 
 #left {
@@ -122,16 +103,6 @@ export default {
   filter: brightness(150%);
 }
 
-#checkButton {
-  background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
-  border: 1px solid #ffffff;
-  transition: 0.5s;
-}
-#checkButton:hover {
-  background: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
-  box-shadow: 1px 30px 40px rgba(233, 233, 233, 0.1);
-}
-
 #center {
   display: block;
   box-sizing: border-box;
@@ -149,16 +120,6 @@ export default {
   transform: rotate(10deg);
 }
 
-#writeButton {
-  background-color: #a0a0a0;
-  position: absolute;
-  left: 35%;
-}
-#writeButton:hover {
-  background-color: #a5a5a5;
-  box-shadow: 10px 50px rgba(194, 194, 194, 0.1);
-  transition: 0.5s;
-}
 #writtingicon {
   padding: 0;
   margin: 0;
@@ -230,7 +191,6 @@ export default {
 }
 #right:hover::after {
   content: 'play ?';
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   position: absolute;
   filter: brightness(150%);
   color: rgb(80, 80, 80);
@@ -245,14 +205,8 @@ export default {
   border-radius: 28px;
   transition: 0.7s;
   box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
-  border-color: red;
 }
 
-#playButton {
-  background: linear-gradient(144deg, #6f4d8a, #414294 60%, #11555a);
-  border: 1px solid #ffffff;
-  transition: 0.5s;
-}
 #keyboardicon {
   position: absolute;
   display: flex;
@@ -276,17 +230,12 @@ export default {
   font-size: 2rem;
 }
 
-#playButton:hover {
-  background: linear-gradient(144deg, #6f4d8a, #4245f3 40%, #db2222);
-  box-shadow: 1px 30px 40px rgba(233, 233, 233, 0.1);
-}
 #scut {
   position: absolute;
   bottom: 2%;
   left: 46%;
   color: #ffffff;
   font-size: 1rem;
-  font-family: cursive;
   text-align: right;
   padding: 10px;
   margin: 10px;

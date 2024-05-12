@@ -18,6 +18,7 @@ const type = ref('')
 const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
 const textarea = ref<HTMLElement | null>(null)
+const play_init_button = ref<HTMLElement | null>(null)
 
 const tools = inject('tools') as Ref<boolean>
 const header_focus_class = inject('header_focus_class') as Ref<boolean>
@@ -42,6 +43,13 @@ async function get_from_api() {
   }
 }
 
+function play_init_focus(event: KeyboardEvent) {
+  if (event.key === 'Tab' && play_init_button.value) {
+    event.preventDefault()
+    play_init_button.value.focus()
+  }
+}
+
 async function play_init() {
   if (textarea.value) {
     textarea.value.focus()
@@ -54,6 +62,8 @@ async function play_init() {
     })
     char_display.value?.querySelector('span')?.classList.add('cursor_before')
   }
+
+  play_ditail.value = false
   type_input.value = ''
   correct_count = 0
   clearInterval(timer)
@@ -118,6 +128,7 @@ onMounted(async () => {
     char.value = get_problem_data_from_api.value[1][0].char
   }
   play_init()
+  window.addEventListener('keydown', play_init_focus)
 })
 
 async function identify_level(level: 'short' | 'normal' | 'long') {
@@ -152,7 +163,6 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
-  play_init()
 }
 
 function punactivate() {
@@ -250,17 +260,6 @@ function add_middle_method(type_input_length: number, type_first: string) {
   }
 }
 
-watch(
-  () => type_input.value.length,
-  (type_count) => {
-    if (type_count > 0) {
-      level_buttons.value = false
-      play_ditail.value = true
-      tools.value = false
-      header_focus_class.value = true
-    }
-  }
-)
 function change_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
@@ -281,7 +280,19 @@ function ti_to_chi(type_input_length: number) {
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
+watch(
+  () => type_input.value.length,
+  (type_count) => {
+    if (type_count > 0) {
+      level_buttons.value = false
+      play_ditail.value = true
+      tools.value = false
+      header_focus_class.value = true
+    }
+  }
+)
 
+//日本語、capslock警告
 function typing_keydown(event: KeyboardEvent) {
   if (char_display.value) {
     if (correct_count === type_input.value.length && event.key === 'Backspace') {
@@ -372,14 +383,13 @@ function compositionEnd() {
           </svg>
         </div>
       </div>
-      <button @click="play_init" id="restart">
+      <button @click="play_init" id="play_init" ref="play_init_button">
         <svg
-          id="restart_svg"
+          id="play_init_svg"
           xmlns="http://www.w3.org/2000/svg"
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-          fill="#e8eaed"
         >
           <path
             d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
@@ -442,8 +452,6 @@ function compositionEnd() {
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 main {
-  margin: 0;
-  padding: 0;
   background: linear-gradient(#652bc2, #000000);
   display: flex;
   align-items: center;
@@ -475,7 +483,6 @@ main {
   height: 100%;
   border: none;
   color: #b981ca;
-  border-radius: 1px;
   filter: brightness(130%);
   background-color: transparent;
   justify-content: center;
@@ -568,34 +575,37 @@ main {
   font-optical-sizing: auto;
 }
 
-#restart {
-  position: absolute;
+#play_init {
   background-color: transparent;
-  border-radius: 90px;
+  position: absolute;
   display: flex;
-  border: none;
   top: 70%;
-  width: 10%;
   height: 10%;
+  width: 10%;
+  border-color: transparent;
+  border-radius: 30px;
+  border-width: 1px;
   justify-content: center;
   align-items: center;
 }
 
+#play_init_svg {
+  fill: rgb(179, 179, 179);
+}
+
+#play_init:focus,
+#play_init:hover {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
 .lost_focus {
-  animation-name: spin_char;
+  animation-name: spin;
   animation-duration: 1s;
   animation-iteration-count: infinite;
 }
-@keyframes spin_type {
-  50% {
-    transform: rotate(10deg);
-  }
-  100% {
-    transform: rotate(370deg);
-  }
-}
 
-@keyframes spin_char {
+@keyframes spin {
   50% {
     transform: rotate(10deg);
   }
