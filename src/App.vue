@@ -3,8 +3,9 @@ import { provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
 
 const tools = ref(true)
+const header_normal_class = ref(true)
 const header_focus_class = ref(false)
-const header_normal_class = ref(false)
+
 provide('tools', tools)
 provide('header_focus_class', header_focus_class)
 </script>
@@ -88,11 +89,11 @@ h1 {
   left: 5%;
   border-radius: 16px;
   background-color: transparent;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(250, 250, 250, 0.5);
 }
 
 .header_focus_class {
-  color: rgba(170, 170, 170, 0.2);
+  color: rgba(182, 182, 182, 0.2);
   background-color: transparent;
   border-radius: 16px;
   backdrop-filter: blur(5px);

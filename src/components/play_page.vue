@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted, watch, inject, type Ref } from 'vue'
+import { ref, nextTick, reactive, onMounted, inject, type Ref } from 'vue'
 
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
@@ -20,6 +20,8 @@ const char_span = ref<HTMLElement | null>(null)
 const textarea = ref<HTMLElement | null>(null)
 const play_init_button = ref<HTMLElement | null>(null)
 
+const play_page = ref(true)
+const result_page = ref(false)
 const tools = inject('tools') as Ref<boolean>
 const header_focus_class = inject('header_focus_class') as Ref<boolean>
 const play_ditail = ref(false)
@@ -173,6 +175,12 @@ function punactivate() {
 function typing() {
   if (char_display.value) {
     type_count++
+    if (type_count > 0) {
+      level_buttons.value = false
+      play_ditail.value = true
+      tools.value = false
+      header_focus_class.value = true
+    }
     if (type_count === 1) {
       start_timer()
     }
@@ -191,7 +199,7 @@ function typing() {
       (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
     )
     export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
-    if (type_input_length > 0) {
+    if (type_input_length > 0 && type_input_length < char.value.length) {
       span_from_char_display[type_input_length - 1].classList.add('cursor_after')
     }
 
@@ -248,6 +256,15 @@ function typing() {
       .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
   }
+
+  // ゲームが終わった時
+  if (
+    correct_count === char.value.length ||
+    (type_input.value[type_input.value.length - 1] === '\n' &&
+      type_input.value.length >= char.value.length)
+  ) {
+    result()
+  }
 }
 
 function add_middle_method(type_input_length: number, type_first: string) {
@@ -280,17 +297,6 @@ function ti_to_chi(type_input_length: number) {
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
-watch(
-  () => type_input.value.length,
-  (type_count) => {
-    if (type_count > 0) {
-      level_buttons.value = false
-      play_ditail.value = true
-      tools.value = false
-      header_focus_class.value = true
-    }
-  }
-)
 
 //日本語、capslock警告
 function typing_keydown(event: KeyboardEvent) {
@@ -317,11 +323,19 @@ function compositionStart() {
 function compositionEnd() {
   isComposing.value = false
 }
+
+//終わった時の処理
+function result() {
+  play_page.value = false
+  result_page.value = true
+  tools.value = true
+  header_focus_class.value = false
+}
 </script>
 
 <template>
   <body>
-    <main id="play" ref="play">
+    <main id="play" ref="play" v-if="play_page">
       <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
         <button
           @click="identify_level('short'), play_init(), short_count++"
@@ -445,7 +459,9 @@ function compositionEnd() {
       ></textarea>
     </main>
   </body>
-  <!-- <main id="result"></main> -->
+  <main id="result" v-if="result_page">
+    <canvas></canvas>
+  </main>
 </template>
 
 <style scoped>
@@ -604,8 +620,8 @@ main {
   letter-spacing: 3px;
   display: none;
   border-radius: 10px;
-  background-color:#b9b9b9 ;
-  color:#333 ;
+  background-color: #b9b9b9;
+  color: #333;
 }
 
 #play_init:hover::after,
