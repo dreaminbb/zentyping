@@ -1,19 +1,29 @@
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted, inject, type Ref } from 'vue'
-
+import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
+import { pie_chart, line_graph } from './chart'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
+
+const type_input = ref('')
+const char = ref('')
+const type = ref('')
+const time = ref(0)
+const time_in_second = ref(0)
+const time_format = ref(time)
+const correct_count = ref(0)
+const correct_rate = ref(0)
+const input_pre_second = ref<number[]>([])
 
 let short_count: number = 1
 let normal_count: number = 1
 let long_count: number = 1
 let timer: number | undefined
-let correct_count: number = 0
+let ips_built: number | undefined
 let type_count: number = 0
-const time = ref(0)
-const type_input = ref('')
-const char = ref('')
-const type = ref('')
+
+provide('correct_rate', correct_rate)
+provide('time_format', time_format)
+provide('input_pre_second', input_pre_second)
 
 const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
@@ -67,13 +77,21 @@ async function play_init() {
 
   play_ditail.value = false
   type_input.value = ''
-  correct_count = 0
+  correct_count.value = 0
   clearInterval(timer)
+  clearInterval(ips_built)
+  input_pre_second.value = []
   time.value = 0
   type_count = 0
 }
 
 function start_timer() {
+  ips_built = setInterval(() => {
+    console.log(input_pre_second.value)
+    time_in_second.value++
+    input_pre_second.value.push(correct_count.value / time_in_second.value)
+  }, 1000)
+
   timer = setInterval(() => {
     time.value++
   }, 100)
@@ -129,6 +147,7 @@ onMounted(async () => {
     type.value = get_problem_data_from_api.value[1][0].type
     char.value = get_problem_data_from_api.value[1][0].char
   }
+  nextTick()
   play_init()
   window.addEventListener('keydown', play_init_focus)
 })
@@ -252,18 +271,21 @@ function typing() {
         span.classList.remove('correct', 'incorrect')
       }
     })
-    correct_count = span_from_char_display
+    correct_count.value = span_from_char_display
       .slice(0, type_input_length)
       .filter((span) => span.classList.contains('correct')).length
   }
 
+  //グラフのための変数に数を代入
+  correct_rate.value = Number(((correct_count.value / type_count) * 100).toFixed(1))
+
   // ゲームが終わった時
   if (
-    correct_count === char.value.length ||
+    correct_count.value === char.value.length ||
     (type_input.value[type_input.value.length - 1] === '\n' &&
       type_input.value.length >= char.value.length)
   ) {
-    result()
+    setTimeout(() => result(), 300)
   }
 }
 
@@ -301,7 +323,7 @@ function ti_to_chi(type_input_length: number) {
 //日本語、capslock警告
 function typing_keydown(event: KeyboardEvent) {
   if (char_display.value) {
-    if (correct_count === type_input.value.length && event.key === 'Backspace') {
+    if (correct_count.value === type_input.value.length && event.key === 'Backspace') {
       event.preventDefault()
     }
   }
@@ -324,8 +346,12 @@ function compositionEnd() {
   isComposing.value = false
 }
 
-//終わった時の処理
+// 終わった時の処理
 function result() {
+  clearInterval(timer)
+  clearInterval(ips_built)
+  console.log(input_pre_second.value)
+  time.value = time.value / 10
   play_page.value = false
   result_page.value = true
   tools.value = true
@@ -460,7 +486,10 @@ function result() {
     </main>
   </body>
   <main id="result" v-if="result_page">
-    <canvas></canvas>
+    <div id="grapsh_freme">
+      <pie_chart id="pie_chart" />
+      <!-- <bar_chart id="line_graph" /> -->
+    </div>
   </main>
 </template>
 
@@ -478,14 +507,14 @@ main {
 
 #buttons {
   position: absolute;
-  top: 10%;
-  left: 50%;
   display: flex;
-  justify-content: space-around;
+  top: 10.5%;
+  left: 50%;
   transform: translate(-50%, -50%);
+  justify-content: space-around;
   align-items: center;
   width: 30%;
-  height: 5%;
+  height: 4%;
   border-radius: 80px;
   background: rgb(255, 255, 255);
   background: rgba(255, 255, 255, 0.3);
@@ -742,7 +771,7 @@ main {
   display: flex;
   left: 0;
   width: 18%;
-  height: 8%;
+  height: 10%;
   padding: 13px;
   border-radius: 30px;
   letter-spacing: 2px;
@@ -790,5 +819,56 @@ main {
 }
 .incorrect {
   color: #f25353;
+}
+
+#grapsh_freme {
+  position: absolute;
+  display: flex;
+  background-color: transparent;
+  width: 70%;
+  height: 35%;
+  right: 20%;
+}
+#pie_chart {
+  position: absolute;
+  width: 30%;
+  height: 100%;
+  left: -20%;
+  background: rgba(255, 255, 255, 0.58);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.1px);
+  -webkit-backdrop-filter: blur(7.1px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: ease circle_graph_animetion 0.5s;
+}
+
+@keyframes circle_graph_animetion {
+  0% {
+    left: 10%;
+  }
+}
+
+#line_graph {
+  position: absolute;
+  left: 30%;
+  height: 100%;
+  width: 70%;
+  background: rgba(255, 255, 255, 0.58);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.1px);
+  -webkit-backdrop-filter: blur(7.1px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: ease wave_graph_animetion 0.5s;
+}
+
+@keyframes wave_graph_animetion {
+  0% {
+    left: 10%;
+  }
+  100% {
+    left: 30%;
+  }
 }
 </style>

@@ -32,12 +32,12 @@ provide('header_focus_class', header_focus_class)
         mode typing
       </h1>
     </header>
-    <div :tools="tools" id="tools" ref="tools" v-if="tools">
+    <div id="tools" ref="tools" v-if="tools">
       <div class="tool">
         <span to="/Getq" id="terminal" class="material-symbols-outlined">terminal</span>
       </div>
       <div class="tool">
-        <span to="" id="settings" class="material-symbols-outlined">settings</span>
+        <span to="setting" id="settings" class="material-symbols-outlined">settings</span>
       </div>
       <div class="tool">
         <span id="about" class="material-symbols-outlined">Exclamation</span>
@@ -135,6 +135,7 @@ h1 {
   align-items: center;
   text-align: center;
 }
+
 #settings,
 #terminal,
 #about,
