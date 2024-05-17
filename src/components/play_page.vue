@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
-import { pie_chart, line_graph } from './chart'
+import { pie_chart, line_chart } from './chart'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 
@@ -8,10 +8,9 @@ const type_input = ref('')
 const char = ref('')
 const type = ref('')
 const time = ref(0)
-const time_in_second = ref(0)
-const time_format = ref(time)
 const correct_count = ref(0)
 const correct_rate = ref(0)
+const correct_pre_second = ref<number[]>([])
 const input_pre_second = ref<number[]>([])
 
 let short_count: number = 1
@@ -22,7 +21,8 @@ let ips_built: number | undefined
 let type_count: number = 0
 
 provide('correct_rate', correct_rate)
-provide('time_format', time_format)
+provide('time', time)
+provide('correct_pre_second', correct_pre_second)
 provide('input_pre_second', input_pre_second)
 
 const char_display = ref<HTMLElement | null>(null)
@@ -80,20 +80,17 @@ async function play_init() {
   correct_count.value = 0
   clearInterval(timer)
   clearInterval(ips_built)
+  correct_pre_second.value = []
   input_pre_second.value = []
   time.value = 0
   type_count = 0
 }
 
 function start_timer() {
-  ips_built = setInterval(() => {
-    console.log(input_pre_second.value)
-    time_in_second.value++
-    input_pre_second.value.push(correct_count.value / time_in_second.value)
-  }, 1000)
-
   timer = setInterval(() => {
     time.value++
+    correct_pre_second.value.push(correct_count.value / (time.value / 10))
+    console.log(correct_pre_second.value)
   }, 100)
 }
 
@@ -349,8 +346,6 @@ function compositionEnd() {
 // 終わった時の処理
 function result() {
   clearInterval(timer)
-  clearInterval(ips_built)
-  console.log(input_pre_second.value)
   time.value = time.value / 10
   play_page.value = false
   result_page.value = true
@@ -488,7 +483,7 @@ function result() {
   <main id="result" v-if="result_page">
     <div id="grapsh_freme">
       <pie_chart id="pie_chart" />
-      <!-- <bar_chart id="line_graph" /> -->
+      <line_chart id="line_chart" />
     </div>
   </main>
 </template>
@@ -833,7 +828,7 @@ main {
   position: absolute;
   width: 30%;
   height: 100%;
-  left: -20%;
+  left: 0%;
   background: rgba(255, 255, 255, 0.58);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -849,9 +844,9 @@ main {
   }
 }
 
-#line_graph {
+#line_chart {
   position: absolute;
-  left: 30%;
+  left: 0.1%;
   height: 100%;
   width: 70%;
   background: rgba(255, 255, 255, 0.58);
@@ -865,10 +860,7 @@ main {
 
 @keyframes wave_graph_animetion {
   0% {
-    left: 10%;
-  }
-  100% {
-    left: 30%;
+    left: -10%;
   }
 }
 </style>

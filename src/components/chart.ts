@@ -1,5 +1,5 @@
 import { defineComponent, ref, inject, type Ref } from 'vue';
-import { Chart as ChartJS, registerables } from 'chart.js';
+import { Chart as ChartJS, registerables, LineController, Title } from 'chart.js';
 import { LineChart, PieChart } from 'vue-chart-3';
 
 
@@ -35,11 +35,11 @@ export const pie_chart = defineComponent({
   setup() {
     const correct_rate = inject('correct_rate') as Ref<number>;
     const data = ref({
-      labels: ['correct'],
+      labels: ['correct', 'nobisiro'],
       datasets: [
         {
           data: [correct_rate.value, 100 - correct_rate.value],
-          backgroundColor: ['rgba(134, 95, 255, 0.5 )', 'transparent'],
+          backgroundColor: ['rgba(134, 95, 255, 0.2)', 'transparent'],
         },
       ],
 
@@ -73,28 +73,39 @@ export const pie_chart = defineComponent({
 });
 
 
-
 export const line_chart = defineComponent({
   components: {
     LineChart: LineChart,
   },
   setup() {
     const time = inject("time") as Ref<number>
-    const labels = []
+    const time_format: Array<number> = [];
+    const correct_pre_second = inject("correct_pre_second") as Ref<Array<number>>;
+    const formated_corrrect_per_second: Array<number> = []
 
-    for (let i = 0; i < time.value; i++) {
-      labels.push(i.toString());
+
+    for (let i = 1; i < correct_pre_second.value.length / 10; i++) {
+      formated_corrrect_per_second.push(correct_pre_second.value[i * 10])
     }
 
-    
+    formated_corrrect_per_second.push(correct_pre_second.value[correct_pre_second.value.length - 1])
+    const height_max = Math.max(...formated_corrrect_per_second) + 1
+
+    for (let i = 1; i < time.value; i++) {
+      time_format.push(i)
+    }
+
+    time_format.push(time.value)
+    console.log(time_format)
+
 
     const data = ref({
-
-      labels: ['correct'],
+      labels: time_format,
       datasets: [
         {
-          data: [],
-          backgroundColor: ['rgba(134, 95, 255, 0.5)', 'transparent'],
+          label: '１秒ごとの正入力',
+          data: formated_corrrect_per_second,
+          backgroundColor: ['rgba(134, 95, 255, 0.5)'],
         },
       ],
     });
@@ -102,6 +113,16 @@ export const line_chart = defineComponent({
     const options = ref({
       responsive: true,
       maintainAspectRatio: false,
+      scales: {
+        x: {
+          min: 1,
+          max: time_format[time_format.length]
+        },
+        y: {
+          min: 0,
+          max: height_max
+        }
+      }
     })
 
     return {
