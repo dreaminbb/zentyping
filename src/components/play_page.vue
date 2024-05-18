@@ -907,7 +907,7 @@ main {
 
 #line_chart {
   position: absolute;
-  left: 0.1%;
+  left: 0%;
   height: 100%;
   width: 70%;
   background: rgba(255, 255, 255, 0.58);
@@ -928,7 +928,8 @@ main {
 #result_container {
   position: absolute;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
   background-color: transparent;
   font-size: 2rem;
   color: #ffffff;
@@ -942,29 +943,28 @@ main {
 #pun_count {
   position: absolute;
   width: 90%;
-  right: 0;
+  left: 14%;
   animation: result_container_animetion ease 1s;
 }
 
 @keyframes result_container_animetion {
   0% {
-    right: 130%;
+    left: -30%;
     color: transparent;
   }
-  50% {
-    opacity: 0.1;
-  }
   70% {
-    opacity: 0.3;
+    opacity: 0.5;
   }
   100% {
     opacity: 1;
-    right: 0;
+    left: 14%;
   }
 }
 
 #char_detail {
-  top: 0%;
+  top: 0;
+  letter-spacing: 0px;
+  font-size: 1.8rem;
 }
 
 #time_display {
@@ -992,6 +992,7 @@ main {
 #back_game:focus::after {
   display: block;
 }
+
 #back_game:focus,
 #back_game:hover {
   outline: none;
