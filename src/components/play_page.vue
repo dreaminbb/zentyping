@@ -10,6 +10,7 @@ const type = ref('')
 const time = ref(0)
 const correct_count = ref(0)
 const correct_rate = ref(0)
+const pun_count = ref(0)
 const correct_pre_second = ref<number[]>([])
 const input_pre_second = ref<number[]>([])
 
@@ -29,6 +30,7 @@ const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
 const textarea = ref<HTMLElement | null>(null)
 const play_init_button = ref<HTMLElement | null>(null)
+const back_game_button = ref<HTMLElement | null>(null)
 
 const play_page = ref(true)
 const result_page = ref(false)
@@ -74,7 +76,6 @@ async function play_init() {
     })
     char_display.value?.querySelector('span')?.classList.add('cursor_before')
   }
-
   play_ditail.value = false
   type_input.value = ''
   correct_count.value = 0
@@ -90,7 +91,6 @@ function start_timer() {
   timer = setInterval(() => {
     time.value++
     correct_pre_second.value.push(correct_count.value / (time.value / 10))
-    console.log(correct_pre_second.value)
   }, 100)
 }
 
@@ -113,6 +113,38 @@ function type_input_focus() {
   focus_alert.value = false
   click_sentence.value = false
   focus_svg.value = false
+}
+function back_game_focus(event: KeyboardEvent) {
+  if (event.key === 'Tab' && back_game_button.value) {
+    event.preventDefault()
+    back_game_button.value.focus()
+  }
+}
+
+async function back_game() {
+  result_page.value = false
+  play_page.value = true
+  level_buttons.value = true
+  if (active_buttons.short === true) {
+    short_count++
+    type.value = get_problem_data_from_api.value[0][short_count].type
+    char.value = get_problem_data_from_api.value[0][short_count].char
+  }
+  if (active_buttons.normal == true) {
+    normal_count++
+    type.value = get_problem_data_from_api.value[1][normal_count].type
+    char.value = get_problem_data_from_api.value[1][normal_count].char
+  }
+  if (active_buttons.long === true) {
+    long_count++
+    type.value = get_problem_data_from_api.value[2][long_count].type
+    char.value = get_problem_data_from_api.value[2][long_count].char
+  }
+
+  window.removeEventListener('keydown', back_game_focus)
+  window.addEventListener('keydown', play_init_focus)
+  await nextTick()
+  play_init()
 }
 
 onMounted(async () => {
@@ -143,6 +175,9 @@ onMounted(async () => {
     active_buttons.normal = true
     type.value = get_problem_data_from_api.value[1][0].type
     char.value = get_problem_data_from_api.value[1][0].char
+  }
+  if (activepun.value === false) {
+    pun_count.value = 0
   }
   nextTick()
   play_init()
@@ -180,6 +215,10 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
     active_buttons.long = true
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
+  }
+
+  if (activepun.value === false) {
+    pun_count.value = 0
   }
 }
 
@@ -351,6 +390,7 @@ function result() {
   result_page.value = true
   tools.value = true
   header_focus_class.value = false
+  window.addEventListener('keydown', back_game_focus)
 }
 </script>
 
@@ -485,6 +525,26 @@ function result() {
       <pie_chart id="pie_chart" />
       <line_chart id="line_chart" />
     </div>
+    <div id="result_container">
+      <div id="char_detail">
+        {{ char.length }} / {{ correct_count }} / {{ char.length - correct_count }}
+      </div>
+      <div id="time_display">{{ time }} s</div>
+      <div id="pun_count">{{ pun_count }}</div>
+    </div>
+    <button @click="back_game" id="back_game" ref="back_game_button">
+      <svg
+        id="play_init_svg"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24px"
+        viewBox="0 -960 960 960"
+        width="24px"
+      >
+        <path
+          d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
+        />
+      </svg>
+    </button>
   </main>
 </template>
 
@@ -615,7 +675,8 @@ main {
   font-optical-sizing: auto;
 }
 
-#play_init {
+#play_init,
+#back_game {
   background-color: transparent;
   padding: 0;
   margin: 0;
@@ -862,5 +923,78 @@ main {
   0% {
     left: -10%;
   }
+}
+
+#result_container {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  background-color: transparent;
+  font-size: 2rem;
+  color: #ffffff;
+  width: 15%;
+  height: 35%;
+  right: 5%;
+}
+
+#char_detail,
+#time_display,
+#pun_count {
+  position: absolute;
+  width: 90%;
+  right: 0;
+  animation: result_container_animetion ease 1s;
+}
+
+@keyframes result_container_animetion {
+  0% {
+    right: 130%;
+    color: transparent;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  70% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+    right: 0;
+  }
+}
+
+#char_detail {
+  top: 0%;
+}
+
+#time_display {
+  top: 50%;
+}
+
+#pun_count {
+  bottom: 0;
+}
+
+#back_game::after {
+  content: 'back to game';
+  position: absolute;
+  top: -30px;
+  width: 100%;
+  height: 20%;
+  letter-spacing: 3px;
+  display: none;
+  border-radius: 10px;
+  background-color: #b9b9b9;
+  color: #333;
+}
+
+#back_game:hover::after,
+#back_game:focus::after {
+  display: block;
+}
+#back_game:focus,
+#back_game:hover {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 </style>

@@ -91,12 +91,12 @@ export const line_chart = defineComponent({
     formated_corrrect_per_second.push(correct_pre_second.value[correct_pre_second.value.length - 1])
     const height_max = Math.max(...formated_corrrect_per_second) + 1
 
+
     for (let i = 1; i < time.value; i++) {
       time_format.push(i)
     }
 
     time_format.push(time.value)
-    console.log(time_format)
 
 
     const data = ref({
