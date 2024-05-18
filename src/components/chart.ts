@@ -80,16 +80,20 @@ export const line_chart = defineComponent({
   setup() {
     const time = inject("time") as Ref<number>
     const time_format: Array<number> = [];
-    const correct_pre_second = inject("correct_pre_second") as Ref<Array<number>>;
-    const formated_corrrect_per_second: Array<number> = []
+    const correct_every_second = inject("correct_every_second") as Ref<Array<number>>;
+    const input_every_second = inject("input_every_second") as Ref<Array<number>>
+    const formated_input_every_second: Array<number> = []
+    const formated_corrrect_every_second: Array<number> = []
 
 
-    for (let i = 1; i < correct_pre_second.value.length / 10; i++) {
-      formated_corrrect_per_second.push(correct_pre_second.value[i * 10])
+    for (let i = 1; i < correct_every_second.value.length / 10; i++) {
+      formated_corrrect_every_second.push(Math.round(correct_every_second.value[i * 10] * 100) / 100)
+      formated_input_every_second.push(Math.round(input_every_second.value[i * 10] * 100) / 100)
     }
 
-    formated_corrrect_per_second.push(correct_pre_second.value[correct_pre_second.value.length - 1])
-    const height_max = Math.max(...formated_corrrect_per_second) + 1
+    formated_corrrect_every_second.push(Math.round(correct_every_second.value[correct_every_second.value.length - 1] * 100) / 100)
+    formated_input_every_second.push(Math.round(input_every_second.value[input_every_second.value.length - 1] * 100) / 100)
+    const height_max = Math.max(...formated_input_every_second) + 1
 
 
     for (let i = 1; i < time.value; i++) {
@@ -98,15 +102,19 @@ export const line_chart = defineComponent({
 
     time_format.push(time.value)
 
-
     const data = ref({
       labels: time_format,
       datasets: [
         {
           label: '１秒ごとの正入力',
-          data: formated_corrrect_per_second,
+          data: formated_corrrect_every_second,
           backgroundColor: ['rgba(134, 95, 255, 0.5)'],
         },
+        {
+          label: "１秒ごとの入力",
+          data: formated_input_every_second,
+          backgroundColor: ["rgba(255, 255, 255, 0.61)"],
+        }
       ],
     });
 

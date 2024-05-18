@@ -11,8 +11,8 @@ const time = ref(0)
 const correct_count = ref(0)
 const correct_rate = ref(0)
 const pun_count = ref(0)
-const correct_pre_second = ref<number[]>([])
-const input_pre_second = ref<number[]>([])
+const correct_every_second = ref<number[]>([])
+const input_every_second = ref<number[]>([])
 
 let short_count: number = 1
 let normal_count: number = 1
@@ -23,8 +23,8 @@ let type_count: number = 0
 
 provide('correct_rate', correct_rate)
 provide('time', time)
-provide('correct_pre_second', correct_pre_second)
-provide('input_pre_second', input_pre_second)
+provide('correct_every_second', correct_every_second)
+provide('input_every_second', input_every_second)
 
 const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
@@ -81,8 +81,8 @@ async function play_init() {
   correct_count.value = 0
   clearInterval(timer)
   clearInterval(ips_built)
-  correct_pre_second.value = []
-  input_pre_second.value = []
+  correct_every_second.value = []
+  input_every_second.value = []
   time.value = 0
   type_count = 0
 }
@@ -90,7 +90,8 @@ async function play_init() {
 function start_timer() {
   timer = setInterval(() => {
     time.value++
-    correct_pre_second.value.push(correct_count.value / (time.value / 10))
+    correct_every_second.value.push(correct_count.value / (time.value / 10))
+    input_every_second.value.push(type_count / (time.value / 10))
   }, 100)
 }
 
@@ -125,20 +126,24 @@ async function back_game() {
   result_page.value = false
   play_page.value = true
   level_buttons.value = true
+
+  get_problem_data_from_api.value = await get_from_api()
+  short_count = normal_count = long_count = 0
+
   if (active_buttons.short === true) {
     short_count++
-    type.value = get_problem_data_from_api.value[0][short_count].type
-    char.value = get_problem_data_from_api.value[0][short_count].char
+    type.value = get_problem_data_from_api.value[0][0].type
+    char.value = get_problem_data_from_api.value[0][0].char
   }
   if (active_buttons.normal == true) {
     normal_count++
-    type.value = get_problem_data_from_api.value[1][normal_count].type
-    char.value = get_problem_data_from_api.value[1][normal_count].char
+    type.value = get_problem_data_from_api.value[1][0].type
+    char.value = get_problem_data_from_api.value[1][0].char
   }
   if (active_buttons.long === true) {
     long_count++
-    type.value = get_problem_data_from_api.value[2][long_count].type
-    char.value = get_problem_data_from_api.value[2][long_count].char
+    type.value = get_problem_data_from_api.value[2][0].type
+    char.value = get_problem_data_from_api.value[2][0].char
   }
 
   window.removeEventListener('keydown', back_game_focus)
@@ -179,6 +184,7 @@ onMounted(async () => {
   if (activepun.value === false) {
     pun_count.value = 0
   }
+
   nextTick()
   play_init()
   window.addEventListener('keydown', play_init_focus)
@@ -946,7 +952,6 @@ main {
   left: 14%;
   animation: result_container_animetion ease 1s;
 }
-
 @keyframes result_container_animetion {
   0% {
     left: -30%;
@@ -975,6 +980,43 @@ main {
   bottom: 0;
 }
 
+#char_detail::after,
+#time_display::after,
+#pun_count::after {
+  position: absolute;
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
+  top: 30px;
+  width: 110%;
+  height: 100%;
+  letter-spacing: 3px;
+  border-radius: 10px;
+  display: none;
+  color: #b6b6b6;
+  font-size: 1.5rem;
+}
+
+#char_detail::after {
+  content: '長さ / 正解 / 間違い';
+}
+
+#time_display::after {
+  content: '時間';
+}
+#pun_count::after {
+  content: '句読点';
+}
+
+#char_detail:focus,
+#char_detail:hover,
+#time_display:focus,
+#time_display:hover,
+#pun_count:focus #pun_count:hover {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
 #back_game::after {
   content: 'back to game';
   position: absolute;
@@ -989,7 +1031,13 @@ main {
 }
 
 #back_game:hover::after,
-#back_game:focus::after {
+#back_game:focus::after,
+#char_detail:hover::after,
+#char_detail:focus::after,
+#time_display:hover::after,
+#time_display:focus::after,
+#pun_count:hover::after,
+#pun_count:focus:after {
   display: block;
 }
 
