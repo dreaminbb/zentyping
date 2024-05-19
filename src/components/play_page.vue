@@ -22,6 +22,7 @@ let ips_built: number | undefined
 let type_count: number = 0
 
 provide('correct_rate', correct_rate)
+provide('correct_count', correct_count)
 provide('time', time)
 provide('correct_every_second', correct_every_second)
 provide('input_every_second', input_every_second)
@@ -616,6 +617,7 @@ main {
   align-items: center;
   justify-content: space-evenly;
 }
+
 .playdetail {
   padding-left: 10px;
   height: 100%;

@@ -22,7 +22,7 @@ provide('header_focus_class', header_focus_class)
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,-25"
     />
-    <header>
+    <router-link to="/" id="header">
       <h1
         :class="{
           header_focus_class: header_focus_class,
@@ -31,7 +31,7 @@ provide('header_focus_class', header_focus_class)
       >
         mode typing
       </h1>
-    </header>
+    </router-link>
     <div id="tools" ref="tools" v-if="tools">
       <div class="tool">
         <span to="/Getq" id="terminal" class="material-symbols-outlined">terminal</span>
@@ -72,7 +72,7 @@ body {
   overflow: hidden;
 }
 
-header {
+#header {
   height: 10%;
   width: 100%;
   top: 0%;
