@@ -50,11 +50,19 @@ const capslockchecker = ref(false)
 
 async function get_from_api() {
   try {
-    const response = await fetch('http://localhost:8000/')
-    const problem_data_from_api = await response.json()
-    return problem_data_from_api
+    const response = await fetch('http://localhost:8000/problem')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    try {
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Invalid JSON')
+      throw error
+    }
   } catch (error) {
-    char.value = '(: something went wrong ....'
+    console.error(`Error fetching problem: ${error}`)
   }
 }
 
@@ -127,7 +135,6 @@ async function back_game() {
   result_page.value = false
   play_page.value = true
   level_buttons.value = true
-
   get_problem_data_from_api.value = await get_from_api()
   short_count = normal_count = long_count = 0
 
@@ -367,6 +374,10 @@ function ti_to_chi(type_input_length: number) {
 function typing_keydown(event: KeyboardEvent) {
   if (char_display.value) {
     if (correct_count.value === type_input.value.length && event.key === 'Backspace') {
+      event.preventDefault()
+    }
+
+    if (['ArrowLeft', 'ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) {
       event.preventDefault()
     }
   }
