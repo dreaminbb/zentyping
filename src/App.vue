@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { provide, ref } from 'vue'
 import { RouterView } from 'vue-router'
-import router from '../router'
+import router from './router'
 
 const tools = ref(true)
 const header_normal_class = ref(true)
