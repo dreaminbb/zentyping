@@ -66,11 +66,6 @@ export default {
 </template>
 
 <style>
-* {
-  user-select: none;
-  font-family: 'Roboto Mono', monospace;
-  font-optical-sizing: auto;
-}
 
 #usr_info_freme {
   position: absolute;
@@ -101,6 +96,7 @@ export default {
 }
 
 .button_rwp {
+  fill: var();
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -127,17 +123,5 @@ export default {
   position: absolute;
   transform: translate(-50%, 50%);
   color: rgba(255, 255, 255, 0.5);
-}
-
-#scut {
-  position: absolute;
-  bottom: 2%;
-  left: 46%;
-  color: #ffffff;
-  font-size: 1rem;
-  text-align: right;
-  padding: 10px;
-  margin: 10px;
-  text-align: center;
 }
 </style>
