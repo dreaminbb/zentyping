@@ -659,7 +659,7 @@ main {
   display: flex;
   width: 100%;
   height: 50%;
-  color: #8b8b8b;
+  color: #a8a6a6;
   align-items: center;
   text-align: center;
 }
@@ -684,14 +684,9 @@ main {
   column-gap: 0px;
   grid-row-gap: -20px;
 }
-.type {
-  font-family: 'Roboto Mono', monospace;
-  font-optical-sizing: auto;
-}
+
 .char {
   font-size: 2rem;
-  font-family: 'Roboto Mono', monospace;
-  font-optical-sizing: auto;
 }
 
 #play_init,

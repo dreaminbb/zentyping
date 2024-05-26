@@ -65,7 +65,7 @@ export default {
   </body>
 </template>
 
-<style>
+<style lang="scss">
 
 #usr_info_freme {
   position: absolute;
