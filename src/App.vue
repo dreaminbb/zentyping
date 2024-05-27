@@ -121,6 +121,8 @@ header {
   color: var(--char-color);
   letter-spacing: 6px;
   border: none;
+  font-size: 2vw; 
+  font-size: min(2vw, 16px);
 }
 #login:hover,
 #login:hover {

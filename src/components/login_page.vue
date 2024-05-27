@@ -63,7 +63,7 @@ import { ref } from 'vue'
 #sign_in_fm {
   position: absolute;
   display: flex;
-  height: 50%;
+  height: 50%;    
   width: 60%;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.3);
