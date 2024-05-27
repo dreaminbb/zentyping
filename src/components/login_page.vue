@@ -7,7 +7,9 @@ import { ref } from 'vue'
 <template>
   <body>
     <div id="sign_in_fm">
-      <div id="sign_with_other_fm">
+      <div id="sign_with_other_and_mp_fm">
+        <textarea name="usr_ma" id="usr_ma"></textarea>
+        <textarea name="usr_pw" id="usr_pw"></textarea>
         <div id="github_bar_fm" class="login_bar_rm">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" id="github_icon">
             <path
@@ -28,16 +30,16 @@ import { ref } from 'vue'
       <div id="sign_in_with_mp_fm">
         <div id="testarea_container">
           <textarea
-            name="usr_md"
-            id="usr_md"
+            name="new_usr_ma"
+            id="new_usr_ma"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
             autocorrect="off"
           ></textarea>
           <textarea
-            name="usr_pw"
-            id="usr_pw"
+            name="new_usr_pw"
+            id="new_usr_pw"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
@@ -50,7 +52,7 @@ import { ref } from 'vue'
       <div id="create_acount">
         <div id="testarea_container">
           <!-- <p>メールアドレス</p>
-          <textarea name="usr_md" id="usr_md"></textarea>
+          <textarea name="new_usr_ma" id="new_usr_ma"></textarea>
           <P>パスワード</P>
           <textarea name="usr_pw" id="usr_pw"></textarea> -->
         </div>
@@ -63,12 +65,28 @@ import { ref } from 'vue'
 #sign_in_fm {
   position: absolute;
   display: flex;
-  height: 50%;    
+  height: 50%;
   width: 60%;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.3);
 
-  #sign_with_other_fm {
+  textarea {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    resize: none;
+    background: rgba(255, 255, 255, 0.34);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(15.1px);
+    -webkit-backdrop-filter: blur(15.1px);
+    border: 1px solid rgb(218, 218, 218);
+    height: 10%;
+    width: 70%;
+    border-radius: 50px;
+  }
+
+  #sign_with_other_and_mp_fm {
     left: 0;
     position: absolute;
     width: 50%;
@@ -77,12 +95,19 @@ import { ref } from 'vue'
     align-items: center;
     justify-content: center;
 
+    #usr_ma {
+      top: 20%;
+    }
+
+    #usr_pw {
+      top: 36%;
+    }
+
     .login_bar_rm {
       position: absolute;
       display: flex;
       width: 70%;
       height: 10%;
-
       background: rgba(255, 255, 255, 0.5);
       border-radius: 16px;
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -92,51 +117,39 @@ import { ref } from 'vue'
     }
 
     #github_bar_fm {
-      top: 30%;
+      bottom: 30%;
     }
 
     #google_bar_fm {
-      bottom: 30%;
+      bottom: 10%;
     }
 
     #github_icon,
     #google_icon {
       border-radius: 60px;
       fill: rgb(129, 126, 126);
-      width:100px;
+      width: 100px;
     }
   }
 
   #sign_in_with_mp_fm {
+    right: 0;
     position: absolute;
     width: 50%;
     height: 100%;
     display: flex;
-    right: 0;
+    align-items: center;
+    justify-content: center;
 
-    #usr_md,
-    #usr_pw {
-      position: absolute;
-      padding: 0;
-      margin: 0;
-      resize: none;
-      background: rgba(255, 255, 255, 0.34);
-      border-radius: 16px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(15.1px);
-      -webkit-backdrop-filter: blur(15.1px);
-      border: 1px solid rgb(218, 218, 218);
-      left: 20%;
-      height: 10%;
-      width: 60%;
-      border-radius: 50px;
+    #new_usr_ma,
+    #new_usr_pw {
+      left: 15%;
     }
-
-    #usr_md {
+    #new_usr_ma {
       top: 20%;
     }
 
-    #usr_pw {
+    #new_usr_pw {
       top: 50%;
     }
 
