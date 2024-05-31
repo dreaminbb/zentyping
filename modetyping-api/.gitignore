@@ -1,4 +1,0 @@
-*.local
-npm-debug.log
-.idea
-.venv
