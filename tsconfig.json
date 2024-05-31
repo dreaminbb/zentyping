@@ -9,6 +9,7 @@
     }
   ],
   "compilerOptions": {
+    "types": ["node"],
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,

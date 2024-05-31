@@ -1,15 +1,36 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-// import { provide, ref, inject, type Ref, onMounted } from 'vue'
+import { provide, ref, inject, type Ref, onMounted } from 'vue'
 </script>
 
 <template>
   <body>
     <div id="sign_in_fm">
       <div id="sign_with_other_and_mp_fm">
-        <textarea name="usr_ma" id="usr_ma"></textarea>
-        <textarea name="usr_pw" id="usr_pw"></textarea>
+        <textarea
+          class="usr_info_input"
+          name="usr_ma"
+          id="usr_ma"
+          autocomplete="off"
+          spellcheck="false"
+          autocapitalize="none"
+          maxlength="100"
+        ></textarea>
+        <textarea
+          class="usr_info_input"
+          name="usr_pw"
+          id="usr_pw"
+          autocomplete="off"
+          spellcheck="false"
+          autocapitalize="none"
+          maxlength="100"
+        ></textarea>
+        <button id="sign_in_buttom">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" id="sign_in_icon">
+            <path
+              d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"
+            />
+          </svg>
+        </button>
         <div id="github_bar_fm" class="login_bar_rm">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" id="github_icon">
             <path
@@ -32,21 +53,25 @@ import { ref } from 'vue'
       <div id="sign_in_with_mp_fm">
         <div id="testarea_container">
           <textarea
+            class="usr_info_input"
             name="new_usr_ma"
             id="new_usr_ma"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
+            maxlength="100"
           ></textarea>
           <textarea
+            class="usr_info_input"
             name="new_usr_pw"
             id="new_usr_pw"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
+            maxlength="100"
           ></textarea>
         </div>
-        <button id="sign_in_go_on">サインイン</button>
+        <button id="sign_in_go_on">サインインアップ</button>
       </div>
 
       <div id="create-acount">
@@ -70,7 +95,7 @@ import { ref } from 'vue'
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.3);
 
-  textarea {
+  .usr_info_input {
     position: absolute;
     padding: 0;
     margin: 0;
@@ -83,6 +108,32 @@ import { ref } from 'vue'
     border: 1px solid rgb(218, 218, 218);
     height: 10%;
     width: 70%;
+    overflow: hidden;
+    padding: 10px 10px 10px 10px;
+    caret-color: rgb(224, 126, 124);
+    color: #636363;
+  }
+
+  .usr_info_input:focus {
+    border: white 2px solid;
+    outline: none;
+  }
+
+  #sign_in_buttom {
+    position: absolute;
+    display: flex;
+    top: 25%;
+    right: 0;
+    border: none;
+    background-color: transparent;
+    border-radius: 10px;
+  }
+
+  #sign_in_icon {
+    background-color: transparent;
+  }
+  #sign_in_icon:hover {
+    fill: #dedede;
   }
 
   #sign_with_other_and_mp_fm {
@@ -168,9 +219,9 @@ import { ref } from 'vue'
       position: absolute;
       display: flex;
       bottom: 10%;
-      left: 35%;
+      left: 30%;
       height: 8%;
-      width: 30%;
+      width: 45%;
       align-items: center;
       letter-spacing: 10px;
       justify-content: center;

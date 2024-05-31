@@ -9,6 +9,7 @@ const header_focus_class = ref(false)
 
 provide('tools', tools)
 provide('header_focus_class', header_focus_class)
+
 </script>
 
 <template>
@@ -121,7 +122,7 @@ header {
   color: var(--char-color);
   letter-spacing: 6px;
   border: none;
-  font-size: 2vw; 
+  font-size: 2vw;
   font-size: min(2vw, 16px);
 }
 #login:hover,
