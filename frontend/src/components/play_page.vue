@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
-import axios from 'axios'
 import { apiKey_get_problem } from '@/main'
 import { pie_chart, line_chart } from './chart'
 const active_buttons = reactive({ short: false, normal: false, long: false })
@@ -50,26 +49,25 @@ const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
 
+
 async function get_from_api() {
   try {
-    const response = await axios.get('http://localhost:8000/get_problem', {
+    console.log(apiKey_get_problem)
+    const response = await fetch('http://localhost:8000/get_problem', {
+      method: 'GET',
       headers: {
-        Authorization: apiKey
+        Authorization: apiKey_get_problem
       }
     })
 
-    if (response.status !== 200) {
-      console.log('something went wrong (:::´д`:::)')
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
-    try {
-      const data = response.data
-      return data
-    } catch (error) {
-      console.error('Invalid JSON')
-      throw error
-    }
+
+    const data = await response.json()
+    console.log(data)
   } catch (error) {
-    console.error(`Error fetching problem: ${error}`)
+    console.error('Error fetching data:', error)
   }
 }
 

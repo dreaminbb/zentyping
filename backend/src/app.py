@@ -72,33 +72,33 @@ def get_problem():
 
 
 # OAuthクライアントの設定
-oauth = OAuth(app)
-oauth.register(
-    name="github",
-    client_id=os.getenv("GITHUB_CLIENT_ID"),
-    client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-    access_token_url="https://github.com/login/oauth/access_token",
-    access_token_params=None,
-    authorize_url="https://github.com/login/oauth/authorize",
-    authorize_params=None,
-    api_base_url="https://api.github.com/",
-    client_kwargs={"scope": "user:email"},
-)
+# oauth = OAuth(app)
+# oauth.register(
+#     name="github",
+#     client_id=os.getenv("GITHUB_CLIENT_ID"),
+#     client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
+#     access_token_url="https://github.com/login/oauth/access_token",
+#     access_token_params=None,
+#     authorize_url="https://github.com/login/oauth/authorize",
+#     authorize_params=None,
+#     api_base_url="https://api.github.com/",
+#     client_kwargs={"scope": "user:email"},
+# )
 
 
-# githubでサインイン
-@app.route("/login/githu")
-def login_github():
-    redirect_uri = url_for("authorize_github", _external=True)
-    return oauth.github.authorize_refurect(redirect_uri)
+# # githubでサインイン
+# @app.route("/login/githu")
+# def login_github():
+#     redirect_uri = url_for("authorize_github", _external=True)
+#     return oauth.github.authorize_refurect(redirect_uri)
 
 
-@app.route("/authorize/github")
-def authorize_github():
-    token = oauth.github.authorize_access_token()
-    resp = oauth.github.get("user", token=token)
-    user_info = resp.json
-    return jsonify(user_info)
+# @app.route("/authorize/github")
+# def authorize_github():
+#     token = oauth.github.authorize_access_token()
+#     resp = oauth.github.get("user", token=token)
+#     user_info = resp.json
+#     return jsonify(user_info)
 
 
 if __name__ == "__main__":
