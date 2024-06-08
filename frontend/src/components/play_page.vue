@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
+import axios from 'axios'
+import { apiKey_get_problem } from '@/main'
 import { pie_chart, line_chart } from './chart'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
@@ -50,12 +52,17 @@ const capslockchecker = ref(false)
 
 async function get_from_api() {
   try {
-    const response = await fetch('http://localhost:8000/problem')
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    const response = await axios.get('http://localhost:8000/get_problem', {
+      headers: {
+        Authorization: apiKey
+      }
+    })
+
+    if (response.status !== 200) {
+      console.log('something went wrong (:::´д`:::)')
     }
     try {
-      const data = await response.json()
+      const data = response.data
       return data
     } catch (error) {
       console.error('Invalid JSON')
