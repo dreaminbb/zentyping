@@ -49,23 +49,19 @@ const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
 
-
 async function get_from_api() {
   try {
-    console.log(apiKey_get_problem)
     const response = await fetch('http://localhost:8000/get_problem', {
       method: 'GET',
       headers: {
         Authorization: apiKey_get_problem
       }
     })
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-
     const data = await response.json()
-    console.log(data)
+    return data
   } catch (error) {
     console.error('Error fetching data:', error)
   }

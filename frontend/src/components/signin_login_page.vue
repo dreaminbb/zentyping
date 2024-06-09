@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { provide, ref, inject, type Ref, onMounted } from 'vue'
-import { apiKey_github_sigin } from '@/main'
 
 //githubでサインイン
-function github_signin() {}
+
+async function github_signin() {
+  try {
+    window.location.href =
+      'https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI'
+  } catch (error) {
+    return 1
+  }
+}
 </script>
 
 <template>
