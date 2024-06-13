@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { provide, ref, inject, type Ref, onMounted } from 'vue'
+import { github_oauth_url } from '@/main'
 
 //githubでサインイン
 
-async function github_signin() {
+function github_signin() {
   try {
-    window.location.href =
-      'https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI'
+    window.location.href = 'http://localhost:8000/github_sign_redirect';
   } catch (error) {
-    return 1
+    console.error('Error redirecting to GitHub authentication page:', error);
   }
 }
+
+
+
 </script>
 
 <template>

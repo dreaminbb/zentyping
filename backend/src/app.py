@@ -1,6 +1,7 @@
 import os
-from flask import Response, request, url_for
+from flask import Response, request, url_for, redirect, Blueprint
 from flask import Flask, jsonify
+import requests
 from flask_cors import CORS
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -45,7 +46,6 @@ def get_problem():
         server_key = os.getenv("SERVER_GET_PROBLEM_API_KEY")
 
         piece = int(os.getenv("piece", 5))
-
         if client_key == server_key:
             short_doc = [
                 json.loads(json_util.dumps(document))
@@ -64,7 +64,6 @@ def get_problem():
                 json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False),
                 mimetype="application/json",
             )
-
         else:
             return jsonify({"error": "Invalid API key"}), 401
 
@@ -87,19 +86,49 @@ oauth.register(
 )
 
 
-# # githubでサインイン
-@app.route("/login/github")
-def login_github():
-    redirect_uri = url_for("authorize_github", _external=True)
-    return oauth.github.authorize_refurect(redirect_uri)
+github_client_id = os.getenv("GITHUB_CLIENT_ID")
+redirect_url = f"https://github.com/login/oauth/authorize?client_id={github_client_id}&scope=user:read"
 
 
-# @app.route("/authorize/github")
-def authorize_github():
-    token = oauth.github.authorize_access_token()
-    resp = oauth.github.get("user", token=token)
-    user_info = resp.json
-    return jsonify(user_info)
+@app.route("/github_sign_redirect")
+def github_sign_redirect():
+    return redirect(redirect_url)
+
+
+@app.route("/callback")
+def github_callback():
+    code = request.args.get("code")
+    if not code:
+        return "認証コードが見つかりません"  # エラーページへとリダイレクト
+
+    token_response = requests.post(
+        "https://github.com/login/oauth/access_token",
+        headers={"Accept": "application/json"},
+        data={
+            "client_id": os.getenv("GITHUB_CLIENT_ID"),
+            "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
+            "code": code,
+        },
+    )
+    # {'access_token': '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', 'token_type': 'bearer', 'scope': ''}
+    access_token = token_response.json()["access_token"]
+    if not access_token:
+        return "アクセストークンが見つかりません", 400
+
+    user_response = requests.get(
+        "https://api.github.com/user",
+        headers={"Authorization": f"token {access_token}"},
+    )
+    user_json = user_response.json()
+
+
+    return redirect("http://localhost:5173/userprofile")
+
+    # ↓ユーザー認証　情報取得のコードを色々
+    # ユーザー認証が成功しなかった場合エラーで返す
+
+
+github_oauth = Blueprint("github_oauth", __name__)
 
 
 if __name__ == "__main__":
