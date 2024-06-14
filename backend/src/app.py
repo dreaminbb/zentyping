@@ -87,7 +87,7 @@ oauth.register(
 
 
 github_client_id = os.getenv("GITHUB_CLIENT_ID")
-redirect_url = f"https://github.com/login/oauth/authorize?client_id={github_client_id}&scope=user:read"
+redirect_url = f"https://github.com/login/oauth/authorize?client_id={github_client_id}&scope=user:email"
 
 
 @app.route("/github_sign_redirect")
@@ -97,6 +97,7 @@ def github_sign_redirect():
 
 @app.route("/callback")
 def github_callback():
+
     code = request.args.get("code")
     if not code:
         return "認証コードが見つかりません"  # エラーページへとリダイレクト
@@ -110,25 +111,66 @@ def github_callback():
             "code": code,
         },
     )
-    # {'access_token': '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', 'token_type': 'bearer', 'scope': ''}
+    # output {'access_token': 'thisistheexampleoftoken ', 'token_type': 'bearer', 'scope': ''}
+
     access_token = token_response.json()["access_token"]
+
     if not access_token:
         return "アクセストークンが見つかりません", 400
 
+    # # トークンを用いてユーザー情報を取得
+
     user_response = requests.get(
         "https://api.github.com/user",
-        headers={"Authorization": f"token {access_token}"},
+        headers={
+            "Authorization": f"token {access_token}",
+        },
     )
-    user_json = user_response.json()
+
+    if user_response.status_code != 200:
+        return "ユーザー情報が見つかりません", 400, user_response.status_code
+
+    email_response = requests.get(
+        "https://api.github.com/user/emails",
+        headers={
+            "Authorization": f"token {access_token}",
+            "Accept": "application/vnd.github.v3+json",
+        },
+    )
+
+    # primary emailを取得
+    if email_response.status_code != 200:
+        return "メールアドレスが見つかりません", 400, email_response.status_code
+
+    user_response = requests.get(
+        "https://api.github.com/user",
+        headers={
+            "Authorization": f"token {access_token}",
+        },
+    )
+
+    if user_response.status_code != 200:
+        return "ユーザー情報が見つかりません", 400, user_response.status_code
+
+    email_response = requests.get(
+        "https://api.github.com/user/emails",
+        headers={
+            "Authorization": f"token {access_token}",
+            "Accept": "application/vnd.github.v3+json",
+        },
+    )
+
+    # primary emailを取得
+    if email_response.status_code != 200:
+        return "メールアドレスが見つかりません", 400, email_response.status_code
+
+    user_email = email_response.json()[0]["email"]
+
+    return user_email
 
 
-    return redirect("http://localhost:5173/userprofile")
-
-    # ↓ユーザー認証　情報取得のコードを色々
-    # ユーザー認証が成功しなかった場合エラーで返す
-
-
-github_oauth = Blueprint("github_oauth", __name__)
+# ↓ユーザー認証　情報取得のコードを色々
+# ユーザー認証が成功しなかった場合エラーで返す
 
 
 if __name__ == "__main__":
