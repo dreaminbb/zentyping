@@ -10,5 +10,4 @@
 npm-debug.log
 .idea
 .venv
-.env
 frontend/node_modules
