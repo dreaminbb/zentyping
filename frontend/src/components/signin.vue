@@ -97,7 +97,7 @@ function github_signin() {
             maxlength="100"
           ></textarea>
         </div>
-        <button id="sign_in_go_on">サインインアップ</button>
+        <button id="sign_in_go_on">サインアップ</button>
       </div>
 
       <div id="create-acount">

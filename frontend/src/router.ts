@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import home from '@/components/home_page.vue'
-import play from '@/components/play_page.vue'
-import login from '@/components/signin_login_page.vue'
-import userprofile from '@/components/userprofile.vue'
+import home from '@/components/home.vue'
+import play from '@/components/play.vue'
+import login from '@/components/signin.vue'
+import userprofile from '@/components/profile.vue'
 
 
 const router = createRouter({

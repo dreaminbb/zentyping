@@ -71,102 +71,114 @@ def get_problem():
         return jsonify({"error": str(e)}), 500
 
 
-# OAuthクライアントの設定
-oauth = OAuth(app)
-oauth.register(
-    name="github",
-    client_id=os.getenv("GITHUB_CLIENT_ID"),
-    client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-    access_token_url="https://github.com/login/oauth/access_token",
-    access_token_params=None,
-    authorize_url="https://github.com/login/oauth/authorize",
-    authorize_params=None,
-    api_base_url="https://api.github.com/",
-    client_kwargs={"scope": "user:email"},
-)
+# ユーザー情報を用いてユーザーのプロフィールを作成
+class user_profile:
+    def __init__(self, user_name, user_email):
+        self.user_name = user_name
+        self.user_email = user_email
+
+    def create_user(self, user_name, user_email):
+        user_profile = {"user_name": user_name, "user_email": user_email}
+        return user_profile
 
 
-github_client_id = os.getenv("GITHUB_CLIENT_ID")
-redirect_url = f"https://github.com/login/oauth/authorize?client_id={github_client_id}&scope=user:email"
+# githunb認証のクラス
+class github_oauth_class:
+
+    client_id = os.getenv("GITHUB_CLIENT_ID")
+    client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+    redirect_url = f"https://github.com/login/oauth/authorize?client_id={client_id}&scope=user:email"
+
+    def __init__(self, client_id, client_secret):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.access_token_url = "https://github.com/login/oauth/access_token"
+        self.access_token_params = (None,)
+        self.authorize_url = "https://github.com/login/oauth/authorize"
+        self.authorize_params = (None,)
+        self.api_base_url = "https://api.github.com/"
+        self.client_kwargs = {"scope": "user:email"}
+
+    # 認証URLを取得
+    def get_url(self, scope: str = "user:email"):
+        return f"{self.authorize_url}?client_id={self.client_id}&scope={scope}"
+
+    # アクセストークンを取得
+    def get_access_token(self, code: str):
+        token_response = requests.post(
+            "https://github.com/login/oauth/access_token",
+            headers={"Accept": "application/json"},
+            data={
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "code": code,
+            },
+        )
+
+        accsess_token = token_response.json()["access_token"]
+        if not accsess_token:
+            raise ValueError("アクセストークンが見つかりません")
+
+        return accsess_token
+
+    # ユーザー情報を取得
+    def get_user_info(self, accsess_token: str) -> dict:
+        user_response = requests.get(
+            f"{self.api_base_url}user",
+            headers={
+                "Authorization": f"token {accsess_token}",
+            },
+        )
+        user_name = user_response.json()["login"]
+
+        if not user_name:
+            raise ValueError("ユーザー名が見つかりません")
+
+        return user_name
+
+    # ユーザーのメールアドレスを取得
+    def get_use_email(self, access_token: str) -> dict:
+        email_response = requests.get(
+            f"{self.api_base_url}user/emails",
+            headers={
+                "Authorization": f"token {access_token}",
+                "Accept": "application/vnd.github.v3+json",
+            },
+        )
+        user_primary_email = email_response.json()[0]["email"]
+        if not user_primary_email:
+            raise ValueError("メールアドレスが見つかりません")
+
+        return user_primary_email
 
 
+client_id = os.getenv("GITHUB_CLIENT_ID")
+client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+github_oauth = github_oauth_class(client_id, client_secret)
+
+
+# ユーザーを認証ページへとリダイレクト
 @app.route("/github_sign_redirect")
 def github_sign_redirect():
-    return redirect(redirect_url)
+
+    return redirect(github_oauth.get_url())
 
 
 @app.route("/callback")
 def github_callback():
-
     code = request.args.get("code")
     if not code:
-        return "認証コードが見つかりません"  # エラーページへとリダイレクト
+        return jsonify({"error": "codeが見つかりません"}), 400
+    try:
+        access_token = github_oauth.get_access_token(code)
+        user_info = github_oauth.get_user_info(access_token)
+        user_email = github_oauth.get_use_email(access_token)
+    # ユーザー情報をデータベースに保存
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    token_response = requests.post(
-        "https://github.com/login/oauth/access_token",
-        headers={"Accept": "application/json"},
-        data={
-            "client_id": os.getenv("GITHUB_CLIENT_ID"),
-            "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-            "code": code,
-        },
-    )
-    # output {'access_token': 'thisistheexampleoftoken ', 'token_type': 'bearer', 'scope': ''}
-
-    access_token = token_response.json()["access_token"]
-
-    if not access_token:
-        return "アクセストークンが見つかりません", 400
-
-    # # トークンを用いてユーザー情報を取得
-
-    user_response = requests.get(
-        "https://api.github.com/user",
-        headers={
-            "Authorization": f"token {access_token}",
-        },
-    )
-
-    if user_response.status_code != 200:
-        return "ユーザー情報が見つかりません", 400, user_response.status_code
-
-    email_response = requests.get(
-        "https://api.github.com/user/emails",
-        headers={
-            "Authorization": f"token {access_token}",
-            "Accept": "application/vnd.github.v3+json",
-        },
-    )
-
-    # primary emailを取得
-    if email_response.status_code != 200:
-        return "メールアドレスが見つかりません", 400, email_response.status_code
-
-    user_response = requests.get(
-        "https://api.github.com/user",
-        headers={
-            "Authorization": f"token {access_token}",
-        },
-    )
-
-    if user_response.status_code != 200:
-        return "ユーザー情報が見つかりません", 400, user_response.status_code
-
-    email_response = requests.get(
-        "https://api.github.com/user/emails",
-        headers={
-            "Authorization": f"token {access_token}",
-            "Accept": "application/vnd.github.v3+json",
-        },
-    )
-
-    # primary emailを取得
-    if email_response.status_code != 200:
-        return "メールアドレスが見つかりません", 400, email_response.status_code
-
-    user_email = email_response.json()[0]["email"]
-
-    return user_email
+    # ユーザー情報をデータベースに保存
+    return redirect("http://localhost:5173/userprofile")
 
 
 # ↓ユーザー認証　情報取得のコードを色々
