@@ -9,5 +9,4 @@
 
 npm-debug.log
 .idea
-.venv
 frontend/node_modules
