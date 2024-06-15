@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { provide, ref, inject, type Ref, onMounted } from 'vue'
+import { ref, inject, type Ref, onMounted } from 'vue'
+
+const alr_usr_email = ref('')
+const alr_usr_pw = ref('')
+const new_usr_email = ref('')
+const new_usr_pw = ref('')
+const verify_pw = ref('')
+
+function sign_in_button() {
+  console.log(alr_usr_email.value)
+  console.log(alr_usr_pw.value)
+}
 
 //githubでサインイン
-
 function github_signin() {
   try {
     window.location.href = 'http://localhost:8000/github_sign_redirect'
@@ -19,8 +29,9 @@ function github_signin() {
         <div id="arl_input_fm">
           <textarea
             class="usr_info_input"
-            name="usr_ma"
-            id="usr_ma"
+            ref="alr_usr_email"
+            name="alr_usr_email"
+            id="alr_usr_email"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
@@ -28,8 +39,9 @@ function github_signin() {
           ></textarea>
           <textarea
             class="usr_info_input"
-            name="usr_pw"
-            id="usr_pw"
+            ref="alr_usr_pw"
+            name="alr_usr_pw"
+            id="alr_usr_pw"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
@@ -37,7 +49,7 @@ function github_signin() {
           ></textarea>
         </div>
 
-        <button id="sign_in_buttom">
+        <button id="sign_in_button" @click="sign_in_button">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" id="sign_in_icon">
             <path
               d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"
@@ -45,7 +57,7 @@ function github_signin() {
           </svg>
         </button>
 
-        <button @click="github_signin()" id="github_bar_fm" class="login_bar_fm">
+        <button @click="github_signin" id="github_bar_fm" class="login_bar_fm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 496 512"
@@ -77,8 +89,9 @@ function github_signin() {
       <div id="sign_up_fm">
         <div id="testarea_container">
           <textarea
-            id="usr_email"
-            name="usr_email"
+            id="new_usr_email"
+            name="new_usr_email"
+            ref="new_usr_email"
             class="usr_info_input"
             autocomplete="off"
             spellcheck="false"
@@ -88,6 +101,7 @@ function github_signin() {
           <textarea
             id="new_usr_pw"
             class="usr_info_input"
+            ref="new_usr_pw"
             name="new_usr_pw"
             autocomplete="off"
             spellcheck="false"
@@ -97,6 +111,7 @@ function github_signin() {
           <textarea
             id="verify_pw"
             name="verify_pw"
+            ref="verify_pw"
             class="usr_info_input"
             autocomplete="off"
             spellcheck="false"
@@ -106,6 +121,7 @@ function github_signin() {
           <textarea
             id="user_name"
             class="usr_info_input"
+            ref="user_name"
             name="user_name"
             autocomplete="off"
             spellcheck="false"
@@ -151,10 +167,10 @@ function github_signin() {
     outline: none;
   }
 
-  #sign_in_buttom {
-    position: absolute;
+  #sign_in_button {
+    position: absolut() e;
     display: flex;
-    top: 25%;
+    top: 30%;
     right: 0;
     border: none;
     background-color: transparent;
@@ -181,15 +197,15 @@ function github_signin() {
     #arl_input_fm {
       position: absolute;
       display: flex;
-      top: 20%;
+      top: 25%;
       left: 15%;
       flex-direction: column;
       height: 20%;
       width: 100%;
       justify-content: space-between;
 
-      #usr_ma,
-      #usr_pw {
+      #alr_usr_email,
+      #alr_usr_pw {
         height: 35%;
         width: 70%;
       }
@@ -300,7 +316,7 @@ function github_signin() {
       justify-content: space-between;
     }
 
-    #usr_email,
+    #new_usr_email,
     #new_usr_pw,
     #verify_pw,
     #user_name {

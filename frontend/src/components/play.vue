@@ -245,6 +245,8 @@ function punactivate() {
 function typing() {
   if (char_display.value) {
     type_count++
+
+    console.log(type_input.value)
     if (type_count > 0) {
       level_buttons.value = false
       play_ditail.value = true
@@ -274,6 +276,7 @@ function typing() {
     }
 
     const type_first: string = type_input.value[type_input_length - 1]
+
     if (type_input.value.length < char.value.length && type_input_length > 0) {
       const char_first: string | null = span_from_char_display[type_input_length - 1].textContent
 
