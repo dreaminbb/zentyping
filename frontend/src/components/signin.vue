@@ -3,13 +3,54 @@ import { ref, inject, type Ref, onMounted } from 'vue'
 
 const alr_usr_email = ref('')
 const alr_usr_pw = ref('')
-const new_usr_email = ref('')
-const new_usr_pw = ref('')
+const new_user_email = ref('')
+const new_user_password = ref('')
 const verify_pw = ref('')
+const user_name = ref('')
 
 function sign_in_button() {
-  console.log(alr_usr_email.value)
-  console.log(alr_usr_pw.value)
+  try {
+    fetch('http://localhost:8000/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        new_user_email: alr_usr_email.value,
+        new_user_password: alr_usr_pw.value
+      })
+    })
+  } catch (error) {
+    console.error('Error signing in:', error)
+  }
+}
+
+function sign_up() {
+  //値が正常かを確認してから
+
+  interface new_user_data {
+    new_user_email: string
+    new_user_password: string
+    user_name: string
+  }
+
+  const new_user_data: new_user_data = {
+    new_user_email: new_user_email.value,
+    new_user_password: new_user_password.value,
+    user_name: user_name.value
+  }
+
+  try {
+    fetch('http://localhost:8000/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(new_user_data)
+    })
+  } catch (error) {
+    console.error('Error signing up:', error)
+  }
 }
 
 //githubでサインイン
@@ -29,7 +70,7 @@ function github_signin() {
         <div id="arl_input_fm">
           <textarea
             class="usr_info_input"
-            ref="alr_usr_email"
+            v-model="alr_usr_email"
             name="alr_usr_email"
             id="alr_usr_email"
             autocomplete="off"
@@ -39,7 +80,7 @@ function github_signin() {
           ></textarea>
           <textarea
             class="usr_info_input"
-            ref="alr_usr_pw"
+            v-model="alr_usr_pw"
             name="alr_usr_pw"
             id="alr_usr_pw"
             autocomplete="off"
@@ -89,9 +130,9 @@ function github_signin() {
       <div id="sign_up_fm">
         <div id="testarea_container">
           <textarea
-            id="new_usr_email"
-            name="new_usr_email"
-            ref="new_usr_email"
+            id="new_user_email"
+            name="new_user_email"
+            v-model="new_user_email"
             class="usr_info_input"
             autocomplete="off"
             spellcheck="false"
@@ -99,10 +140,10 @@ function github_signin() {
             maxlength="100"
           ></textarea>
           <textarea
-            id="new_usr_pw"
+            id="new_user_password"
             class="usr_info_input"
-            ref="new_usr_pw"
-            name="new_usr_pw"
+            v-model="new_user_password"
+            name="new_user_password"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
@@ -111,7 +152,7 @@ function github_signin() {
           <textarea
             id="verify_pw"
             name="verify_pw"
-            ref="verify_pw"
+            v-model="verify_pw"
             class="usr_info_input"
             autocomplete="off"
             spellcheck="false"
@@ -121,7 +162,7 @@ function github_signin() {
           <textarea
             id="user_name"
             class="usr_info_input"
-            ref="user_name"
+            v-model="user_name"
             name="user_name"
             autocomplete="off"
             spellcheck="false"
@@ -130,7 +171,7 @@ function github_signin() {
           >
           </textarea>
         </div>
-        <button id="sign_in_go_on">サインアップ</button>
+        <button id="sign_in_go_on" @click="sign_up">サインアップ</button>
       </div>
     </div>
   </body>
@@ -316,8 +357,8 @@ function github_signin() {
       justify-content: space-between;
     }
 
-    #new_usr_email,
-    #new_usr_pw,
+    #new_user_email,
+    #new_user_password,
     #verify_pw,
     #user_name {
       width: 100%;

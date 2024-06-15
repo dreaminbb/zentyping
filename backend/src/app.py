@@ -27,6 +27,8 @@ try:
     dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 except Exception as e:
     print("Failed to load .env file in main", e)
+
+
 load_dotenv(dotenv_path)
 
 
@@ -45,7 +47,7 @@ def get_problem():
         client_key = request.headers.get("Authorization")
         server_key = os.getenv("SERVER_GET_PROBLEM_API_KEY")
 
-        piece = int(os.getenv("piece", 5))
+        piece = int(os.getenv("PIECE", 5))
         if client_key == server_key:
             short_doc = [
                 json.loads(json_util.dumps(document))
@@ -72,14 +74,14 @@ def get_problem():
 
 
 # ユーザー情報を用いてユーザーのプロフィールを作成
-class user_profile:
-    def __init__(self, user_name, user_email):
-        self.user_name = user_name
-        self.user_email = user_email
+# class user_profile:
+#     def __init__(self, user_name, user_email):
+#         self.user_name = user_name
+#         self.user_email = user_email
 
-    def create_user(self, user_name, user_email):
-        user_profile = {"user_name": user_name, "user_email": user_email}
-        return user_profile
+#     def create_user(self, user_name, user_email):
+#         user_profile = {"user_name": user_name, "user_email": user_email}
+#         return user_profile
 
 
 # githunb認証のクラス
@@ -137,7 +139,7 @@ class github_oauth_class:
         return user_name
 
     # ユーザーのメールアドレスを取得
-    def get_use_email(self, access_token: str) -> dict:
+    def get_user_email(self, access_token: str) -> dict:
         email_response = requests.get(
             f"{self.api_base_url}user/emails",
             headers={
@@ -172,7 +174,7 @@ def github_callback():
     try:
         access_token = github_oauth.get_access_token(code)
         user_info = github_oauth.get_user_info(access_token)
-        user_email = github_oauth.get_use_email(access_token)
+        user_email = github_oauth.get_user_email(access_token)
     # ユーザー情報をデータベースに保存
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -183,6 +185,14 @@ def github_callback():
 
 # ↓ユーザー認証　情報取得のコードを色々
 # ユーザー認証が成功しなかった場合エラーで返す
+
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    # ユーザーアカウントが存在しているかを確認
+    print(request.json)
+    print(type(request.json))
+    return "anal"
 
 
 if __name__ == "__main__":
