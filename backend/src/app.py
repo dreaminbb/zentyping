@@ -74,14 +74,18 @@ def get_problem():
 
 
 # ユーザー情報を用いてユーザーのプロフィールを作成
-# class user_profile:
-#     def __init__(self, user_name, user_email):
-#         self.user_name = user_name
-#         self.user_email = user_email
+class user_profile:
+    def __init__(self, user_name, user_email):
+        self.user_name = user_name
+        self.user_email = user_email
 
-#     def create_user(self, user_name, user_email):
-#         user_profile = {"user_name": user_name, "user_email": user_email}
-#         return user_profile
+    def create_user(self, user_name, user_email):
+        user_profile = {"user_name": user_name, "user_email": user_email}
+
+        return user_profile
+
+    def give_user_session(self , user_profile):
+        return user_profile
 
 
 # githunb認証のクラス
@@ -117,7 +121,8 @@ class github_oauth_class:
             },
         )
 
-        accsess_token = token_response.json()["access_token"]
+
+        access_token = token_response.json()["access_token"]
         if not accsess_token:
             raise ValueError("アクセストークンが見つかりません")
 
