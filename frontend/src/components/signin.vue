@@ -3,8 +3,8 @@ import { ref, inject, type Ref, onMounted } from 'vue'
 
 const alr_usr_email = ref('')
 const alr_usr_pw = ref('')
-const new_user_email = ref('')
-const new_user_password = ref('')
+const user_email = ref('')
+const user_password = ref('')
 const verify_pw = ref('')
 const user_name = ref('')
 
@@ -28,16 +28,16 @@ function sign_in_button() {
 function sign_up() {
   //値が正常かを確認してから
 
-  interface new_user_data {
-    new_user_email: string
-    new_user_password: string
+  interface user_data {
+    email: string
+    user_password: string
     user_name: string
   }
 
-  const new_user_data: new_user_data = {
-    new_user_email: new_user_email.value,
-    new_user_password: new_user_password.value,
-    user_name: user_name.value
+  const user_data: user_data = {
+    email: user_email.value,
+    password: user_password.value,
+    name: user_name.value
   }
 
   try {
@@ -46,7 +46,7 @@ function sign_up() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(new_user_data)
+      body: JSON.stringify(user_data)
     })
   } catch (error) {
     console.error('Error signing up:', error)
@@ -132,7 +132,7 @@ function github_signin() {
           <textarea
             id="new_user_email"
             name="new_user_email"
-            v-model="new_user_email"
+            v-model="user_email"
             class="usr_info_input"
             autocomplete="off"
             spellcheck="false"
@@ -142,7 +142,7 @@ function github_signin() {
           <textarea
             id="new_user_password"
             class="usr_info_input"
-            v-model="new_user_password"
+            v-model="user_password"
             name="new_user_password"
             autocomplete="off"
             spellcheck="false"
@@ -209,7 +209,7 @@ function github_signin() {
   }
 
   #sign_in_button {
-    position: absolut() e;
+    position: absolute;
     display: flex;
     top: 30%;
     right: 0;

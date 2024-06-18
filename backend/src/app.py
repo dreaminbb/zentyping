@@ -1,35 +1,29 @@
 import os
+from typing import Tuple
 from flask import Response, request, url_for, redirect, Blueprint
 from flask import Flask, jsonify
 import requests
+import  hashlib
 from flask_cors import CORS
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from bson import ObjectId
 from bson import json_util
-from authlib.integrations.flask_client import OAuth
 import json
-from waitress import serve
 
 
 app = Flask(__name__)
 CORS(app, origins="http://localhost:5173")  # セキュリティ意識高めでいこう
 
 client = MongoClient("mongodb://localhost:27017/")
+db = client["mode-typing"]
 port = int(os.getenv("PORT", 8000))
-db = client["mode-typing-problem-db"]
-short_collection = db.short
-normal_collection = db.normal
-long_collection = db.long
 
 # .envファイルを読み込む
 try:
     dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+    load_dotenv(dotenv_path)
 except Exception as e:
     print("Failed to load .env file in main", e)
-
-
-load_dotenv(dotenv_path)
 
 
 # APIがデーターベースに接続
@@ -40,6 +34,12 @@ try:
 except Exception as e:
     print("MongoDB connection failed in main", e)
 
+
+
+
+short_collection = db.short
+normal_collection = db.normal
+long_collection = db.long
 
 @app.route("/get_problem", methods=["GET"])
 def get_problem():
@@ -73,26 +73,15 @@ def get_problem():
         return jsonify({"error": str(e)}), 500
 
 
-# ユーザー情報を用いてユーザーのプロフィールを作成
-class user_profile:
-    def __init__(self, user_name, user_email):
-        self.user_name = user_name
-        self.user_email = user_email
-
-    def create_user(self, user_name, user_email):
-        user_profile = {"user_name": user_name, "user_email": user_email}
-
-        return user_profile
-
-    def give_user_session(self , user_profile):
-        return user_profile
 
 
-# githunb認証のクラス
-class github_oauth_class:
+
+#アカウントをDBに保存、削除、更新、(保存方法はサードパーティでもネイティブでも変わらないのでそれぞれで作成する必要なし)
+
+# githunb認証
+class github_user:
 
     client_id = os.getenv("GITHUB_CLIENT_ID")
-    client_secret = os.getenv("GITHUB_CLIENT_SECRET")
     redirect_url = f"https://github.com/login/oauth/authorize?client_id={client_id}&scope=user:email"
 
     def __init__(self, client_id, client_secret):
@@ -121,12 +110,11 @@ class github_oauth_class:
             },
         )
 
-
         access_token = token_response.json()["access_token"]
-        if not accsess_token:
+        if not access_token:
             raise ValueError("アクセストークンが見つかりません")
 
-        return accsess_token
+        return access_token
 
     # ユーザー情報を取得
     def get_user_info(self, accsess_token: str) -> dict:
@@ -161,15 +149,20 @@ class github_oauth_class:
 
 client_id = os.getenv("GITHUB_CLIENT_ID")
 client_secret = os.getenv("GITHUB_CLIENT_SECRET")
-github_oauth = github_oauth_class(client_id, client_secret)
+github_oauth = github_user(client_id, client_secret)
 
 
 # ユーザーを認証ページへとリダイレクト
 @app.route("/github_sign_redirect")
 def github_sign_redirect():
-
     return redirect(github_oauth.get_url())
 
+
+
+#todo
+# ユーザー情報をデータベースに保存
+# ↓ユーザー認証　情報取得のコードを色々
+# ユーザー認証が成功しなかった場合エラーで返す
 
 @app.route("/callback")
 def github_callback():
@@ -180,24 +173,56 @@ def github_callback():
         access_token = github_oauth.get_access_token(code)
         user_info = github_oauth.get_user_info(access_token)
         user_email = github_oauth.get_user_email(access_token)
-    # ユーザー情報をデータベースに保存
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    # ユーザー情報をデータベースに保存
     return redirect("http://localhost:5173/userprofile")
 
 
-# ↓ユーザー認証　情報取得のコードを色々
-# ユーザー認証が成功しなかった場合エラーで返す
+
+class native_user:
+    def __init__(self):
+        pass
+
+    class cra_user:
+
+        def  __init__(self,db):
+            self.collection = db["user"]
+
+        def profile (self)->dict:
+            data = request.json
+
+            if not data:
+                return jsonify({"error": "データが見つかりません"}), 400
+
+            salt = os.urandom(32)
+            data["password"] = salt + hashlib.sha256(data["password"].encode("utf-8")).hexdigest().encode("utf-8")
+
+            user_profile = {"type": "native","email": data["email"], "password": data["password"], "name": data["name"]}
+            return user_profile
+
+        def save_db(self, collection , user_profile: dict):
+            try:
+                collection.insert_one(user_profile)
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
 
 
+
+
+
+
+
+#todo
+#アカウントを作成する
+#ユーザーアカウントが存在しているかを確認
+cra_user = native_user().cra_user(db)
 @app.route("/signup", methods=["POST"])
 def signup():
-    # ユーザーアカウントが存在しているかを確認
-    print(request.json)
-    print(type(request.json))
-    return "anal"
+    user_profile = cra_user.profile()
+    cra_user.save_db(cra_user.collection, user_profile)
+
+    return "pass"
 
 
 if __name__ == "__main__":
