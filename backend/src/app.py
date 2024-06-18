@@ -3,7 +3,7 @@ from typing import Tuple
 from flask import Response, request, url_for, redirect, Blueprint
 from flask import Flask, jsonify
 import requests
-import  hashlib
+import hashlib
 from flask_cors import CORS
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -35,11 +35,10 @@ except Exception as e:
     print("MongoDB connection failed in main", e)
 
 
-
-
 short_collection = db.short
 normal_collection = db.normal
 long_collection = db.long
+
 
 @app.route("/get_problem", methods=["GET"])
 def get_problem():
@@ -73,10 +72,13 @@ def get_problem():
         return jsonify({"error": str(e)}), 500
 
 
+# ユーザー情報を削除、更新、セッションの付与、クッキーの付与、(保存方法はサードパーティでもネイティブでも変わらないのでそれぞれで作成する必要なし)
 
 
+class user:
+    def __init__(self, db):
+        self.collection = db["user"]
 
-#アカウントをDBに保存、削除、更新、(保存方法はサードパーティでもネイティブでも変わらないのでそれぞれで作成する必要なし)
 
 # githunb認証
 class github_user:
@@ -158,11 +160,11 @@ def github_sign_redirect():
     return redirect(github_oauth.get_url())
 
 
-
-#todo
+# todo
 # ユーザー情報をデータベースに保存
 # ↓ユーザー認証　情報取得のコードを色々
 # ユーザー認証が成功しなかった場合エラーで返す
+
 
 @app.route("/callback")
 def github_callback():
@@ -179,50 +181,73 @@ def github_callback():
     return redirect("http://localhost:5173/userprofile")
 
 
-
 class native_user:
-    def __init__(self):
-        pass
 
     class cra_user:
-
-        def  __init__(self,db):
+        def __init__(self):
             self.collection = db["user"]
 
-        def profile (self)->dict:
-            data = request.json
+        # ここがユーザー情報のエントリーポイント
+        def check_email(self, data: dict) -> dict:
+            email = {"email": data["email"]}
+            try:
+                same_email = self.collection.find_one(email)
+            except Exception as e:
+                return jsonify({"error": "エラー(::"}), 500
 
+            if same_email:
+                return (
+                    jsonify({"message": "すでに登録されているメールアドレスです"}),
+                    400,
+                )
+
+            return data
+
+        # ここでパスワードをハッシュ化して適切なJSONに変換している
+        def profile(self, data) -> dict:
             if not data:
                 return jsonify({"error": "データが見つかりません"}), 400
-
             salt = os.urandom(32)
-            data["password"] = salt + hashlib.sha256(data["password"].encode("utf-8")).hexdigest().encode("utf-8")
-
-            user_profile = {"type": "native","email": data["email"], "password": data["password"], "name": data["name"]}
+            data["password"] = salt + hashlib.sha256(
+                data["password"].encode("utf-8")
+            ).hexdigest().encode("utf-8")
+            user_profile = {
+                "type": "native",
+                "email": data["email"],
+                "password": data["password"],
+                "name": data["name"],
+            }
             return user_profile
 
-        def save_db(self, collection , user_profile: dict):
+        # ここでデータベースに保存している
+        def save_db(self, user_profile: dict):
             try:
-                collection.insert_one(user_profile)
+                self.collection.insert_one(user_profile)
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
 
+# todo
+# アカウントを作成する
+# ユーザーアカウントが存在しているかを確認
 
 
+cra_user = native_user().cra_user()
 
 
-
-#todo
-#アカウントを作成する
-#ユーザーアカウントが存在しているかを確認
-cra_user = native_user().cra_user(db)
 @app.route("/signup", methods=["POST"])
 def signup():
-    user_profile = cra_user.profile()
-    cra_user.save_db(cra_user.collection, user_profile)
+    data = request.json
+    if not data:
+        return jsonify({"error": "データが見つかりません"}), 400
 
-    return "pass"
+    check_email = cra_user.check_email(data)
+    if not check_email:
+        return jsonify({"error": "すでに登録されているメールアドレスです"}), 400
+
+    user_profile = cra_user.profile(data)
+    cra_user.save_db(user_profile)
+    return jsonify({"message": "アカウントが作成されました"}), 201
 
 
 if __name__ == "__main__":
