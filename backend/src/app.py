@@ -203,6 +203,21 @@ class native_user:
 
             return
 
+        def check_name(self, data: dict):
+            name = {"name": data["name"]}
+            try:
+                same_name = self.collection.find_one(name)
+            except Exception as e:
+                return jsonify({"error": "エラー(::"}, (e)), 500
+
+            if same_name:
+                return (
+                    jsonify({"massage": "そのユーザー名は既に登録されています"}),
+                    400,
+                )
+
+            return
+
         # ここでパスワードをハッシュ化して適切なJSONに変換している
         def profile(self, data) -> dict:
 
@@ -243,11 +258,15 @@ def signup():
     if not data:
         return jsonify({"error": "データが見つかりません"}), 400
 
-    check_email = cra_user.check_email(data)
-    if check_email:
+    if check_email := cra_user.check_email(data):
         return check_email
+
+    if check_name := cra_user.check_name(data):
+        return check_name
+    
     user_profile = cra_user.profile(data)
     cra_user.save_db(user_profile)
+
     return jsonify({"message": "アカウントが作成されました"}), 201
 
 
