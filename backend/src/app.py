@@ -188,26 +188,28 @@ class native_user:
             self.collection = db["user"]
 
         # ここがユーザー情報のエントリーポイント
-        def check_email(self, data: dict) -> dict:
+        def check_email(self, data: dict):
             email = {"email": data["email"]}
             try:
                 same_email = self.collection.find_one(email)
             except Exception as e:
-                return jsonify({"error": "エラー(::"}), 500
+                return jsonify({"error": "エラー(::"}, (e)), 500
 
             if same_email:
                 return (
-                    jsonify({"message": "すでに登録されているメールアドレスです"}),
+                    jsonify({"massage": "そのメールアドレスは既に登録されています"}),
                     400,
                 )
 
-            return data
+            return
 
         # ここでパスワードをハッシュ化して適切なJSONに変換している
         def profile(self, data) -> dict:
+
             if not data:
                 return jsonify({"error": "データが見つかりません"}), 400
             salt = os.urandom(32)
+
             data["password"] = salt + hashlib.sha256(
                 data["password"].encode("utf-8")
             ).hexdigest().encode("utf-8")
@@ -242,9 +244,8 @@ def signup():
         return jsonify({"error": "データが見つかりません"}), 400
 
     check_email = cra_user.check_email(data)
-    if not check_email:
-        return jsonify({"error": "すでに登録されているメールアドレスです"}), 400
-
+    if check_email:
+        return check_email
     user_profile = cra_user.profile(data)
     cra_user.save_db(user_profile)
     return jsonify({"message": "アカウントが作成されました"}), 201
