@@ -1,6 +1,7 @@
 import os
 from typing import Tuple
-from flask import Response, request, url_for, redirect, Blueprint
+import uuid
+from flask import Response, url_for, redirect, Blueprint, make_response, request
 from flask import Flask, jsonify
 import requests
 import hashlib
@@ -10,6 +11,10 @@ from pymongo import MongoClient
 from bson import json_util
 import json
 
+
+# 本番環境で変更すること
+# Secure
+# HTTPOnly
 
 app = Flask(__name__)
 CORS(app, origins="http://localhost:5173")  # セキュリティ意識高めでいこう
@@ -35,54 +40,39 @@ except Exception as e:
     print("MongoDB connection failed in main", e)
 
 
-short_collection = db.short
-normal_collection = db.normal
-long_collection = db.long
-
-
-@app.route("/get_problem", methods=["GET"])
-def get_problem():
-    try:
-        client_key = request.headers.get("Authorization")
-        server_key = os.getenv("SERVER_GET_PROBLEM_API_KEY")
-
-        piece = int(os.getenv("PIECE", 5))
-        if client_key == server_key:
-            short_doc = [
-                json.loads(json_util.dumps(document))
-                for document in db["short"].aggregate([{"$sample": {"size": piece}}])
-            ]
-            normal_doc = [
-                json.loads(json_util.dumps(document))
-                for document in db["normal"].aggregate([{"$sample": {"size": piece}}])
-            ]
-            long_doc = [
-                json.loads(json_util.dumps(document))
-                for document in db["long"].aggregate([{"$sample": {"size": piece}}])
-            ]
-
-            return Response(
-                json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False),
-                mimetype="application/json",
-            )
-        else:
-            return jsonify({"error": "Invalid API key"}), 401
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 # ユーザー情報を削除、更新、セッションの付与、クッキーの付与、(保存方法はサードパーティでもネイティブでも変わらないのでそれぞれで作成する必要なし)
+# google analytics cookie を使う
+# class user:
+#     def __init__(self):
+#         self.collection = db["user"]
+
+#     def user_cookie(self, response, user_profile: dict) -> Tuple[Response, int]:
+
+#         # for store user's local storage
+#         response.set_cookie("session", "session", secure=True, httponly=True)
+
+#         return print(user_id)
+
+#     def server_cookie(self, user_profile: dict) -> str:
+
+#         # for store user's DB
+#         return
+
+#     # for store user's DB
 
 
-class user:
-    def __init__(self, db):
-        self.collection = db["user"]
+class cookie:
+
+    def __init__(self):
+        self.collection = db["cookie"]
+
+    def store_cookie(self, user_id: str) -> dict:
+        cookie = {"_id": user_id, "cookie": "cookie", "httpOnly": True, "secure": True}
+        return cookie
 
 
-# githunb認証
+# github認証
 class github_user:
-
     client_id = os.getenv("GITHUB_CLIENT_ID")
     redirect_url = f"https://github.com/login/oauth/authorize?client_id={client_id}&scope=user:email"
 
@@ -218,21 +208,27 @@ class native_user:
 
             return
 
-        # ここでパスワードをハッシュ化して適切なJSONに変換している
         def profile(self, data) -> dict:
 
             if not data:
                 return jsonify({"error": "データが見つかりません"}), 400
             salt = os.urandom(32)
 
+            # ここでパスワードをハッシュ化して適切なJSONに変換している
             data["password"] = salt + hashlib.sha256(
                 data["password"].encode("utf-8")
             ).hexdigest().encode("utf-8")
+
+            user_id = uuid.uuid4().hex
+            # ユーザーIDの生成
             user_profile = {
+                "_id": user_id,
                 "type": "native",
                 "email": data["email"],
                 "password": data["password"],
                 "name": data["name"],
+                # cookie_info: {},
+                "play_info": {},
             }
             return user_profile
 
@@ -248,7 +244,6 @@ class native_user:
 # アカウントを作成する
 # ユーザーアカウントが存在しているかを確認
 
-
 cra_user = native_user().cra_user()
 
 
@@ -258,16 +253,61 @@ def signup():
     if not data:
         return jsonify({"error": "データが見つかりません"}), 400
 
-    if check_email := cra_user.check_email(data):
-        return check_email
+    try:
+        if check_email := cra_user.check_email(data):
+            return check_email
 
-    if check_name := cra_user.check_name(data):
-        return check_name
-    
+        if check_name := cra_user.check_name(data):
+            return check_name
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     user_profile = cra_user.profile(data)
-    cra_user.save_db(user_profile)
+
+    try:
+        cra_user.save_db(user_profile)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     return jsonify({"message": "アカウントが作成されました"}), 201
+
+
+short_collection = db.short
+normal_collection = db.normal
+long_collection = db.long
+
+
+@app.route("/get_problem", methods=["GET"])
+def get_problem():
+    try:
+        client_key = request.headers.get("Authorization")
+        server_key = os.getenv("SERVER_GET_PROBLEM_API_KEY")
+
+        piece = int(os.getenv("PIECE", 5))
+        if client_key == server_key:
+            short_doc = [
+                json.loads(json_util.dumps(document))
+                for document in db["short"].aggregate([{"$sample": {"size": piece}}])
+            ]
+            normal_doc = [
+                json.loads(json_util.dumps(document))
+                for document in db["normal"].aggregate([{"$sample": {"size": piece}}])
+            ]
+            long_doc = [
+                json.loads(json_util.dumps(document))
+                for document in db["long"].aggregate([{"$sample": {"size": piece}}])
+            ]
+
+            return Response(
+                json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False),
+                mimetype="application/json",
+            )
+        else:
+            return jsonify({"error": "Invalid API key"}), 401
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
