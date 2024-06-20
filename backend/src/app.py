@@ -65,9 +65,12 @@ class cookie:
 
     def __init__(self):
         self.collection = db["cookie"]
+        cookie_age = os.getenv("COOKIE_AGE", 60 * 60 * 24 * 7)
 
-    def store_cookie(self, user_id: str) -> dict:
-        cookie = {"_id": user_id, "cookie": "cookie", "httpOnly": True, "secure": True}
+    def store_cookie(self, user_profile: dict, cookie_age: int) -> dict:
+        cookie = {
+            "id": user_profile["_id"],
+        }
         return cookie
 
 
@@ -227,6 +230,7 @@ class native_user:
                 "email": data["email"],
                 "password": data["password"],
                 "name": data["name"],
+                # "cookie":
                 # cookie_info: {},
                 "play_info": {},
             }
