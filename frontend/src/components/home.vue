@@ -1,9 +1,8 @@
 <script lang="ts">
 import router from '@/router'
-import { ref, onMounted } from 'vue'
-export default {
-  setup() {}
-}
+import { ref, inject, type Ref } from 'vue'
+
+const login = inject('login') as Ref<boolean>
 </script>
 <template>
   <body>
@@ -66,7 +65,6 @@ export default {
 </template>
 
 <style lang="scss">
-
 #usr_info_freme {
   position: absolute;
   display: flex;

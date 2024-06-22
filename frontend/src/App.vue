@@ -1,15 +1,20 @@
 <script lang="ts" setup>
-import { provide, ref } from 'vue'
+import { provide, inject, type Ref, ref } from 'vue'
 import { RouterView } from 'vue-router'
+import { login } from './main'
 import router from './router'
 
 const tools = ref(true)
+const login_button = ref(true)
+
+provide('login', login)
+
 const header_normal_class = ref(true)
 const header_focus_class = ref(false)
 
+//ログインしていたらログインボタンを消す
 provide('tools', tools)
 provide('header_focus_class', header_focus_class)
-
 </script>
 
 <template>
@@ -25,10 +30,26 @@ provide('header_focus_class', header_focus_class)
           mode typing
         </h1>
       </router-link>
-      <router-link to="/login" id="login" v-show="$route.name == 'home'">
-        <p id="login_char">sign in</p>
-      </router-link>
     </header>
+
+    <router-link to="/profile" ref="user_profile" id="profile_link" v-if="login">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" id="profile_svg">
+        <path
+          d="M480-240q-56 0-107 17.5T280-170v10h400v-10q-42-35-93-52.5T480-240Zm0-80q69 0 129 21t111 59v-560H240v560q51-38 111-59t129-21Zm0-160q-25 0-42.5-17.5T420-540q0-25 17.5-42.5T480-600q25 0 42.5 17.5T540-540q0 25-17.5 42.5T480-480ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80H240Zm240-320q58 0 99-41t41-99q0-58-41-99t-99-41q-58 0-99 41t-41 99q0 58 41 99t99 41Zm0-140Z"
+        />
+      </svg>
+    </router-link>
+
+    <router-link
+      to="/login"
+      id="login"
+      v-else="login"
+      v-show="$route.name == 'home'"
+      ref="login_button"
+    >
+      <div id="login_char">sign in</div>
+    </router-link>
+
     <div id="tools" ref="tools" v-show="$route.name !== 'login'">
       <svg id="terminal" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path
@@ -73,134 +94,159 @@ svg {
   margin: 0;
   font-family: 'Roboto Mono', monospace;
   font-optical-sizing: auto;
-}
 
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(#865ffb, #6b546d);
-  display: flex;
-  align-items: center;
-  height: 100vh;
-  justify-content: center;
-  overflow: hidden;
-}
-header {
-  position: absolute;
-  top: 0;
-  height: 7%;
-  width: 100%;
-  background-color: transparent;
-}
-
-#title {
-  height: 10%;
-  width: 100%;
-  right: 0;
-  bottom: 0;
-  position: absolute;
-  display: flex;
-  background-color: transparent;
-  filter: brightness(120%);
-}
-#login {
-  position: absolute;
-  display: flex;
-  bottom: 0;
-  width: 10%;
-  height: 90%;
-  right: 5%;
-  background-color: transparent;
-  border-radius: 10px;
-  text-decoration: none;
-  border: 1px solid rgb(202, 202, 202);
-  font-size: 2rem;
-  justify-content: center;
-  align-items: center;
-}
-#login_char {
-  color: var(--char-color);
-  letter-spacing: 6px;
-  border: none;
-  font-size: 2vw;
-  font-size: min(2vw, 16px);
-}
-#login:hover,
-#login:hover {
-  border-color: aliceblue;
-}
-
-h1 {
-  position: absolute;
-  letter-spacing: 7px;
-  font-size: 3rem;
-  bottom: 0%;
-  left: 5%;
-  border-radius: 16px;
-  background-color: transparent;
-  color: var(--char-color);
-}
-
-.header_focus_class {
-  color: rgba(182, 182, 182, 0.2);
-  background-color: transparent;
-  border-radius: 16px;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  animation: header_down_animetion ease 0.3s;
-  animation-fill-mode: forwards;
-}
-
-@keyframes header_down_animetion {
-  100% {
-    bottom: -10%;
+  body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(#865ffb, #6b546d);
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    justify-content: center;
+    overflow: hidden;
   }
-}
 
-#tools {
-  position: absolute;
-  display: flex;
-  top: 8.5%;
-  width: 20%;
-  height: 4%;
-  right: 10%;
-  border-radius: 40px;
-  background: rgba(255, 255, 255, 0.3);
-  -webkit-backdrop-filter: blur(17px);
-  backdrop-filter: blur(17px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  justify-content: space-around;
-  align-items: center;
-}
+  header {
+    position: absolute;
+    top: 0;
+    height: 7%;
+    width: 100%;
+    background-color: transparent;
 
-#setting,
-#terminal,
-#about,
-#help {
-  width: 45px;
-  height: 35px;
-  transition: (50%, 50%);
-  fill: var(--main-icon-color);
-}
+    #title {
+      height: 10%;
+      width: 100%;
+      right: 0;
+      bottom: 0;
+      position: absolute;
+      display: flex;
+      background-color: transparent;
+      filter: brightness(120%);
+    }
+  }
 
-#setting:hover,
-#terminal:hover,
-#about:hover,
-#help:hover {
-  transition: 0.5s;
-  transform: translateY(-1px);
-  filter: brightness(150%);
-  box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
-}
-#scut {
-  position: absolute;
-  display: flex;
-  bottom: 10%;
-  left: 46%;
-  color: var(--char-color);
-  font-size: 1rem;
-  padding: 10px;
-  margin: 10px;
-  text-align: center;
+  #login {
+    position: absolute;
+    display: flex;
+    top: 1%;
+    width: 10%;
+    height: 7%;
+    right: 5%;
+    background-color: transparent;
+    border-radius: 10px;
+    text-decoration: none;
+    border: 1px solid rgb(189, 183, 183);
+    font-size: 2rem;
+    justify-content: center;
+    align-items: center;
+
+    #login_char {
+      color: var(--char-color);
+      letter-spacing: 6px;
+      border: none;
+      font-size: 2vw;
+      font-size: min(2vw, 16px);
+    }
+
+    #login:hover,
+    #login:hover {
+      border-color: aliceblue;
+    }
+  }
+
+  #profile_link {
+    position: absolute;
+    display: flex;
+    top: 1%;
+    width: 10%;
+    height: 7%;
+    right: 5%;
+    background-color: transparent;
+    border-radius: 10px;
+    text-decoration: none;
+    border: 1px solid rgb(189, 183, 183);
+    font-size: 2rem;
+    justify-content: center;
+    align-items: center;
+
+    #profile_svg {
+      width: 50px;
+      fill: var(--char-color);
+    }
+  }
+
+  h1 {
+    position: absolute;
+    letter-spacing: 7px;
+    font-size: 3rem;
+    bottom: 0%;
+    left: 5%;
+    border-radius: 16px;
+    background-color: transparent;
+    color: var(--char-color);
+  }
+
+  .header_focus_class {
+    color: rgba(182, 182, 182, 0.2);
+    background-color: transparent;
+    border-radius: 16px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    animation: header_down_animetion ease 0.3s;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes header_down_animetion {
+    100% {
+      bottom: -10%;
+    }
+  }
+
+  #tools {
+    position: absolute;
+    display: flex;
+    top: 8.5%;
+    width: 20%;
+    height: 4%;
+    right: 10%;
+    border-radius: 40px;
+    background: rgba(255, 255, 255, 0.3);
+    -webkit-backdrop-filter: blur(17px);
+    backdrop-filter: blur(17px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  #setting,
+  #terminal,
+  #about,
+  #help {
+    width: 45px;
+    height: 35px;
+    transition: (50%, 50%);
+    fill: var(--main-icon-color);
+  }
+
+  #setting:hover,
+  #terminal:hover,
+  #about:hover,
+  #help:hover {
+    transition: 0.5s;
+    transform: translateY(-1px);
+    filter: brightness(150%);
+    box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+  }
+  #scut {
+    position: absolute;
+    display: flex;
+    bottom: 10%;
+    left: 46%;
+    color: var(--char-color);
+    font-size: 1rem;
+    padding: 10px;
+    margin: 10px;
+    text-align: center;
+  }
 }
 </style>
