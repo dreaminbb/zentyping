@@ -1,7 +1,10 @@
 import os
 from typing import Tuple
+import jwt
+from jwt import encode, decode
+import datetime
 import uuid
-from flask import Response, url_for, redirect, Blueprint, make_response, request
+from flask import Response, redirect, Blueprint, make_response, request
 from flask import Flask, jsonify
 import requests
 import hashlib
@@ -10,6 +13,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson import json_util
 import json
+from bson.objectid import ObjectId
 
 
 # 本番環境で変更すること
@@ -58,20 +62,176 @@ except Exception as e:
 #         # for store user's DB
 #         return
 
+
 #     # for store user's DB
 
 
-class cookie:
+class jwt:
 
-    def __init__(self):
-        self.collection = db["cookie"]
-        cookie_age = os.getenv("COOKIE_AGE", 60 * 60 * 24 * 7)
+    def __init__(self) -> None:
+        self.secret = os.getenv("JWT_SECRET")
+        self.time = int(os.getenv("JWT_EXPIRES_IN"))
+        self.algorithm = os.getenv("JWT_ALGORITHM")
+        self.user_id = str(uuid.uuid4())
 
-    def store_cookie(self, user_profile: dict, cookie_age: int) -> dict:
-        cookie = {
-            "id": user_profile["_id"],
+    def generate(self):
+
+        jwt_token = jwt.encode(
+            {
+                "user_id": self.user_id,
+                "exp": datetime.datetime.utcnow()
+                + datetime.timedelta(minutes=self.time),
+            },
+            self.secret,
+            algorithm=self.algorithm,
+        )
+        return jwt_token
+
+    def user_cookie(self, jwt_token: str) -> dict:
+
+        user_cookie = {
+            "id": self.user_id,
+            "cookies": [
+                {
+                    "jwt_token": jwt_token,
+                    "path": "/",
+                    "httponly": True,
+                    "secure": True,
+                }
+            ],
         }
-        return cookie
+
+        return user_cookie
+
+    def decode(self, token, user_id):
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"massage": "トークンが見つかりません"}), 400
+        try:
+            payload = jwt.decode(token, self.secret, algorithms=self.algorithm)
+            user_id = payload["user_id"]
+
+            return jsonify({"アクセスが許可されました": user_id}), 200
+        except jwt.ExpiredSignatureError:
+            return (
+                jsonify(
+                    {"error": "トークンの有効期限が切れています再ログインしてください"}
+                ),
+                401,
+            )
+
+        except jwt.InvalidTokenError:
+            return redirect(os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL"))
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    # def refresh(self, token):
+
+
+class native_user:
+
+    class cra_user:
+        def __init__(self):
+            self.collection = db["user"]
+
+        # ここがユーザー情報のエントリーポイント
+        def check_email(self, data: dict):
+            email = {"email": data["email"]}
+            try:
+                same_email = self.collection.find_one(email)
+            except Exception as e:
+                return jsonify({"error": "エラー(::"}, (e)), 500
+
+            if same_email:
+                return (
+                    jsonify({"massage": "そのメールアドレスは既に登録されています"}),
+                    400,
+                )
+
+            return
+
+        def check_name(self, data: dict):
+            name = {"name": data["name"]}
+            try:
+                same_name = self.collection.find_one(name)
+            except Exception as e:
+                return jsonify({"error": "エラー(::"}, (e)), 500
+
+            if same_name:
+                return (
+                    jsonify({"massage": "そのユーザー名は既に登録されています"}),
+                    400,
+                )
+
+            return
+
+        def profile(self, data, cookie) -> dict:
+
+            if not data:
+                return jsonify({"error": "データが見つかりません"}), 400
+            salt = os.urandom(32)
+
+            # ここでパスワードをハッシュ化して適切なJSONに変換している
+            data["password"] = salt + hashlib.sha256(
+                data["password"].encode("utf-8")
+            ).hexdigest().encode("utf-8")
+
+            # ユーザーIDの生成
+            user_profile = {
+                "type": "native",
+                "email": data["email"],
+                "password": data["password"],
+                "name": data["name"],
+                "cookie": cookie,
+            }
+
+            return user_profile
+
+        # ここでデータベースに保存している
+        def save_db(self, user_profile: dict):
+            try:
+                self.collection.insert_one(user_profile)
+                _id = self.collection.insert_one(user_profile).inserted_id
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+
+            return _id
+
+
+# todo
+# アカウントを作成する
+# ユーザーアカウントが存在しているかを確認
+
+cra_user = native_user().cra_user()
+
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    data = request.json
+    if not data:
+        return jsonify({"error": "データが見つかりません"}), 400
+
+    try:
+        if check_email := cra_user.check_email(data):
+            return check_email
+
+        if check_name := cra_user.check_name(data):
+            return check_name
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    user_profile = cra_user.profile(data)
+    try:
+        cra_user.save_db(user_profile)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    user_cookie = jwt.generate()
+    response = make_response(jsonify(user_cookie), 200)
+    print(user_cookie)
+
+    return response
 
 
 # github認証
@@ -174,109 +334,7 @@ def github_callback():
     return redirect("http://localhost:5173/userprofile")
 
 
-class native_user:
-
-    class cra_user:
-        def __init__(self):
-            self.collection = db["user"]
-
-        # ここがユーザー情報のエントリーポイント
-        def check_email(self, data: dict):
-            email = {"email": data["email"]}
-            try:
-                same_email = self.collection.find_one(email)
-            except Exception as e:
-                return jsonify({"error": "エラー(::"}, (e)), 500
-
-            if same_email:
-                return (
-                    jsonify({"massage": "そのメールアドレスは既に登録されています"}),
-                    400,
-                )
-
-            return
-
-        def check_name(self, data: dict):
-            name = {"name": data["name"]}
-            try:
-                same_name = self.collection.find_one(name)
-            except Exception as e:
-                return jsonify({"error": "エラー(::"}, (e)), 500
-
-            if same_name:
-                return (
-                    jsonify({"massage": "そのユーザー名は既に登録されています"}),
-                    400,
-                )
-
-            return
-
-        def profile(self, data) -> dict:
-
-            if not data:
-                return jsonify({"error": "データが見つかりません"}), 400
-            salt = os.urandom(32)
-
-            # ここでパスワードをハッシュ化して適切なJSONに変換している
-            data["password"] = salt + hashlib.sha256(
-                data["password"].encode("utf-8")
-            ).hexdigest().encode("utf-8")
-
-            user_id = uuid.uuid4().hex
-            # ユーザーIDの生成
-            user_profile = {
-                "_id": user_id,
-                "type": "native",
-                "email": data["email"],
-                "password": data["password"],
-                "name": data["name"],
-                # "cookie":
-                # cookie_info: {},
-                "play_info": {},
-            }
-            return user_profile
-
-        # ここでデータベースに保存している
-        def save_db(self, user_profile: dict):
-            try:
-                self.collection.insert_one(user_profile)
-            except Exception as e:
-                return jsonify({"error": str(e)}), 500
-
-
-# todo
-# アカウントを作成する
-# ユーザーアカウントが存在しているかを確認
-
-cra_user = native_user().cra_user()
-
-
-@app.route("/signup", methods=["POST"])
-def signup():
-    data = request.json
-    if not data:
-        return jsonify({"error": "データが見つかりません"}), 400
-
-    try:
-        if check_email := cra_user.check_email(data):
-            return check_email
-
-        if check_name := cra_user.check_name(data):
-            return check_name
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    user_profile = cra_user.profile(data)
-
-    try:
-        cra_user.save_db(user_profile)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    return jsonify({"message": "アカウントが作成されました"}), 201
-
-
+# 問題取得
 short_collection = db.short
 normal_collection = db.normal
 long_collection = db.long

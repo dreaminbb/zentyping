@@ -4,7 +4,6 @@
 .idea
 .env
 .venv
-
 /cypress/videos/
 /cypress/screenshots/
 
