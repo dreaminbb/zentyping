@@ -25,9 +25,13 @@ function sign_in_button() {
   }
 }
 
+if (localStorage.getItem('cookie')) {
+  //cookieを送って期限内であるかを確認して期限内であればprofileページにリダイレクトそうじゃなければcookieを削除してAPIでcookieの期限を更新
+  window.location.href = 'http://localhost:5173/profile'
+}
+
 async function sign_up() {
   //値が正常かを確認してから
-
   interface user_data {
     email: string
     password: string
@@ -48,8 +52,15 @@ async function sign_up() {
       },
       body: JSON.stringify(user_data)
     })
-    const data = await response.json()
-    // localStorage.setItem(await response.json())
+
+    if (!response.ok) {
+      throw new Error('Error signing up')
+    }
+
+    const res = await response.json()
+    if (res) {
+      localStorage.setItem('cookie', JSON.stringify(res))
+    }
   } catch (error) {
     console.error('Error signg up:', error)
   }
