@@ -23,8 +23,6 @@ class user:
 
     def generate(self):
 
-        print(self.user_id, self.secret, self.time, self.algorithm)
-
         jwt_token = jwt.encode(
             {
                 "user_id": self.user_id,
@@ -37,4 +35,5 @@ class user:
         return jwt_token
 
 
-print(user().generate())
+a = user().generate()
+print((a))

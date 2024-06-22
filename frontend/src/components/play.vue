@@ -125,6 +125,7 @@ function type_input_focus() {
   click_sentence.value = false
   focus_svg.value = false
 }
+
 function back_game_focus(event: KeyboardEvent) {
   if (event.key === 'Tab' && back_game_button.value) {
     event.preventDefault()

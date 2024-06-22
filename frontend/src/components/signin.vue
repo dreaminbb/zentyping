@@ -25,13 +25,13 @@ function sign_in_button() {
   }
 }
 
-function sign_up() {
+async function sign_up() {
   //値が正常かを確認してから
 
   interface user_data {
     email: string
-    user_password: string
-    user_name: string
+    password: string
+    name: string
   }
 
   const user_data: user_data = {
@@ -41,15 +41,17 @@ function sign_up() {
   }
 
   try {
-    fetch('http://localhost:8000/signup', {
+    const response = await fetch('http://localhost:8000/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(user_data)
     })
+    const data = await response.json()
+    // localStorage.setItem(await response.json())
   } catch (error) {
-    console.error('Error signing up:', error)
+    console.error('Error signg up:', error)
   }
 }
 

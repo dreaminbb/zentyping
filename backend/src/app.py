@@ -66,17 +66,19 @@ except Exception as e:
 #     # for store user's DB
 
 
-class jwt:
+class jwt_maneger:
 
     def __init__(self) -> None:
         self.secret = os.getenv("JWT_SECRET")
         self.time = int(os.getenv("JWT_EXPIRES_IN"))
         self.algorithm = os.getenv("JWT_ALGORITHM")
         self.user_id = str(uuid.uuid4())
+        self.user_cookie = None
+        self.server_cookie = None
 
     def generate(self):
 
-        jwt_token = jwt.encode(
+        jwt_token: str = jwt.encode(
             {
                 "user_id": self.user_id,
                 "exp": datetime.datetime.utcnow()
@@ -85,23 +87,28 @@ class jwt:
             self.secret,
             algorithm=self.algorithm,
         )
-        return jwt_token
 
-    def user_cookie(self, jwt_token: str) -> dict:
-
-        user_cookie = {
+        self.user_cookie = {
             "id": self.user_id,
-            "cookies": [
-                {
-                    "jwt_token": jwt_token,
-                    "path": "/",
-                    "httponly": True,
-                    "secure": True,
-                }
-            ],
+            "jwt_token": jwt_token,
+            "path": "/",
+            "httponly": True,
+            "secure": True,
         }
 
-        return user_cookie
+        # 問題あり
+        self.server_cookie = [
+            {
+                "id": self.user_id,
+                "jwt": jwt_token,
+                "path": "/",
+                "httponly": True,
+                "secure": True,
+                "sameSite": "None",
+            }
+        ]
+
+        return {"server_cookie": self.server_cookie, "user_cookie": self.user_cookie}
 
     def decode(self, token, user_id):
         token = request.headers.get("Authorization")
@@ -134,7 +141,7 @@ class native_user:
         def __init__(self):
             self.collection = db["user"]
 
-        # ここがユーザー情報のエントリーポイント
+        # ここがユーザー情報のエントリーポイント\
         def check_email(self, data: dict):
             email = {"email": data["email"]}
             try:
@@ -165,7 +172,7 @@ class native_user:
 
             return
 
-        def profile(self, data, cookie) -> dict:
+        def profile(self, data, server_cookie) -> dict:
 
             if not data:
                 return jsonify({"error": "データが見つかりません"}), 400
@@ -182,7 +189,7 @@ class native_user:
                 "email": data["email"],
                 "password": data["password"],
                 "name": data["name"],
-                "cookie": cookie,
+                "cookie": server_cookie,
             }
 
             return user_profile
@@ -191,11 +198,10 @@ class native_user:
         def save_db(self, user_profile: dict):
             try:
                 self.collection.insert_one(user_profile)
-                _id = self.collection.insert_one(user_profile).inserted_id
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
-            return _id
+            return
 
 
 # todo
@@ -205,7 +211,7 @@ class native_user:
 cra_user = native_user().cra_user()
 
 
-@app.route("/signup", methods=["POST"])
+@app.route("/register", methods=["POST"])
 def signup():
     data = request.json
     if not data:
@@ -221,16 +227,17 @@ def signup():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    user_profile = cra_user.profile(data)
+    server_cookie = jwt_maneger().generate()["server_cookie"]
+    user_cookie = jwt_maneger().generate()["user_cookie"]
+    user_profile = cra_user.profile(data, server_cookie)
+
     try:
         cra_user.save_db(user_profile)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    user_cookie = jwt.generate()
-    response = make_response(jsonify(user_cookie), 200)
-    print(user_cookie)
-
+    response = make_response(jsonify(user_cookie))
+    print(response)
     return response
 
 
