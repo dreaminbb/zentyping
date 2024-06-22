@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import home from '@/components/home.vue'
 import play from '@/components/play.vue'
 import login from '@/components/signin.vue'
-import userprofile from '@/components/profile.vue'
+import profile from '@/components/profile.vue'
 
 
 const router = createRouter({
@@ -24,9 +24,9 @@ const router = createRouter({
       component: login
     },
     {
-      path: '/userprofile',
-      name: 'userprofile',
-      component: userprofile
+      path: '/profile',
+      name: 'profile',
+      component: profile
     }
   ]
 })

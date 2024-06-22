@@ -1,8 +1,22 @@
 <script lang="ts">
 import router from '@/router'
-import { ref, inject, type Ref } from 'vue'
+import { ref, inject, type Ref, defineComponent } from 'vue'
 
-const login = inject('login') as Ref<boolean>
+export default defineComponent({
+  setup() {
+    const login = inject('login') as Ref<boolean>
+    const tools = inject('tools') as Ref<boolean>
+    const header_focus_class = inject('header_focus_class') as Ref<boolean>
+    const header_normal_class = inject('header_normal_class') as Ref<boolean>
+
+    return {
+      login,
+      tools,
+      header_focus_class,
+      header_normal_class
+    }
+  }
+})
 </script>
 <template>
   <body>
