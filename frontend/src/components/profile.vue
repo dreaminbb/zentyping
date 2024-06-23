@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { inject, onMounted, onUnmounted } from 'vue'
 
 onMounted(() => {
   document.body.style.overflowX = 'hidden'
@@ -16,18 +16,30 @@ onUnmounted(() => {
 
 <template>
   <body>
-    <div id="profile_component">
-      <div id="fm">
-        <div id="user_fm">
-          <div id="user_icon"></div>
-          <div id="user_name"></div>
-          <div id="reg_day"></div>
-        </div>
-
-        <div id="play_info_fm">
-          <div id="last_play"></div>
-        </div>
+    <div id="fm">
+      <div id="user_fm">
+        <div id="user_icon"></div>
+        <div id="user_name"></div>
+        <div id="reg_day"></div>
       </div>
+
+      <div id="cps_fm" class="four_elm">
+        <div id="cps_chart"></div>
+      </div>
+
+      <div id="play_count_fm" class="four_elm">
+        <div id="play_count"></div>
+      </div>
+
+      <div id="best_ips_fm" class="four_elm">
+        <div id="best_ips"></div>
+      </div>
+
+      <div id="total_time_fm" class="four_elm">
+        <div id="total_time"></div>
+      </div>
+
+      <div id="active_day"></div>
     </div>
   </body>
 </template>
@@ -46,7 +58,7 @@ body {
 
 #fm {
   width: 80%;
-  height: 90%;
+  height: 150%;
   position: absolute;
   top: 16%;
   left: 10%;
@@ -54,50 +66,104 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4.4px);
-  -webkit-backdrop-filter: blur(4.4px);
-  border: 1px solid rgba(255, 255, 255, 0.56);
-}
+  background: transparent;
 
-#user_fm {
-  display: flex;
-  position: absolute;
-  top: 5%;
-  left: 5%;
-  height: 22%;
-  width: 90%;
-  background-color: turquoise;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
+  //ユーザーの名前、登録日、アイコンなど
+  #user_fm {
+    display: flex;
+    position: absolute;
+    top: 5%;
+    left: 0;
+    height: 15%;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4.4px);
+    -webkit-backdrop-filter: blur(4.4px);
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
 
-  #user_icon {
-    width: 180px;
-    height: 180px;
-    background-color: #ccc;
-    border-radius: 50%;
+    #user_icon {
+      position: absolute;
+      left: 2%;
+      width: 10%;
+      height: 70%;
+      background-color: #ccc;
+      border-radius: 50%;
+    }
+
+    #user_name {
+      position: absolute;
+      display: flex;
+      width: 50%;
+      height: 60%;
+      left: 20%;
+      background-color: red;
+    }
+
+    #reg_day {
+      position: absolute;
+      display: flex;
+      width: 20%;
+      height: 60%;
+      right: 5%;
+      background-color: yellow;
+    }
   }
 
-  #user_name {
+  // プレイ情報
+
+  .four_elm {
     position: absolute;
     display: flex;
-    width: 50%;
-    height: 60%;
-    left: 15%;
-    background-color: red;
-  }
-  #reg_day {
-    position: absolute;
-    display: flex;
+    height: 10%;
     width: 20%;
-    height: 60%;
-    right: 10%;
-    background-color: yellow;
+    top: 25%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4.4px);
+    -webkit-backdrop-filter: blur(4.4px);
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+  }
+
+  #cps_fm {
+    left: 0;
+  }
+
+  #play_count_fm {
+    left: 25%;
+  }
+
+  #best_ips_fm {
+    left: 55%;
+  }
+
+  #total_time_fm {
+    left: 80%;
+  }
+
+  #active_day {
+    position: absolute;
+    display: flex;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4.4px);
+    -webkit-backdrop-filter: blur(4.4px);
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    height: 30%;
+    width: 100%;
+    top: 40%;
   }
 }
 </style>

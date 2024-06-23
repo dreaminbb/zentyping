@@ -10,5 +10,8 @@ export const github_oauth_url: string = `https://github.com/login/oauth/authoriz
 
 //アクセストークンが有効かどうかを確認
 const cookie = localStorage.getItem('cookie')
+if (cookie) {
+    console.log("cookieここにあり")
+}
 
 createApp(App).use(router).mount('#app')
