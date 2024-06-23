@@ -95,15 +95,15 @@ svg {
   font-family: 'Roboto Mono', monospace;
   font-optical-sizing: auto;
 
-  body {
+  body{
     margin: 0;
     padding: 0;
-    background: linear-gradient(#865ffb, #6b546d);
+    background: linear-gradient(#7d66c4,  #7b617d);
     display: flex;
     align-items: center;
     height: 100vh;
     justify-content: center;
-    overflow: hidden;
+    overflow: auto;
   }
 
   header {

@@ -573,14 +573,13 @@ function result() {
   </main>
 </template>
 
-<style scoped>
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 main {
   display: flex;
   align-items: center;
   height: 100vh;
-  width: 100vw;
   justify-content: center;
   overflow: hidden;
 }
