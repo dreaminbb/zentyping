@@ -4,15 +4,18 @@ import { onMounted, onUnmounted } from 'vue'
 onMounted(() => {
   document.body.style.overflowX = 'hidden'
   document.body.style.overflowY = 'scroll'
+  document.body.style.height = '200vh'
 })
 
 onUnmounted(() => {
   document.body.style.overflow = 'hidden' // スクロールを無効にする
+  document.body.style.height = '' // 元の状態に戻す
+  document.body.style.overflow = '' // 元の状態に戻す
 })
 </script>
 
 <template>
-  <main>
+  <body>
     <div id="profile_component">
       <div id="fm">
         <div id="user_fm">
@@ -26,11 +29,11 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-  </main>
+  </body>
 </template>
 
 <style lang="scss" scoped>
-main {
+body {
   margin: 0;
   padding: 0;
   display: flex;

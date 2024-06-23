@@ -78,10 +78,12 @@ provide('header_focus_class', header_focus_class)
 
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
 :root {
   --main-icon-color: #dabfbf;
   --char-color: rgb(206, 206, 206);
 }
+
 svg {
   fill: var(--main-icon-color);
   width: 50px;
@@ -95,10 +97,10 @@ svg {
   font-family: 'Roboto Mono', monospace;
   font-optical-sizing: auto;
 
-  body{
+  body {
     margin: 0;
     padding: 0;
-    background: linear-gradient(#7d66c4,  #7b617d);
+    background: linear-gradient(#7058b8, #68506a);
     display: flex;
     align-items: center;
     height: 100vh;
