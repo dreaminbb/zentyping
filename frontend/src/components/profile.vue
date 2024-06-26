@@ -12,6 +12,7 @@ onUnmounted(() => {
   document.body.style.height = '' // 元の状態に戻す
   document.body.style.overflow = '' // 元の状態に戻す
 })
+
 </script>
 
 <template>
@@ -44,15 +45,17 @@ onUnmounted(() => {
   </body>
 </template>
 
+<!-- todo -->
+<!-- ノートパソコンで見たときに下までスクロールしたら白い部分が見えてしまうので、それ以上スクロールできないようにする -->
 <style lang="scss" scoped>
 body {
   margin: 0;
   padding: 0;
   display: flex;
   align-items: center;
-  height: 200vh;
+  height: 900vh;
+  min-height: 100%;
   justify-content: center;
-  overflow: hidden;
   justify-self: center;
 }
 

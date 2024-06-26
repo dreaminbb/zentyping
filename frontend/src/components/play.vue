@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
-import { apiKey_get_problem } from '@/main'
+import { apiKey } from '@/main'
 import { pie_chart, line_chart } from './chart'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
@@ -56,7 +56,7 @@ async function get_from_api() {
     const response = await fetch('http://localhost:8000/get_problem', {
       method: 'GET',
       headers: {
-        Authorization: apiKey_get_problem
+        Authorization: apiKey
       }
     })
     if (!response.ok) {

@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 import jwt
 from jwt import encode, decode
 import datetime
@@ -15,13 +14,12 @@ from bson import json_util
 import json
 from bson.objectid import ObjectId
 
-
 # 本番環境で変更すること
-# Secure
-# HTTPOnly
+# cookieの設定(Secure HTTPOnly)
 
 app = Flask(__name__)
-CORS(app, origins="http://localhost:5173")  # セキュリティ意識高めでいこう
+# CORS(app, origins="http://localhost:5173")     # セキュリティ意識高めでいこう
+CORS(app, )  # 本番環境では使わないように
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["mode-typing"]
@@ -34,7 +32,6 @@ try:
 except Exception as e:
     print("Failed to load .env file in main", e)
 
-
 # APIがデーターベースに接続
 
 try:
@@ -45,26 +42,6 @@ except Exception as e:
 
 
 # ユーザー情報を削除、更新、セッションの付与、クッキーの付与、(保存方法はサードパーティでもネイティブでも変わらないのでそれぞれで作成する必要なし)
-# google analytics cookie を使う
-# class user:
-#     def __init__(self):
-#         self.collection = db["user"]
-
-#     def user_cookie(self, response, user_profile: dict) -> Tuple[Response, int]:
-
-#         # for store user's local storage
-#         response.set_cookie("session", "session", secure=True, httponly=True)
-
-#         return print(user_id)
-
-#     def server_cookie(self, user_profile: dict) -> str:
-
-#         # for store user's DB
-#         return
-
-
-#     # for store user's DB
-
 
 class jwt_maneger:
 
@@ -82,7 +59,7 @@ class jwt_maneger:
             {
                 "user_id": self.user_id,
                 "exp": datetime.datetime.utcnow()
-                + datetime.timedelta(minutes=self.time),
+                       + datetime.timedelta(minutes=self.time),
             },
             self.secret,
             algorithm=self.algorithm,
@@ -92,8 +69,8 @@ class jwt_maneger:
             "id": self.user_id,
             "jwt_token": jwt_token,
             "path": "/",
-            "httponly": True,
-            "secure": True,
+            # "httponly": True,
+            # "secure": True,
         }
 
         # 問題あり
@@ -102,46 +79,60 @@ class jwt_maneger:
                 "id": self.user_id,
                 "jwt": jwt_token,
                 "path": "/",
-                "httponly": True,
-                "secure": True,
-                "sameSite": "None",
+                # "httponly": True,
+                # "secure": True,
+                # "sameSite": "None",
             }
         ]
 
         return {"server_cookie": self.server_cookie, "user_cookie": self.user_cookie}
 
-    def decode(self, token, user_id):
-        token = request.headers.get("Authorization")
+    def decode(self, token):
+        print("デコードしています")
+        if token:
+            print("トークンあり")
+            try:
+
+                try:
+                    payload = jwt.decode(token, self.secret, algorithms=self.algorithm)
+                    print("decoded" , payload)
+                except Exception as e:
+                     print(jsonify({"error": str(e)}))
+
+
+                return jsonify({"massage": "アクセス許可", "status": 200, "login": True})
+            except jwt.ExpiredSignatureError:
+                print("時間切れ")
+
+                res = make_response(jsonify(
+                    {"message": "トークンの有効期限が切れています再ログインしてください"}
+                ), 401)
+
+                print("ユーザーに返すレス↓")
+                print(res)
+
+                return res
+
+            except jwt.InvalidTokenError:
+                # return redirect(os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL"))
+                return jsonify({"message": "トークンが無効です"}), 401
+
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+
         if not token:
-            return jsonify({"massage": "トークンが見つかりません"}), 400
-        try:
-            payload = jwt.decode(token, self.secret, algorithms=self.algorithm)
-            user_id = payload["user_id"]
-
-            return jsonify({"アクセスが許可されました": user_id}), 200
-        except jwt.ExpiredSignatureError:
-            return (
-                jsonify(
-                    {"error": "トークンの有効期限が切れています再ログインしてください"}
-                ),
-                401,
-            )
-
-        except jwt.InvalidTokenError:
-            return redirect(os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL"))
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            print("トークンが見つかりません")
+            return jsonify({"message": "トークンが見つかりません"}), 400
 
     # def refresh(self, token):
 
 
 class native_user:
-
     class cra_user:
         def __init__(self):
             self.collection = db["user"]
 
-        # ここがユーザー情報のエントリーポイント\
+        # ここがユーザー情報のエントリーポイント
         def check_email(self, data: dict):
             email = {"email": data["email"]}
             try:
@@ -204,11 +195,21 @@ class native_user:
             return
 
 
-# todo
-# アカウントを作成する
-# ユーザーアカウントが存在しているかを確認
-
 cra_user = native_user().cra_user()
+
+
+@app.route("/cookie", methods=["POST"])
+def cookie_check():
+    print(request.headers , "cookie from user")
+    print(request.headers.get("Cookies"))
+    token = request.headers.get("Cookies")
+    if not token:
+        print("トークンが見つかりません")
+        return jsonify({"message": "トークンが見つかりません"}), 400
+
+    response = jwt_maneger().decode(token)
+    print(response)
+    return response
 
 
 @app.route("/register", methods=["POST"])
@@ -238,6 +239,8 @@ def signup():
 
     response = make_response(jsonify(user_cookie))
     print(response)
+    
+    return response , redirect("http://localhost:5173/profile")
     return response
 
 

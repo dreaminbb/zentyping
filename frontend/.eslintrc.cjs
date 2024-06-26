@@ -12,11 +12,4 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest'
   },
-    css: {
-    loaderOptions: {
-      sass: {
-        additionalData: `@import "@/main.scss";`
-      }
-    }
-  }
 }

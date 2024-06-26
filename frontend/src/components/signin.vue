@@ -34,13 +34,13 @@ if (localStorage.getItem('cookie')) {
 
 async function sign_up() {
   //値が正常かを確認してから
-  interface user_data {
+  interface data_interface {
     email: string
     password: string
     name: string
   }
 
-  const user_data: user_data = {
+  const user_data: data_interface = {
     email: user_email.value,
     password: user_password.value,
     name: user_name.value

@@ -30,8 +30,8 @@ export default defineComponent({
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,-25"
     />
-    <div id="usr_info_freme"></div>
-    <div id="botton_freme">
+    <div id="usr_info_frame"></div>
+    <div id="button_frame">
       <router-link to="/ranking" id="ranking" class="button_rwp">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@ export default defineComponent({
 </template>
 
 <style lang="scss">
-#usr_info_freme {
+#usr_info_frame {
   position: absolute;
   display: flex;
   height: 50%;
@@ -87,14 +87,13 @@ export default defineComponent({
   left: 15%;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-#botton_freme {
+#button_frame {
   position: absolute;
   display: flex;
   background-color: transparent;
