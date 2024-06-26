@@ -2,7 +2,7 @@ import {createApp, provide, ref, type Ref} from 'vue'
 import App from '../src/App.vue'
 import router from './router'
 
-export const is_login: Ref<boolean> = ref(false)
+export const is_login: Ref<boolean> = ref(true)
 
 export const apiKey: string = import.meta.env.VITE_APP_API_KEY;
 export const github_client_id: string = import.meta.env.VITE_APP_GITHUB_CLIENT_ID
@@ -82,6 +82,14 @@ export class token_manager {
     public refresh_cookie() {
 
     }
+
+    public user_logout() {
+        localStorage.removeItem('cookie')
+        is_login.value = false
+    }
+
+
+
 }
 
 const cookie_manager = new token_manager()

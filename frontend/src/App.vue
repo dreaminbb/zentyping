@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import {provide, inject, type Ref, ref} from 'vue'
+import {provide, type Ref, ref} from 'vue'
 import {RouterView} from 'vue-router'
-import {is_login} from './main'
-import router from './router'
+import {is_login, token_manager} from './main'
 
 const tools = ref(true)
 const login_button = ref(true)
@@ -15,6 +14,10 @@ const header_focus_class = ref(false)
 //ログインしていたらログインボタンを消す
 provide('tools', tools)
 provide('header_focus_class', header_focus_class)
+
+const logout = () => {
+  new token_manager().user_logout()
+}
 </script>
 
 <template>
@@ -38,6 +41,7 @@ provide('header_focus_class', header_focus_class)
         ref="user_profile"
         id="profile_link"
         v-if="is_login && $route.name === 'home'"
+        class="items"
     >
       <svg class="item_svg" id="profile_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path
@@ -46,26 +50,30 @@ provide('header_focus_class', header_focus_class)
       </svg>
     </router-link>
 
-    <button id="logout_button">
+    <button id="logout_button" class="items" @click="logout" v-if="is_login && $route.name === 'home'">
       <svg class="item_svg" id="logout_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path
             d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/>
       </svg>
     </button>
 
+    <router-link
+        id="register_link"
+        class="items"
+        to="/login"
+        v-if="!is_login && $route.name === 'home'"
+        ref="login_button"
+    >
+      <svg id="register_icon" class="item_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+        <path
+            d="M80-160v-112q0-33 17-62t47-44q51-26 115-44t141-18q30 0 58.5 3t55.5 9l-70 70q-11-2-21.5-2H400q-71 0-127.5 17T180-306q-9 5-14.5 14t-5.5 20v32h250l80 80H80Zm542 16L484-282l56-56 82 82 202-202 56 56-258 258ZM400-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm10 240Zm-10-320q33 0 56.5-23.5T480-640q0-33-23.5-56.5T400-720q-33 0-56.5 23.5T320-640q0 33 23.5 56.5T400-560Zm0-80Z"/>
+      </svg>
+    </router-link>
+
   </div>
 
-  <router-link
-      id="login_char"
-      to="/login"
-      v-if="!is_login && $route.name === 'home'"
-      ref="login_button"
-  >
-    <div id="login_char">sign in</div>
-  </router-link>
 
-
-  <div id="tools" ref="tools" v-show="$route.name !== 'register'">
+  <div id="tools" ref="tools">
     <svg class="tool_svg" id="terminal" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path
           d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H160v400Zm140-40-56-56 103-104-104-104 57-56 160 160-160 160Zm180 0v-80h240v80H480Z"
@@ -153,7 +161,7 @@ provide('header_focus_class', header_focus_class)
       position: absolute;
       letter-spacing: 7px;
       font-size: 3rem;
-      bottom: 0%;
+      bottom: 0;
       left: 5%;
       border-radius: 16px;
       background-color: transparent;
@@ -166,7 +174,7 @@ provide('header_focus_class', header_focus_class)
       border-radius: 16px;
       backdrop-filter: blur(5px);
       -webkit-backdrop-filter: blur(5px);
-      animation: header_down_animetion ease 0.3s;
+      animation: header_down_animation ease 0.3s;
       animation-fill-mode: forwards;
     }
   }
@@ -183,105 +191,80 @@ provide('header_focus_class', header_focus_class)
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: 1fr;
 
-    #profile_link {
-      position: absolute;
-      grid-column: 1;
-      top: 0;
-      width: 50%;
+    .item_svg {
+      width: 100%;
       height: 100%;
+    }
+
+    .items {
+      top: 0;
+      position: absolute;
       background: transparent;
       border: none;
       justify-content: center;
       align-items: center;
       margin: auto;
+    }
 
-      #profile_svg {
-        width: 100%;
-        height: 100%;
-      }
-
+    #profile_link {
+      grid-column: 1;
+      width: 50%;
+      height: 100%;
     }
 
     #logout_button {
-      position: absolute;
       grid-column: 2;
-      top: 0;
       width: 100%;
       height: 100%;
-      background: transparent;
-      border: none;
-      justify-content: center;
-      align-items: center;
-      margin: auto;
-
-      #logout_svg {
-        width: 100%;
-        height: 100%;
-      }
-
-      .item_svg:hover {
-        fill: var(--main-icon-color);
-      }
     }
-  }
-
-  #register_char {
-    color: var(--char-color);
-    letter-spacing: 6px;
-    border: none;
-    font-size: 2vw;
-  }
-
-  #register:hover,
-  #register:hover {
-    border-color: aliceblue;
-  }
 
 
-  @keyframes header_down_animetion {
-    100% {
-      bottom: -10%;
+    #register_link {
+      grid-column: 1;
+      width: 100%;
+      height: 100%;
+      top: 0;
     }
-  }
 
-  #tools {
-    position: absolute;
-    display: flex;
-    top: 8.5%;
-    width: 20%;
-    height: 4%;
-    right: 10%;
-    border-radius: 40px;
-    background: rgba(255, 255, 255, 0.3);
-    -webkit-backdrop-filter: blur(17px);
-    backdrop-filter: blur(17px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    justify-content: space-around;
-    align-items: center;
-  }
-
-  #tool_svg {
-    fill: var(--main-icon-color);
-  }
-
-  #setting,
-  #terminal,
-  #about,
-  #help {
-    width: 35px;
-    transition: (50%, 50%);
-  }
-
-  #scut {
-    position: absolute;
-    display: flex;
-    bottom: 10%;
-    left: 46%;
-    color: var(--char-color);
-    font-size: 1rem;
-    padding: 10px;
-    margin: 10px;
-    text-align: center;
+    .item_svg:hover {
+      fill: var(--main-icon-color);
+    }
   }
 }
+
+
+@keyframes header_down_animation {
+  100% {
+    bottom: -10%;
+  }
+}
+
+#tools {
+  position: absolute;
+  display: flex;
+  top: 8.5%;
+  width: 20%;
+  height: 4%;
+  right: 10%;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(17px);
+  backdrop-filter: blur(17px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  justify-content: space-around;
+  align-items: center;
+}
+
+#tool_svg {
+  fill: var(--main-icon-color);
+}
+
+#setting,
+#terminal,
+#about,
+#help {
+  width: 35px;
+  transition: (50%, 50%);
+}
+
 </style>

@@ -238,10 +238,8 @@ def signup():
         return jsonify({"error": str(e)}), 500
 
     response = make_response(jsonify(user_cookie))
-    print(response)
-    
+
     return response , redirect("http://localhost:5173/profile")
-    return response
 
 
 # github認証

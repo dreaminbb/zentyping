@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, inject, type Ref, onMounted } from 'vue'
-
 const login = inject('login') as Ref<boolean>
 
 const alr_usr_email = ref('')
