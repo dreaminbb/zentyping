@@ -5,7 +5,7 @@ import { pie_chart, line_chart } from './chart'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 
-const login = inject('login') as Ref<boolean>
+// const login = inject('login') as Ref<boolean>
 
 const type_input = ref('')
 const char = ref('')
@@ -249,7 +249,6 @@ function typing() {
   if (char_display.value) {
     type_count++
 
-    console.log(type_input.value)
     if (type_count > 0) {
       level_buttons.value = false
       play_ditail.value = true
@@ -641,7 +640,6 @@ main {
   font-size: 2rem;
   font-family: 'Roboto Mono', monospace;
   font-optical-sizing: auto;
-  font-size: 1.6rem;
 }
 
 #rest_character {

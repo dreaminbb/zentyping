@@ -1,23 +1,22 @@
 <script lang="ts" setup>
 import {provide, type Ref, ref} from 'vue'
 import {RouterView} from 'vue-router'
-import {is_login, token_manager} from './main'
+import {is_login} from './client'
+
 
 const tools = ref(true)
 const login_button = ref(true)
 const user_profile: Ref<boolean> = ref(false)
-provide('is_login', is_login)
 
 const header_normal_class = ref(true)
 const header_focus_class = ref(false)
 
 //ログインしていたらログインボタンを消す
+provide('login', is_login)
 provide('tools', tools)
+provide('header_normal_class', header_normal_class)
 provide('header_focus_class', header_focus_class)
 
-const logout = () => {
-  new token_manager().user_logout()
-}
 </script>
 
 <template>
@@ -73,7 +72,7 @@ const logout = () => {
   </div>
 
 
-  <div id="tools" ref="tools">
+  <div id="tools" ref="tools" v-if="!is_login && $route.name === 'home'">
     <svg class="tool_svg" id="terminal" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path
           d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H160v400Zm140-40-56-56 103-104-104-104 57-56 160 160-160 160Zm180 0v-80h240v80H480Z"

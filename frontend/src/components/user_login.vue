@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, inject, type Ref, onMounted } from 'vue'
-const login = inject('login') as Ref<boolean>
+import {is_login} from '@/client'
+import {ref, provide} from 'vue'
 
+provide('is_login', is_login)
 const alr_usr_email = ref('')
 const alr_usr_pw = ref('')
 const user_email = ref('')
@@ -9,26 +10,41 @@ const user_password = ref('')
 const verify_pw = ref('')
 const user_name = ref('')
 
-function sign_in_button() {
-  try {
-    fetch('http://localhost:8000/signin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        new_user_email: alr_usr_email.value,
-        new_user_password: alr_usr_pw.value
-      })
-    })
-  } catch (error) {
-    console.error('Error signing in:', error)
-  }
+const email_check = (email: string) => {
+  const email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  return email_regex.test(email)
 }
 
-if (localStorage.getItem('cookie')) {
-  //cookieを送って期限内であるかを確認して期限内であればprofileページにリダイレクトそうじゃなければcookieを削除してAPIでcookieの期限を更新
-  window.location.href = 'http://localhost:5173/profile'
+function native_login() {
+  const email = alr_usr_email.value
+  email_check(email)
+  if (!email_check(email)) {
+    console.error('Invalid email')
+    return
+
+  } else if (email_check(email)) {
+    try {
+      fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: alr_usr_email.value,
+          password: alr_usr_pw.value
+        })
+      })
+    } catch (error) {
+      console.error('Error signing in:', error)
+    }
+
+
+  }
+  const a = JSON.stringify({
+    new_user_email: alr_usr_email.value,
+    new_user_password: alr_usr_pw.value
+  })
+  console.log(a)
 }
 
 async function sign_up() {
@@ -44,6 +60,7 @@ async function sign_up() {
     password: user_password.value,
     name: user_name.value
   }
+  
 
   try {
     const response = await fetch('http://localhost:8000/register', {
@@ -54,16 +71,12 @@ async function sign_up() {
       body: JSON.stringify(user_data)
     })
 
-    if (!response.ok) {
-      throw new Error('Error signing up')
-    }
-
     const res = await response.json()
     if (res) {
       localStorage.setItem('cookie', JSON.stringify(res))
     }
 
-    login.value = true
+    is_login.value = true
   } catch (error) {
     console.error('Error signg up:', error)
   }
@@ -81,81 +94,80 @@ function github_signin() {
 
 <template>
   <body>
-    <div id="sign_in_fm">
-      <div id="arl_fm">
-        <div id="arl_input_fm">
+  <div id="sign_in_fm">
+    <div id="arl_fm">
+      <div id="arl_input_fm">
           <textarea
-            class="usr_info_input"
-            v-model="alr_usr_email"
-            name="alr_usr_email"
-            id="alr_usr_email"
-            autocomplete="off"
-            spellcheck="false"
-            autocapitalize="none"
-            maxlength="100"
+              class="usr_info_input"
+              v-model="alr_usr_email"
+              id="alr_usr_email"
+              autocomplete="off"
+              spellcheck="false"
+              autocapitalize="none"
+              maxlength="100"
           ></textarea>
-          <textarea
+        <textarea
             class="usr_info_input"
+            id="alr_usr_pw"
             v-model="alr_usr_pw"
             name="alr_usr_pw"
-            id="alr_usr_pw"
             autocomplete="off"
             spellcheck="false"
             autocapitalize="none"
             maxlength="100"
-          ></textarea>
-        </div>
+        ></textarea>
+      </div>
 
-        <button id="sign_in_button" @click="sign_in_button">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" id="sign_in_icon">
-            <path
+      <button id="native_login" @click="native_login">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" id="native_login_icon">
+          <path
               d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"
-            />
-          </svg>
-        </button>
+          />
+        </svg>
+      </button>
 
-        <button @click="github_signin" id="github_bar_fm" class="login_bar_fm">
-          <svg
+      <button @click="github_signin" id="github_bar_fm" class="login_bar_fm">
+        <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 496 512"
             id="github_icon"
             class="signin_svg_icon"
-          >
-            <path
+        >
+          <path
               d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3 .3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5 .3-6.2 2.3zm44.2-1.7c-2.9 .7-4.9 2.6-4.6 4.9 .3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3 .7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3 .3 2.9 2.3 3.9 1.6 1 3.6 .7 4.3-.7 .7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3 .7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3 .7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"
-            />
-          </svg>
-          <p id="sigin_with_github_char" class="sign_in_with_char">githubでサインイン</p>
-        </button>
+          />
+        </svg>
+        <div id="sigin_with_github_char" class="sign_in_with_char">githubでサインイン</div>
+      </button>
 
-        <button id="google_bar_fm" class="login_bar_fm">
-          <svg
+      <button id="google_bar_fm" class="login_bar_fm">
+        <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 488 512"
             id="google_icon"
             class="signin_svg_icon"
-          >
-            <path
+        >
+          <path
               d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-            />
-          </svg>
-          <p id="sigin_with_github_char" class="sign_in_with_char">googleでサインイン</p>
-        </button>
-      </div>
+          />
+        </svg>
+        <div id="sigin_with_github_char" class="sign_in_with_char">googleでサインイン</div>
+      </button>
+    </div>
 
-      <div id="sign_up_fm">
-        <div id="testarea_container">
+    <div id="sign_up_fm">
+      <div id="textarea_container">
           <textarea
-            id="new_user_email"
-            name="new_user_email"
-            v-model="user_email"
-            class="usr_info_input"
-            autocomplete="off"
-            spellcheck="false"
-            autocapitalize="none"
-            maxlength="100"
+              id="new_user_email"
+              name="new_user_email"
+              v-model="user_email"
+              class="usr_info_input"
+              autocomplete="off"
+              spellcheck="false"
+              autocapitalize="none"
+              maxlength="100"
           ></textarea>
-          <textarea
+        <textarea
             id="new_user_password"
             class="usr_info_input"
             v-model="user_password"
@@ -164,8 +176,8 @@ function github_signin() {
             spellcheck="false"
             autocapitalize="none"
             maxlength="100"
-          ></textarea>
-          <textarea
+        ></textarea>
+        <textarea
             id="verify_pw"
             name="verify_pw"
             v-model="verify_pw"
@@ -174,8 +186,8 @@ function github_signin() {
             spellcheck="false"
             autocapitalize="none"
             maxlength="100"
-          ></textarea>
-          <textarea
+        ></textarea>
+        <textarea
             id="user_name"
             class="usr_info_input"
             v-model="user_name"
@@ -184,16 +196,32 @@ function github_signin() {
             spellcheck="false"
             autocapitalize="none"
             maxlength="100"
-          >
+        >
           </textarea>
-        </div>
-        <button id="sign_in_go_on" @click="sign_up">サインアップ</button>
       </div>
+      <button id="sign_in_go_on" @click="sign_up">サインアップ</button>
     </div>
+  </div>
   </body>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
+textarea {
+  resize: none;
+  background: rgba(255, 255, 255, 0.34);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(15.1px);
+  -webkit-backdrop-filter: blur(15.1px);
+  border: 1px solid rgb(218, 218, 218);
+  padding: 15px 10px 10px 10px;
+  caret-color: rgb(224, 126, 124);
+  font-size: 1rem;
+  color: #636363;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
 #sign_in_fm {
   position: absolute;
   display: flex;
@@ -202,43 +230,28 @@ function github_signin() {
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.3);
 
-  .usr_info_input {
-    padding: 0;
-    margin: 0;
-    resize: none;
-    background: rgba(255, 255, 255, 0.34);
-    border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(15.1px);
-    -webkit-backdrop-filter: blur(15.1px);
-    border: 1px solid rgb(218, 218, 218);
-    overflow: hidden;
-    padding: 10px 10px 10px 10px;
-    caret-color: rgb(224, 126, 124);
-    font-size: 1.2rem;
-    color: #636363;
-  }
-
   .usr_info_input:focus {
     border: white 2px solid;
     outline: none;
   }
 
-  #sign_in_button {
+  #native_login {
     position: absolute;
     display: flex;
     top: 30%;
-    right: 0;
+    right: 5%;
+    width: 10%;
+    height: 10%;
     border: none;
     background-color: transparent;
     border-radius: 10px;
   }
 
-  #sign_in_icon {
+  #native_login_icon {
     background-color: transparent;
   }
 
-  #sign_in_icon:hover {
+  #native_login_icon:hover {
     fill: #dedede;
   }
 
@@ -363,7 +376,7 @@ function github_signin() {
     display: flex;
     justify-content: center;
 
-    #testarea_container {
+    #textarea_container {
       position: absolute;
       display: flex;
       top: 25%;
