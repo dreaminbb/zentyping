@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ref, inject, type Ref,  provide} from 'vue'
+import { inject, type Ref,  provide} from 'vue'
 
-
+const is_login = inject('is_login') as Ref<boolean>;
 const tools = inject('tools') as Ref<boolean>;
 const header_focus_class = inject('header_focus_class') as Ref<boolean>;
 const header_normal_class = inject('header_normal_class') as Ref<boolean>;
 provide('tools', tools)
 provide('header_focus_class', header_focus_class)
 provide('header_normal_class', header_normal_class)
+
+console.log(is_login.value)
 
 </script>
 <template>

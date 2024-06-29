@@ -20,11 +20,5 @@ export const github_oauth_url: string = `https://github.com/is_login/oauth/autho
 
 
 
-// const cookie_manager = new token_manager()
-// if (cookie_manager.cookie_exit()) {
-//     console.log(is_login.value)
-//     cookie_manager.send_cookie()
-// }
-
 
 createApp(App).use(router).mount('#app')

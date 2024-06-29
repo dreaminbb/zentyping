@@ -19,6 +19,7 @@ export class token_manager {
         if (this.cookie) {
             console.log("token is exist")
             is_login.value = true
+            console.log(this.cookie)
             console.log(is_login.value)
             return true
         } else if (!this.cookie) {
@@ -34,8 +35,6 @@ export class token_manager {
     //cookieをAPIに送信
     public async send_cookie(): Promise<void> {
         try {
-
-
             const req: Response = await fetch("http://localhost:8000/cookie", {
                 method: "POST",
                 headers: {
@@ -61,6 +60,10 @@ export class token_manager {
         } catch (e) {
             console.error(e)
         }
+    }
+
+    public remove_cookie(){
+        localStorage.removeItem('cookie')
     }
 
     public refresh_cookie() {
@@ -108,3 +111,5 @@ export class native_user {
 
 
 }
+
+new token_manager().cookie_exit()

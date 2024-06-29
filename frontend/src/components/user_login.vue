@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { is_login } from '@/client'
-import { ref, provide } from 'vue'
+import { ref, inject, type Ref } from 'vue'
 
-provide('is_login', is_login)
+const is_login = inject('is_login') as Ref<boolean>
 const alr_usr_email = ref('')
 const alr_usr_pw = ref('')
 const user_email = ref('')
@@ -14,9 +13,15 @@ const email_check = (email: string) => {
   const email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return email_regex.test(email)
 }
+
 //メールアドレスが有効な形かを確認
 async function native_login() {
-  
+  email_check(alr_usr_email.value)
+  if (!email_check(alr_usr_email.value)) {
+    console.log('う、、そうなんだこれ')
+    return
+  }
+
   const response = await fetch('http://localhost:8000/login', {
     method: 'POST',
     headers: {
@@ -28,13 +33,20 @@ async function native_login() {
     })
   })
   const res = await response.json()
-  console.log(res)
+  // console.log(res)
 
-  const a = JSON.stringify({
-    new_user_email: alr_usr_email.value,
-    new_user_password: alr_usr_pw.value
-  })
-  console.log(a)
+  // const a = JSON.stringify({
+  //   new_user_email: alr_usr_email.value,
+  //   new_user_password: alr_usr_pw.value
+  // })
+  // console.log(a)
+  if (res['login'] === true && res['cookie']) {
+    localStorage.removeItem('cookie')
+    localStorage.setItem('cookie', JSON.stringify(res['cookie']))
+    console.log('is_login:', is_login.value)
+    window.location.href = 'http://localhost:5173/'
+    return (is_login.value = true)
+  }
 }
 
 async function sign_up() {

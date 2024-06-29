@@ -227,13 +227,12 @@ class native:
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             decoded_password = user["password"][:64].decode("utf-8")
 
-
             if decoded_password == hashed_password:
                 print("correct password")
                 return True
             else:
                 print("incorrect password")
-                return jsonify({"message": "パスワードが一致しません"}), 401
+                return False
 
         except Exception as e:
             print(e)
@@ -313,6 +312,10 @@ def login():
                 }
             ),
             200,
+        )
+    elif result == False:
+        response = make_response(
+            jsonify({"massage": "パスワード又はメールアドレスが違います"}), 401
         )
     else:
         response = make_response(jsonify({"massage": "ログイン失敗"}), 401)
