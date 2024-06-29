@@ -5,8 +5,9 @@
 .env
 .venv
 /cypress/videos/
-/cypress/screenshots/
-
+/cypress/screenshots/       
 npm-debug.log
 .idea
 frontend/node_modules
+
+
