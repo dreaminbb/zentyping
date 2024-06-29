@@ -58,7 +58,7 @@ class jwt_maneger:
         jwt_token: str = jwt.encode(
             {
                 "user_id": self.user_id,
-                "exp": datetime.datetime.utcnow()
+                "exp": datetime.datetime.now(datetime.timezone.utc)
                 + datetime.timedelta(minutes=self.time),
             },
             self.secret,
@@ -141,53 +141,48 @@ class native:
         self.collection = db["user"]
 
     # ここがユーザー情報のエントリーポイント
-    def check_email(self, data: dict):
-
-        email = {"email": data["email"]}
+    def search_email(self, email: str) -> bool:
         try:
-            same_email = self.collection.find_one(email)
-        except Exception as e:
-            return jsonify({"error": "エラー(::"}, (e)), 500
+            same_email = self.collection.find_one({"email": email})
 
-        if same_email:
-            return (jsonify({"massage": "そのメールアドレスは既に登録されています"}),)
-        else:
-            return None
+            if same_email:
+                return True
+            else:
+                return False
 
-    def check_name(self, data: dict):
-
-        try:
-            same_name = self.collection.find_one({"name": data["name"]})
         except Exception as e:
             print(e)
-            return jsonify({"error": "エラー(::"}, (e)), 500
 
-        if same_name:
-            return (
-                jsonify({"massage": "そのユーザー名は既に登録されています"}),
-                400,
-            )
-        else:
+    def search_name(self, name: str) -> bool:
+        try:
+            same_name = self.collection.find_one({"name": name})
+            if same_name:
+                print(same_name)
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(e)
+            return jsonify({"error": str(e)}), 500
 
-            return None
-
-    def profile(self, data, server_cookie) -> dict:
+    def create(self, data: dict, server_cookie: str) -> dict:
 
         if not data:
             return jsonify({"error": "データが見つかりません"}), 400
 
         salt = os.urandom(32)
         # ここでパスワードをハッシュ化して適切なJSONに変換している
-        data["password"] = (
+        hashed_password = (
             hashlib.sha256(data["password"].encode("utf-8")).hexdigest().encode("utf-8")
             + salt
         )
 
         # ユーザーIDの生成
+
         user_profile = {
             "type": "native",
             "email": data["email"],
-            "password": data["password"],
+            "password": hashed_password,
             "name": data["name"],
             "cookie": server_cookie,
         }
@@ -200,26 +195,13 @@ class native:
             self.collection.insert_one(user_profile)
 
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": ("エラーが発生しました")}), 500
 
         return jsonify({"massage": "登録完了"}), 200
-
-    def check_email(self, check_email: str) -> bool:
-        same_email = self.collection.find_one(check_email)
-        if same_email:
-            return True
-        return False
-
-    def check_name(self, check_name: str) -> bool:
-        same_name = self.collection.find_one(check_name)
-        if same_name:
-            return True
-        return False
 
     def login(self, email: str, password: str):
         try:
             user = self.collection.find_one({"email": email})
-
             if not user:
                 print("no user")
                 return jsonify({"message": "ユーザーが見つかりません"}), 404
@@ -239,6 +221,7 @@ class native:
             return jsonify({"error": ("error")}), 500
 
 
+# セッションが有効かどうかの確認
 @app.route("/cookie", methods=["POST"])
 def cookie_check():
     print(request.headers, "cookie from user")
@@ -253,33 +236,30 @@ def cookie_check():
     return response
 
 
+# ユーザー作成
 @app.route("/register", methods=["POST"])
 def user_register():
-
-    data = request.json
-    if not data:
+    if not request.json:
         return jsonify({"error": "データが見つかりません"}), 400
 
-    try:
-        check_email = native().check_email(data)  # data引数を追加
-        if check_email:
-            return jsonify(check_email), 200
+    data = request.json
+    email = data["email"]
+    name = data["name"]
 
-        check_name = native().check_name(data)  # data引数を追加
-        if check_name:
-            return jsonify(check_name), 200
+    # if there are same email or name in db , return message
+    if native().search_email(email) == True:
+        print("email is already used")
+        return jsonify({"message": "あ〜それメアド使われてるかも〜。。。"}), 400
+    if native().search_name(name) == True:
+        print("name is already used")
+        return jsonify({"message": "悪いけどその名前使われてるっす"}), 400
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    cookie = jwt_maneger().generate()
+    user_cookie = cookie["user_cookie"]
+    server_cookie = cookie["server_cookie"]
 
-    server_cookie = jwt_maneger().generate()["server_cookie"]
-    user_cookie = jwt_maneger().generate()["user_cookie"]
-    user_profile = native().profile(data, server_cookie)
-
-    try:
-        native().save_db(user_profile)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # make profile and save to db
+    native().save_db(native().create(data, server_cookie))
 
     return make_response(jsonify({"status": "passed", "user_cookie": user_cookie}), 200)
 

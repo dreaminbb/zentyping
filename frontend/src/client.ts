@@ -21,11 +21,9 @@ export class token_manager {
             is_login.value = true
             console.log(this.cookie)
             console.log(is_login.value)
-            return true
         } else if (!this.cookie) {
             console.log("you have to is_login")
             is_login.value = false
-            return false
         } else {
             console.error("error")
         }
@@ -83,6 +81,46 @@ export class native_user {
 
 
     private email_password: { email: string, password: string } | null = null
+
+
+    public async create(email: string, password: string) {
+
+        interface data_interface {
+            email: string,
+            password: string
+            name: string
+        }
+
+        const user_data: data_interface = {
+            email: email,
+            password: password,
+            name: "name"
+        }
+
+        try {
+            const response = await fetch('http://localhost:8000/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(user_data)
+            })
+
+            const res = await response.json()
+            if (res) {
+                localStorage.setItem('cookie', JSON.stringify(res))
+                console.log(res["cookie"])
+            }
+
+            is_login.value = true
+        } catch (error) {
+            console.error('Error signg up:', error)
+        }
+    }
+
+
+
+
 
     public async login(email: string, password: string) {
 

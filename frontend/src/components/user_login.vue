@@ -35,14 +35,14 @@ async function native_login() {
     })
   })
   const res = await response.json()
-  
+
   if (res['login'] === true && res['cookie']) {
     new token_manager().reset_cookie(res['cookie'])
     window.location.href = '/'
   }
 }
 
-async function sign_up() {
+async function create() {
   //値が正常かを確認してから
   interface data_interface {
     email: string
@@ -66,7 +66,9 @@ async function sign_up() {
     })
 
     const res = await response.json()
+    console.log(res)
     if (res) {
+      localStorage.removeItem('cookie')
       localStorage.setItem('cookie', JSON.stringify(res))
     }
 
@@ -193,7 +195,7 @@ function github_signin() {
           >
           </textarea>
         </div>
-        <button id="sign_in_go_on" @click="sign_up">サインアップ</button>
+        <button id="sign_in_go_on" @click="create">サインアップ</button>
       </div>
     </div>
   </body>

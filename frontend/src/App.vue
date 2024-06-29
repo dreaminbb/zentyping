@@ -21,6 +21,7 @@ const logout = () => {
   new token_manager().logout()
 }
 
+console.log(localStorage.getItem('cookie'))
 </script>
 
 <template>
