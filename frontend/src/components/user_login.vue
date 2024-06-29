@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { token_manager } from '@/client'
 import { ref, inject, type Ref } from 'vue'
 
 const is_login = inject('is_login') as Ref<boolean>
@@ -17,6 +18,7 @@ const email_check = (email: string) => {
 //メールアドレスが有効な形かを確認
 async function native_login() {
   email_check(alr_usr_email.value)
+
   if (!email_check(alr_usr_email.value)) {
     console.log('う、、そうなんだこれ')
     return
@@ -33,19 +35,10 @@ async function native_login() {
     })
   })
   const res = await response.json()
-  // console.log(res)
-
-  // const a = JSON.stringify({
-  //   new_user_email: alr_usr_email.value,
-  //   new_user_password: alr_usr_pw.value
-  // })
-  // console.log(a)
+  
   if (res['login'] === true && res['cookie']) {
-    localStorage.removeItem('cookie')
-    localStorage.setItem('cookie', JSON.stringify(res['cookie']))
-    console.log('is_login:', is_login.value)
-    window.location.href = 'http://localhost:5173/'
-    return (is_login.value = true)
+    new token_manager().reset_cookie(res['cookie'])
+    window.location.href = '/'
   }
 }
 

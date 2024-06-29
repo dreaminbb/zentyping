@@ -17,11 +17,10 @@ provide('tools', tools)
 provide('header_normal_class', header_normal_class)
 provide('header_focus_class', header_focus_class)
 
-function logout() {
-  console.log('logout')
-  new token_manager().remove_cookie()
-  window.location.href = '/'
+const logout = () => {
+  new token_manager().logout()
 }
+
 </script>
 
 <template>
@@ -154,7 +153,7 @@ function logout() {
     fill: var(--main-icon-color);
   }
 
-  svg:hover {
+  .tool_svg:hover {
     transition: 0.5s;
     transform: translateY(-1px);
     filter: brightness(150%);

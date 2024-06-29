@@ -1,5 +1,5 @@
-import {ref, type Ref} from 'vue'
-import {apiKey} from "@/main";
+import { ref, type Ref } from 'vue'
+import { apiKey } from "@/main";
 
 export const is_login: Ref<boolean> = ref(false)
 
@@ -62,17 +62,17 @@ export class token_manager {
         }
     }
 
-    public remove_cookie(){
+
+    public reset_cookie(new_cookie: string) {
         localStorage.removeItem('cookie')
+        localStorage.setItem('cookie', JSON.stringify(new_cookie))
+        is_login.value = true
     }
 
-    public refresh_cookie() {
-
-    }
-
-    public user_logout() {
+    public logout() {
         localStorage.removeItem('cookie')
         is_login.value = false
+        window.location.reload()
     }
 
 }
@@ -80,6 +80,7 @@ export class token_manager {
 
 // ユーザーのアカウント作成、ログイン、ログアウト
 export class native_user {
+
 
     private email_password: { email: string, password: string } | null = null
 
@@ -91,13 +92,13 @@ export class native_user {
         }
 
         const res: Response = await fetch("http://localhost:8000/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: apiKey,
-                },
-                body: JSON.stringify(this.email_password)
-            }
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: apiKey,
+            },
+            body: JSON.stringify(this.email_password)
+        }
         )
 
         if (res.ok) {
