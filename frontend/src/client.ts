@@ -1,12 +1,12 @@
 import { ref, type Ref } from 'vue'
-import { apiKey } from "@/main";
 
 export const is_login: Ref<boolean> = ref(false)
+export const cookie_exist: Ref<boolean> = ref(false)
 
 export class token_manager {
 
     private cookie: string | null = null
-    private res: boolean | null = null
+    apiKey: string | undefined;
 
     constructor() {
         this.cookie = localStorage.getItem('cookie')
@@ -15,48 +15,38 @@ export class token_manager {
 
     //cookieが存在するかを確認
     public cookie_exit() {
-
         if (this.cookie) {
-            console.log("token is exist")
-            is_login.value = true
-            console.log(this.cookie)
-            console.log(is_login.value)
-        } else if (!this.cookie) {
-            console.log("you have to is_login")
-            is_login.value = false
+            console.log(localStorage.getItem('cookie'))
+            cookie_exist.value = true
         } else {
-            console.error("error")
+            cookie_exist.value = false
+            console.log(localStorage.getItem('cookie'))
         }
-
     }
 
+
     //cookieをAPIに送信
-    public async send_cookie(): Promise<void> {
-        try {
-            const req: Response = await fetch("http://localhost:8000/cookie", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: apiKey,
-                    "Cookies": this.cookie ? `cookie=${this.cookie}` : ''
-                },
-            })
-            console.log(`cookie=${this.cookie}`)
+    //todo cookieを更新させる not yet
+    public async verify_settion() {
+        const request: Response = await fetch("http://localhost:8000/cookie", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: import.meta.env.VITE_APP_API_KEY,
+                "Cookies": this.cookie ? `cookie=${this.cookie}` : '',
+                credentials: 'include',
+                "type": JSON.parse(this.cookie as string)["type"] as string
+            },
+        });
 
-            this.res = await req.json()
-            console.log(this.res)
-
-            if (this.res === false) {
-                localStorage.removeItem('cookie')
-                is_login.value = false
-            }
-
-            if (this.res === null) {
-                is_login.value = false
-            }
-
-        } catch (e) {
-            console.error(e)
+        const res = await request.json();
+        if (res["login"] === true) {
+            is_login.value = true;
+            cookie_exist.value = true;
+        }
+        else {
+            is_login.value = false;
+            cookie_exist.value = false;
         }
     }
 
@@ -64,13 +54,11 @@ export class token_manager {
     public reset_cookie(new_cookie: string) {
         localStorage.removeItem('cookie')
         localStorage.setItem('cookie', JSON.stringify(new_cookie))
-        is_login.value = true
+        console.log('removing cookie and setting new cookie...')
     }
 
     public logout() {
-        localStorage.removeItem('cookie')
         is_login.value = false
-        window.location.reload()
     }
 
 }
@@ -80,10 +68,10 @@ export class token_manager {
 export class native_user {
 
 
-    private email_password: { email: string, password: string } | null = null
+    private email_password: { email: string, password: string, type: "native" } | null = null
 
 
-    public async create(email: string, password: string) {
+    public async register(email: string, password: string, name: string) {
 
         interface data_interface {
             email: string,
@@ -94,7 +82,7 @@ export class native_user {
         const user_data: data_interface = {
             email: email,
             password: password,
-            name: "name"
+            name: name
         }
 
         try {
@@ -107,12 +95,17 @@ export class native_user {
             })
 
             const res = await response.json()
-            if (res) {
-                localStorage.setItem('cookie', JSON.stringify(res))
-                console.log(res["cookie"])
+            console.log(res)
+            if (res && res["cookie"]) {
+                const new_cookie = res["cookie"]
+                new token_manager().reset_cookie(new_cookie)
+                is_login.value = true
+                console.log(is_login.value)
+            }
+            else {
+                console.log(res["message"])
             }
 
-            is_login.value = true
         } catch (error) {
             console.error('Error signg up:', error)
         }
@@ -120,35 +113,39 @@ export class native_user {
 
 
 
-
-
     public async login(email: string, password: string) {
 
-        this.email_password = {
-            email: email,
-            password: password
-        }
 
-        const res: Response = await fetch("http://localhost:8000/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: apiKey,
-            },
-            body: JSON.stringify(this.email_password)
-        }
-        )
+        if (!localStorage.getItem('cookie')) {
 
-        if (res.ok) {
-            is_login.value = true
-            localStorage.setItem('cookie', res.headers.get('cookie') as string)
-        } else {
-            console.error("error")
-            is_login.value = false
+            this.email_password = {
+                email: email,
+                password: password,
+                type: "native"
+            }
+
+            const response: Response = await fetch("http://localhost:8000/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: import.meta.env.VITE_APP_API_KEY,
+                },
+                body: JSON.stringify(this.email_password)
+            }
+            )
+
+            const res = await response.json()
+            if (res["cookie"]) {
+                const new_cookie = res["cookie"]
+                new token_manager().reset_cookie(new_cookie)
+                is_login.value = true
+                window.location.href = '/'
+            } else {
+                console.error("error")
+            }
         }
     }
-
-
 }
 
 new token_manager().cookie_exit()
+new token_manager().verify_settion()

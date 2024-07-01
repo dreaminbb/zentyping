@@ -53,7 +53,7 @@ class jwt_maneger:
         self.user_cookie = None
         self.server_cookie = None
 
-    def generate(self):
+    def generate(self, user_type: str):
 
         jwt_token: str = jwt.encode(
             {
@@ -69,8 +69,11 @@ class jwt_maneger:
             "id": self.user_id,
             "jwt_token": jwt_token,
             "path": "/",
+            "type": user_type,
             # "httponly": True,
             # "secure": True,
+            "Secure": True,
+            "sameSite": "None",
         }
 
         # 問題あり
@@ -93,7 +96,7 @@ class jwt_maneger:
             db["user"].update_one({"email": email}, {"$set": {"cookie": None}})
 
     def decode(self, token):
-        print("デコードしています")
+        print("トークン", token)
         if token:
             print("トークンあり")
             try:
@@ -203,7 +206,6 @@ class native:
         try:
             user = self.collection.find_one({"email": email})
             if not user:
-                print("no user")
                 return jsonify({"message": "ユーザーが見つかりません"}), 404
 
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
@@ -224,9 +226,8 @@ class native:
 # セッションが有効かどうかの確認
 @app.route("/cookie", methods=["POST"])
 def cookie_check():
-    print(request.headers, "cookie from user")
-    print(request.headers.get("Cookies"))
     token = request.headers.get("Cookies")
+    print(token)
     if not token:
         print("トークンが見つかりません")
         return jsonify({"message": "トークンが見つかりません"}), 400
@@ -247,21 +248,20 @@ def user_register():
     name = data["name"]
 
     # if there are same email or name in db , return message
-    if native().search_email(email) == True:
-        print("email is already used")
+    if native().search_email(email):
         return jsonify({"message": "あ〜それメアド使われてるかも〜。。。"}), 400
-    if native().search_name(name) == True:
-        print("name is already used")
+    if native().search_name(name):
         return jsonify({"message": "悪いけどその名前使われてるっす"}), 400
 
-    cookie = jwt_maneger().generate()
+    user_type = "native"
+    cookie = jwt_maneger().generate(user_type)
     user_cookie = cookie["user_cookie"]
     server_cookie = cookie["server_cookie"]
 
     # make profile and save to db
     native().save_db(native().create(data, server_cookie))
 
-    return make_response(jsonify({"status": "passed", "user_cookie": user_cookie}), 200)
+    return make_response(jsonify({"status": "passed", "cookie": user_cookie}), 200)
 
 
 @app.route("/login", methods=["POST"])
@@ -275,13 +275,15 @@ def login():
     ):
         return jsonify({"error": "メールアドレスまたはパスワードが見つかりません"}), 400
 
+    print(request.json)
     email = request.json["email"]
     password = request.json["password"]
+    user_type = request.json["type"]
     result = native().login(email, password)
 
     if result == True:
-        server_cookie = jwt_maneger().generate()["server_cookie"]
-        user_cookie = jwt_maneger().generate()["user_cookie"]
+        server_cookie = jwt_maneger().generate(user_type)["server_cookie"]
+        user_cookie = jwt_maneger().generate(user_type)["user_cookie"]
         jwt_maneger().refresh(email, server_cookie)
         response = make_response(
             jsonify(

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { token_manager } from '@/client'
-import { ref, inject, type Ref } from 'vue'
+import { native_user } from '@/client'
+import { ref } from 'vue'
 
-const is_login = inject('is_login') as Ref<boolean>
 const alr_usr_email = ref('')
 const alr_usr_pw = ref('')
 const user_email = ref('')
@@ -10,72 +9,28 @@ const user_password = ref('')
 const verify_pw = ref('')
 const user_name = ref('')
 
+console.log(localStorage.getItem('cookie'))
+
 const email_check = (email: string) => {
   const email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return email_regex.test(email)
 }
 
 //メールアドレスが有効な形かを確認
-async function native_login() {
-  email_check(alr_usr_email.value)
-
-  if (!email_check(alr_usr_email.value)) {
-    console.log('う、、そうなんだこれ')
-    return
-  }
-
-  const response = await fetch('http://localhost:8000/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      email: alr_usr_email.value,
-      password: alr_usr_pw.value
-    })
-  })
-  const res = await response.json()
-
-  if (res['login'] === true && res['cookie']) {
-    new token_manager().reset_cookie(res['cookie'])
-    window.location.href = '/'
-  }
+function native_login() {
+  new native_user().login(alr_usr_email.value, alr_usr_pw.value)
+  // if (email_check(alr_usr_email.value)) {
+  // } else {
+    // console.log('う、、そうなんだこれ')
+  // }
 }
 
 async function create() {
   //値が正常かを確認してから
-  interface data_interface {
-    email: string
-    password: string
-    name: string
-  }
-
-  const user_data: data_interface = {
-    email: user_email.value,
-    password: user_password.value,
-    name: user_name.value
-  }
-
-  try {
-    const response = await fetch('http://localhost:8000/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(user_data)
-    })
-
-    const res = await response.json()
-    console.log(res)
-    if (res) {
-      localStorage.removeItem('cookie')
-      localStorage.setItem('cookie', JSON.stringify(res))
-    }
-
-    is_login.value = true
-  } catch (error) {
-    console.error('Error signg up:', error)
-  }
+  const email = user_email.value
+  const password = user_password.value
+  const name = user_name.value
+  new native_user().register(email, password, name)
 }
 
 //githubでサインイン

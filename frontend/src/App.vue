@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { provide, type Ref, ref } from 'vue'
 import { RouterView } from 'vue-router'
-import { is_login, token_manager } from './client'
+import { cookie_exist, is_login, token_manager } from './client'
 
 const tools = ref(true)
 const login_button = ref(true)
@@ -9,8 +9,6 @@ const user_profile: Ref<boolean> = ref(false)
 const header_normal_class = ref(true)
 const header_focus_class = ref(false)
 //ログインしていたらログインボタンを消す
-
-console.log(is_login.value)
 
 provide('is_login', is_login)
 provide('tools', tools)
@@ -21,7 +19,19 @@ const logout = () => {
   new token_manager().logout()
 }
 
-console.log(localStorage.getItem('cookie'))
+const login_link = () => {
+  if (cookie_exist.value === false) {
+    window.location.href = '/login'
+  } else if (cookie_exist.value === true) {
+    new token_manager().verify_settion()
+  }
+}
+
+// const verify_sesstion = async () => {
+//   if (localStorage.getItem('cookie')) {
+//     await new token_manager().verify_settion()
+//   }
+// }
 </script>
 
 <template>
@@ -77,10 +87,10 @@ console.log(localStorage.getItem('cookie'))
         </svg>
       </button>
 
-      <router-link
-        id="register_link"
+      <div
+        id="login_link"
         class="items"
-        to="/login"
+        @click="login_link"
         v-if="!is_login && $route.name === 'home'"
         ref="login_button"
       >
@@ -94,7 +104,7 @@ console.log(localStorage.getItem('cookie'))
             d="M80-160v-112q0-33 17-62t47-44q51-26 115-44t141-18q30 0 58.5 3t55.5 9l-70 70q-11-2-21.5-2H400q-71 0-127.5 17T180-306q-9 5-14.5 14t-5.5 20v32h250l80 80H80Zm542 16L484-282l56-56 82 82 202-202 56 56-258 258ZM400-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm10 240Zm-10-320q33 0 56.5-23.5T480-640q0-33-23.5-56.5T400-720q-33 0-56.5 23.5T320-640q0 33 23.5 56.5T400-560Zm0-80Z"
           />
         </svg>
-      </router-link>
+      </div>
     </div>
 
     <div id="tools" ref="tools" v-if="!is_login && $route.name === 'home'">
@@ -251,7 +261,7 @@ console.log(localStorage.getItem('cookie'))
       height: 100%;
     }
 
-    #register_link {
+    #login_link {
       grid-column: 1;
       width: 100%;
       height: 100%;

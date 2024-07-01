@@ -20,7 +20,17 @@ const router = createRouter({
     },
     {
       path: '/login',
-      name: 'login',
+      // name: 'login',
+      // beforeEnter: async (to, from, next) => {
+      //   const verify_settion = await new token_manager().verify_settion();
+      //   if (verify_settion) {
+      //     is_login.value = true;
+      //     next({ name: 'home' });
+      //   } else {
+      //     is_login.value = false;
+      //     next();
+      //   }
+      // },
       component: login,
     },
     {
