@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue'
-
 export const is_login: Ref<boolean> = ref(false)
 export const cookie_exist: Ref<boolean> = ref(false)
+
 
 export class token_manager {
 
@@ -27,27 +27,31 @@ export class token_manager {
 
     //cookieをAPIに送信
     //todo cookieを更新させる not yet
-    public async verify_settion() {
-        const request: Response = await fetch("http://localhost:8000/cookie", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: import.meta.env.VITE_APP_API_KEY,
-                "Cookies": this.cookie ? `cookie=${this.cookie}` : '',
-                credentials: 'include',
-                "type": JSON.parse(this.cookie as string)["type"] as string
-            },
-        });
-
-        const res = await request.json();
-        if (res["login"] === true) {
-            is_login.value = true;
-            cookie_exist.value = true;
+    public async verify_session(): Promise<boolean> {
+        if (localStorage.getItem('cookie')) {
+            try {
+                const request: Response = await fetch("http://localhost:8000/session", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": import.meta.env.VITE_APP_API_KEY,
+                        "token": JSON.stringify(JSON.parse(this.cookie as string)["jwt_token"]) as string,
+                        "type": JSON.parse(this.cookie as string)["type"] as string
+                    },
+                });
+                const res = await request.json()
+                const response: string = JSON.stringify(res)
+                console.log(response)
+                if (res["login"] === true) {
+                    return true
+                } else {
+                    return false
+                }
+            } catch (error) {
+                return false
+            }
         }
-        else {
-            is_login.value = false;
-            cookie_exist.value = false;
-        }
+        return false
     }
 
 
@@ -77,12 +81,14 @@ export class native_user {
             email: string,
             password: string
             name: string
+            type: string
         }
 
         const user_data: data_interface = {
             email: email,
             password: password,
-            name: name
+            name: name,
+            type: "native"
         }
 
         try {
@@ -95,11 +101,11 @@ export class native_user {
             })
 
             const res = await response.json()
-            console.log(res)
             if (res && res["cookie"]) {
                 const new_cookie = res["cookie"]
                 new token_manager().reset_cookie(new_cookie)
                 is_login.value = true
+                window.location.href = '/account'
                 console.log(is_login.value)
             }
             else {
@@ -114,16 +120,13 @@ export class native_user {
 
 
     public async login(email: string, password: string) {
+        this.email_password = {
+            email: email,
+            password: password,
+            type: "native"
+        }
 
-
-        if (!localStorage.getItem('cookie')) {
-
-            this.email_password = {
-                email: email,
-                password: password,
-                type: "native"
-            }
-
+        try {
             const response: Response = await fetch("http://localhost:8000/login", {
                 method: "POST",
                 headers: {
@@ -131,21 +134,23 @@ export class native_user {
                     Authorization: import.meta.env.VITE_APP_API_KEY,
                 },
                 body: JSON.stringify(this.email_password)
-            }
-            )
+            });
 
-            const res = await response.json()
+            const res = await response.json();
+            console.log(res);
             if (res["cookie"]) {
-                const new_cookie = res["cookie"]
-                new token_manager().reset_cookie(new_cookie)
-                is_login.value = true
-                window.location.href = '/'
+                const new_cookie = res["cookie"];
+                new token_manager().reset_cookie(new_cookie);
+                is_login.value = true; // Update is_login value here
+                window.location.href = '/'; // Redirect to home page
             } else {
-                console.error("error")
+                is_login.value = false; // Set is_login to false if no cookie is returned
             }
+        } catch (error) {
+            console.log(error);
+            is_login.value = false
         }
     }
 }
 
 new token_manager().cookie_exit()
-new token_manager().verify_settion()

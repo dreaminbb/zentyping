@@ -17,11 +17,11 @@ const email_check = (email: string) => {
 }
 
 //メールアドレスが有効な形かを確認
-function native_login() {
-  new native_user().login(alr_usr_email.value, alr_usr_pw.value)
+async function native_login() {
+  await new native_user().login(alr_usr_email.value, alr_usr_pw.value)
   // if (email_check(alr_usr_email.value)) {
   // } else {
-    // console.log('う、、そうなんだこれ')
+  // console.log('う、、そうなんだこれ')
   // }
 }
 

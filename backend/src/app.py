@@ -1,24 +1,24 @@
 import os
-import jwt
-from typing import Union
-from jwt import encode, decode
+from dotenv import load_dotenv
+from flask import Response, redirect, make_response, request
+from pymongo import MongoClient
+from flask import Flask, jsonify
 import datetime
 import uuid
-from flask import Response, redirect, make_response, request
-from flask import Flask, jsonify
-import requests
-import hashlib
-from flask_cors import CORS, cross_origin
-from dotenv import load_dotenv
-from pymongo import MongoClient
-from bson import json_util
 import json
+import hashlib
+import requests
+from flask_cors import CORS
+from bson import json_util
+from typing import Tuple
+import jwt
+
 
 # 本番環境で変更すること
 # cookieの設定(Secure HTTPOnly)
 
 app = Flask(__name__)
-CORS(app, origins="http://localhost:5173")  # セキュリティ意識高めでいこう
+CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 # CORS(app)  # 本番環境では使わないように
 client = MongoClient("mongodb://localhost:27017/")
 db = client["mode-typing"]
@@ -45,108 +45,53 @@ except Exception as e:
 
 class jwt_maneger:
 
-    def __init__(self) -> None:
-        self.secret = os.getenv("JWT_SECRET")
-        self.time = int(os.getenv("JWT_EXPIRES_IN"))
-        self.algorithm = os.getenv("JWT_ALGORITHM")
-        self.user_id = str(uuid.uuid4())
-        self.user_cookie = None
-        self.server_cookie = None
+    def generate(self, user_id: str, user_type: str) -> dict:
 
-    def generate(self, user_type: str):
-
-        jwt_token: str = jwt.encode(
-            {
-                "user_id": self.user_id,
-                "exp": datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(minutes=self.time),
-            },
-            self.secret,
-            algorithm=self.algorithm,
+        jti = str(uuid.uuid4())
+        url = os.getenv("URL")
+        access_token = (
+            jwt.encode(
+                {
+                    "iss": url,
+                    "user_id": user_id,
+                    "type": user_type,
+                    "exp": datetime.datetime.now(datetime.timezone.utc)
+                    + datetime.timedelta(minutes=int(os.getenv("JWT_EXPIRES_IN"))),
+                    "role": "user",
+                },
+                os.getenv("JWT_SECRET"),
+                algorithm=os.getenv("JWT_ALGORITHM"),
+            ),
         )
 
-        self.user_cookie = {
-            "id": self.user_id,
-            "jwt_token": jwt_token,
+        refresh_token = {
+            "iss": url,
+            "sub": user_id,
+            "aud": os.getenv("URL"),
+            "exp": datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(days=int(os.getenv("JWT_EXPIRES_IN_REFRESH"))),
+            "jti": jti,
+        }
+        
+        db["refresh_token"].insert_one(json.loads(json_util.dumps(refresh_token)))
+
+        user_cookie = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
             "path": "/",
-            "type": user_type,
-            # "httponly": True,
-            # "secure": True,
-            "Secure": True,
-            "sameSite": "None",
+            "httponly": True,
+            # "Secure": True,
+            # "sameSite": "None",
         }
 
-        # 問題あり
-        self.server_cookie = [
-            {
-                "id": self.user_id,
-                "jwt": jwt_token,
-                "path": "/",
-                # "httponly": True,
-                # "secure": True,
-                # "sameSite": "None",
-            }
-        ]
-
-        return {"server_cookie": self.server_cookie, "user_cookie": self.user_cookie}
-
-    def refresh(sef, email: str, server_cookie: str):
-        user = db["user"].find_one({"email": email})
-        if user:
-            db["user"].update_one({"email": email}, {"$set": {"cookie": None}})
-
-    def decode(self, token):
-        print("トークン", token)
-        if token:
-            print("トークンあり")
-            try:
-
-                try:
-                    payload = jwt.decode(token, self.secret, algorithms=self.algorithm)
-                    print("decoded", payload)
-                except Exception as e:
-                    print(jsonify({"error": str(e)}))
-
-                return jsonify(
-                    {"massage": "アクセス許可", "status": 200, "login": True}
-                )
-            except jwt.ExpiredSignatureError:
-                print("時間切れ")
-
-                res = make_response(
-                    jsonify(
-                        {
-                            "message": "トークンの有効期限が切れています再ログインしてください"
-                        }
-                    ),
-                    401,
-                )
-
-                print("ユーザーに返すレス↓")
-                print(res)
-
-                return res
-
-            except jwt.InvalidTokenError:
-                # return redirect(os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL"))
-                return jsonify({"message": "トークンが無効です"}), 401
-
-            except Exception as e:
-                return jsonify({"error": str(e)}), 500
-
-        if not token:
-            print("トークンが見つかりません")
-            return jsonify({"message": "トークンが見つかりません"}), 400
+        return user_cookie
 
 
 class native:
-    def __init__(self):
-        self.collection = db["user"]
-
     # ここがユーザー情報のエントリーポイント
     def search_email(self, email: str) -> bool:
         try:
-            same_email = self.collection.find_one({"email": email})
+            same_email = db["user"].find_one({"email": email})
 
             if same_email:
                 return True
@@ -158,7 +103,7 @@ class native:
 
     def search_name(self, name: str) -> bool:
         try:
-            same_name = self.collection.find_one({"name": name})
+            same_name = db["user"].find_one({"name": name})
             if same_name:
                 print(same_name)
                 return True
@@ -168,43 +113,38 @@ class native:
             print(e)
             return jsonify({"error": str(e)}), 500
 
-    def create(self, data: dict, server_cookie: str) -> dict:
+    def create_save(email, password, name, user_type, user_id) -> bool:
 
-        if not data:
-            return jsonify({"error": "データが見つかりません"}), 400
-
-        salt = os.urandom(32)
-        # ここでパスワードをハッシュ化して適切なJSONに変換している
-        hashed_password = (
-            hashlib.sha256(data["password"].encode("utf-8")).hexdigest().encode("utf-8")
-            + salt
-        )
-
-        # ユーザーIDの生成
-
-        user_profile = {
-            "type": "native",
-            "email": data["email"],
-            "password": hashed_password,
-            "name": data["name"],
-            "cookie": server_cookie,
-        }
-
-        return user_profile
-
-    # ここでデータベースに保存している
-    def save_db(self, user_profile: dict):
         try:
-            self.collection.insert_one(user_profile)
+            if not email or not name or not user_type:
+                return jsonify({"error": "データが見つかりません"}), 400
 
-        except Exception as e:
-            return jsonify({"error": ("エラーが発生しました")}), 500
+            salt = os.urandom(32)
+            # ここでパスワードをハッシュ化して適切なJSONに変換している
+            hashed_password = (
+                hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
+                + salt
+            )
 
-        return jsonify({"massage": "登録完了"}), 200
+            # ユーザーIDの生成
+            user_profile = {
+                "id": user_id,
+                "type": "native",
+                "email": email,
+                "password": hashed_password,
+                "name": name,
+                "play_info": {"total_play": 0, "total_time": 0},
+                "play_history": {},
+            }
+
+            db["user"].insert_one(user_profile)
+            return True
+        except Exception:
+            return False
 
     def login(self, email: str, password: str):
         try:
-            user = self.collection.find_one({"email": email})
+            user = db["user"].find_one({"email": email})
             if not user:
                 return jsonify({"message": "ユーザーが見つかりません"}), 404
 
@@ -224,28 +164,53 @@ class native:
 
 
 # セッションが有効かどうかの確認
-@app.route("/cookie", methods=["POST"])
-def cookie_check():
-    token = request.headers.get("Cookies")
-    print(token)
-    if not token:
-        print("トークンが見つかりません")
+@app.route("/session", methods=["POST"])
+def session_check():
+    jwt_token = request.headers.get("token").replace('"', "")
+    print(jwt_token)
+
+    if not jwt_token:
         return jsonify({"message": "トークンが見つかりません"}), 400
 
-    response = jwt_maneger().decode(token)
-    print(response)
-    return response
+    try:
+        payload = jwt.decode(
+            jwt_token,
+            key=os.getenv("JWT_SECRET"),  # Use 'key' instead of 'secret'
+            algorithms=[
+                os.getenv("JWT_ALGORITHM")
+            ],  # Use 'algorithms' instead of 'algorithm'
+        )
+        return jsonify({"message": "トークンが有効です"}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "トークンの有効期限が切れています"}), 401
+
+    except jwt.InvalidTokenError as e:
+        db["invalid_tokens"].insert_one(
+            {
+                "token": jwt_token,
+                "detected_at": datetime.datetime.now(datetime.timezone.utc),
+            }
+        )
+        print(e)
+        return jsonify({"message": "トークンが無効です"}), 401
+
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
 
 
 # ユーザー作成
 @app.route("/register", methods=["POST"])
-def user_register():
+def native_register():
     if not request.json:
         return jsonify({"error": "データが見つかりません"}), 400
 
     data = request.json
     email = data["email"]
     name = data["name"]
+    password = data["password"]
+    user_type = data["type"]
+    if not email or not name or not user_type:
+        return jsonify({"error": "データが見つかりません"}), 400
 
     # if there are same email or name in db , return message
     if native().search_email(email):
@@ -253,21 +218,33 @@ def user_register():
     if native().search_name(name):
         return jsonify({"message": "悪いけどその名前使われてるっす"}), 400
 
-    user_type = "native"
-    cookie = jwt_maneger().generate(user_type)
-    user_cookie = cookie["user_cookie"]
-    server_cookie = cookie["server_cookie"]
+    # プロフィールを作成してDBに保存
 
-    # make profile and save to db
-    native().save_db(native().create(data, server_cookie))
+    user_id = str(uuid.uuid4())
+    salt = os.urandom(32)
+    # ここでパスワードをハッシュ化して適切なJSONに変換している
+    hashed_password = (
+        hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8") + salt
+    )
+    # ユーザーIDの生成
+    user_profile = {
+        "id": user_id,
+        "type": user_type,
+        "email": email,
+        "password": hashed_password,
+        "name": name,
+        "play_info": {"total_play": 0, "total_time": 0},
+        "play_history": {},
+    }
+    db["user"].insert_one(user_profile)
+    cookie = jwt_maneger().generate(user_id, user_type)
 
-    return make_response(jsonify({"status": "passed", "cookie": user_cookie}), 200)
+    return make_response(jsonify({"status": "passed", "cookie": cookie}), 200)
 
 
 @app.route("/login", methods=["POST"])
 # @app.errorhandler(404)
-def login():
-
+def native_login():
     if (
         not request.json
         or "email" not in request.json
@@ -275,7 +252,6 @@ def login():
     ):
         return jsonify({"error": "メールアドレスまたはパスワードが見つかりません"}), 400
 
-    print(request.json)
     email = request.json["email"]
     password = request.json["password"]
     user_type = request.json["type"]
@@ -284,17 +260,19 @@ def login():
     if result == True:
         server_cookie = jwt_maneger().generate(user_type)["server_cookie"]
         user_cookie = jwt_maneger().generate(user_type)["user_cookie"]
-        jwt_maneger().refresh(email, server_cookie)
-        response = make_response(
-            jsonify(
-                {
-                    "massage": "ログイン成功",
-                    "cookie": user_cookie,
-                    "login": True,
-                }
-            ),
-            200,
-        )
+        if jwt_maneger().refresh(email, server_cookie):
+            response = make_response(
+                jsonify(
+                    {
+                        "massage": "ログイン成功",
+                        "cookie": user_cookie,
+                        "login": True,
+                    }
+                ),
+                200,
+            )
+        else:
+            return make_response(jsonify({"massage": "エラーが発生しました"}), 401)
     elif result == False:
         response = make_response(
             jsonify({"massage": "パスワード又はメールアドレスが違います"}), 401
