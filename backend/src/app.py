@@ -77,6 +77,15 @@ class jwt_maneger:
 
         return access_token, encoded_refresh_token
 
+    def del_old_refresh_token(self, user_id: str) -> None:
+        old_token = db["refresh_token"].find_one({"sub": user_id})
+        if old_token:
+            db["refresh_token"].delete_one({"sub": user_id})
+            db["invalid_tokens"].insert_one(old_token)
+            return
+        else:
+            return
+
     def add_cookie(self, access_token, encoded_refresh_token):
         user_cookie = {
             "access_token": access_token,
@@ -223,6 +232,7 @@ def refresh():
 
         new_access_token = jwt_maneger().generate(user_id, user_type)[0]
         new_refresh_token = jwt_maneger().generate(user_id, user_type)[1]
+        jwt_maneger().del_old_refresh_token(user_id)
         return jsonify(
             {"access_token": new_access_token, "refresh_token": new_refresh_token}
         )
@@ -294,7 +304,6 @@ def native_login():
     user_type = request.json["type"]
     result = native().login(email, password)
 
-
     if result == True:
         user_id = db["user"].find_one({"email": email})["id"]
         if user_id:
@@ -302,6 +311,7 @@ def native_login():
             cookie = jwt_maneger().add_cookie(
                 access_token=token[0], encoded_refresh_token=token[1]
             )
+            jwt_maneger().del_old_refresh_token(user_id)
 
             return jsonify(
                 {"login": True, "cookie": cookie}

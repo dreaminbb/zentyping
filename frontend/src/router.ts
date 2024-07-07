@@ -35,6 +35,13 @@ const router = createRouter({
     {
       path: '/account',
       name: 'account',
+      beforeEnter: async (to, from, next) => {
+        if (await new token_manager().verify_access_token() === true) {
+          next()
+        } else {
+          next({ name: "home" })
+        }
+      },
       component: account
     }
   ]

@@ -189,3 +189,6 @@ export class native_user {
 }
 
 new token_manager().cookie_exit()
+if (await new token_manager().verify_access_token() === true) {
+    is_login.value = true
+}
