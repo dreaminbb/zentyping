@@ -9,5 +9,6 @@
 npm-debug.log
 .idea
 frontend/node_modules
+test.py
 
 

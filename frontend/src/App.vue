@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { provide, type Ref, ref } from 'vue'
 import { RouterView } from 'vue-router'
-import { cookie_exist, is_login, token_manager } from './client'
-import router from './router'
+import { is_login, token_manager } from './client'
 
 const tools = ref(true)
 const login_button = ref(true)

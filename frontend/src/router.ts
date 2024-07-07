@@ -3,7 +3,7 @@ import home from '@/components/user_home.vue'
 import play from '@/components/play.vue'
 import login from '@/components/user_login.vue'
 import account from '@/components/user_account.vue'
-import { token_manager } from './client'
+import { is_login, token_manager } from './client'
 
 
 const router = createRouter({
@@ -23,7 +23,8 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       beforeEnter: async (to, from, next) => {
-        if (await new token_manager().verify_session()) {
+        if (await new token_manager().verify_access_token() === true) {
+          is_login.value = true
           next({ name: 'home' })
         } else {
           next()

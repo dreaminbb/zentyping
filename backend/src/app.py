@@ -19,7 +19,6 @@ import jwt
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
-# CORS(app)  # 本番環境では使わないように
 client = MongoClient("mongodb://localhost:27017/")
 db = client["mode-typing"]
 port = int(os.getenv("PORT", 8000))
@@ -49,41 +48,44 @@ class jwt_maneger:
 
         jti = str(uuid.uuid4())
         url = os.getenv("URL")
-        access_token = (
-            jwt.encode(
-                {
-                    "iss": url,
-                    "user_id": user_id,
-                    "type": user_type,
-                    "exp": datetime.datetime.now(datetime.timezone.utc)
-                    + datetime.timedelta(minutes=int(os.getenv("JWT_EXPIRES_IN"))),
-                    "role": "user",
-                },
-                os.getenv("JWT_SECRET"),
-                algorithm=os.getenv("JWT_ALGORITHM"),
-            ),
+        access_token: str = jwt.encode(
+            {
+                # "iss": url,
+                "user_id": user_id,
+                "type": user_type,
+                "exp": datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(minutes=int(os.getenv("JWT_EXPIRES_IN"))),
+                "role": "user",
+            },
+            os.getenv("JWT_SECRET"),
+            algorithm=os.getenv("JWT_ALGORITHM"),
         )
 
-        refresh_token = {
+        refresh_token: str = {
             "iss": url,
             "sub": user_id,
-            "aud": os.getenv("URL"),
+            # "aud": os.getenv("URL"),
             "exp": datetime.datetime.now(datetime.timezone.utc)
             + datetime.timedelta(days=int(os.getenv("JWT_EXPIRES_IN_REFRESH"))),
             "jti": jti,
         }
-        
         db["refresh_token"].insert_one(json.loads(json_util.dumps(refresh_token)))
 
+        encoded_refresh_token = jwt.encode(
+            refresh_token, os.getenv("JWT_SECRET"), algorithm=os.getenv("JWT_ALGORITHM")
+        )
+
+        return access_token, encoded_refresh_token
+
+    def add_cookie(self, access_token, encoded_refresh_token):
         user_cookie = {
             "access_token": access_token,
-            "refresh_token": refresh_token,
+            "refresh_token": encoded_refresh_token,
             "path": "/",
             "httponly": True,
             # "Secure": True,
             # "sameSite": "None",
         }
-
         return user_cookie
 
 
@@ -164,7 +166,7 @@ class native:
 
 
 # セッションが有効かどうかの確認
-@app.route("/session", methods=["POST"])
+@app.route("/access", methods=["POST"])
 def session_check():
     jwt_token = request.headers.get("token").replace('"', "")
     print(jwt_token)
@@ -175,14 +177,14 @@ def session_check():
     try:
         payload = jwt.decode(
             jwt_token,
-            key=os.getenv("JWT_SECRET"),  # Use 'key' instead of 'secret'
-            algorithms=[
-                os.getenv("JWT_ALGORITHM")
-            ],  # Use 'algorithms' instead of 'algorithm'
+            key=os.getenv("JWT_SECRET"),
+            algorithms=[os.getenv("JWT_ALGORITHM")],
         )
-        return jsonify({"message": "トークンが有効です"}), 200
+
+        return jsonify({"message": "トークンが有効です", "login": True}), 200
     except jwt.ExpiredSignatureError:
-        return jsonify({"message": "トークンの有効期限が切れています"}), 401
+        print("timeout")
+        return jsonify({"timeout": True}), 200
 
     except jwt.InvalidTokenError as e:
         db["invalid_tokens"].insert_one(
@@ -192,10 +194,42 @@ def session_check():
             }
         )
         print(e)
+        print("invalid token")
         return jsonify({"message": "トークンが無効です"}), 401
 
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+
+
+@app.route("/refresh", methods=["POST"])
+def refresh():
+    try:
+        refresh_token = request.headers.get("token").replace('"', "")
+        print(request.headers.get("token"))
+        if not refresh_token:
+            return jsonify({"message": "リフレッシュトークンが見つかりません"}), 400
+
+        payload = jwt.decode(
+            refresh_token,
+            key=os.getenv("JWT_SECRET"),
+            algorithms=[os.getenv("JWT_ALGORITHM")],
+        )
+
+        # ユーザーのIDをペイロードから取得してDBのユーザー情報のIDを参照
+        jti = payload["jti"]
+        if db["refresh_token"].find_one({"jti": jti}):
+            user_id = payload["sub"]
+            user_type = db["user"].find_one({"id": user_id})["type"]
+
+        new_access_token = jwt_maneger().generate(user_id, user_type)[0]
+        new_refresh_token = jwt_maneger().generate(user_id, user_type)[1]
+        return jsonify(
+            {"access_token": new_access_token, "refresh_token": new_refresh_token}
+        )
+
+    except Exception as e:
+        print(e)
+        return jsonify({"message": "認証失敗...."}), 401
 
 
 # ユーザー作成
@@ -237,7 +271,10 @@ def native_register():
         "play_history": {},
     }
     db["user"].insert_one(user_profile)
-    cookie = jwt_maneger().generate(user_id, user_type)
+    token = jwt_maneger().generate(user_id, user_type)
+    cookie = jwt_maneger().add_cookie(
+        access_token=token[0], encoded_refresh_token=token[1]
+    )  # 0=access_token,1=refresh_token
 
     return make_response(jsonify({"status": "passed", "cookie": cookie}), 200)
 
@@ -257,30 +294,20 @@ def native_login():
     user_type = request.json["type"]
     result = native().login(email, password)
 
-    if result == True:
-        server_cookie = jwt_maneger().generate(user_type)["server_cookie"]
-        user_cookie = jwt_maneger().generate(user_type)["user_cookie"]
-        if jwt_maneger().refresh(email, server_cookie):
-            response = make_response(
-                jsonify(
-                    {
-                        "massage": "ログイン成功",
-                        "cookie": user_cookie,
-                        "login": True,
-                    }
-                ),
-                200,
-            )
-        else:
-            return make_response(jsonify({"massage": "エラーが発生しました"}), 401)
-    elif result == False:
-        response = make_response(
-            jsonify({"massage": "パスワード又はメールアドレスが違います"}), 401
-        )
-    else:
-        response = make_response(jsonify({"massage": "ログイン失敗"}), 401)
 
-    return response
+    if result == True:
+        user_id = db["user"].find_one({"email": email})["id"]
+        if user_id:
+            token = jwt_maneger().generate(user_id, user_type)
+            cookie = jwt_maneger().add_cookie(
+                access_token=token[0], encoded_refresh_token=token[1]
+            )
+
+            return jsonify(
+                {"login": True, "cookie": cookie}
+            )  # 0=access_token,1=refresh_token
+    else:
+        return jsonify({"massage": "パスワード又はメールアドレスが違います"}), 401
 
 
 # github認証
