@@ -52,7 +52,7 @@ class jwt_maneger:
             {
                 # "iss": url,
                 "user_id": user_id,
-                "type": user_type,
+                "iat": datetime.datetime.now(datetime.timezone.utc),
                 "exp": datetime.datetime.now(datetime.timezone.utc)
                 + datetime.timedelta(minutes=int(os.getenv("JWT_EXPIRES_IN"))),
                 "role": "user",
@@ -69,24 +69,25 @@ class jwt_maneger:
             + datetime.timedelta(days=int(os.getenv("JWT_EXPIRES_IN_REFRESH"))),
             "jti": jti,
         }
-        db["refresh_token"].insert_one(json.loads(json_util.dumps(refresh_token)))
-
-        encoded_refresh_token = jwt.encode(
+        encoded_refresh_token: str = jwt.encode(
             refresh_token, os.getenv("JWT_SECRET"), algorithm=os.getenv("JWT_ALGORITHM")
         )
 
+        db["refresh_token"].find_one_and_delete({"sub": user_id})
+        db["refresh_token"].insert_one(refresh_token)
+
         return access_token, encoded_refresh_token
 
-    def del_old_refresh_token(self, user_id: str) -> None:
+    def del_old_be_invalid(self, user_id: str) -> None:
         old_token = db["refresh_token"].find_one({"sub": user_id})
         if old_token:
-            db["refresh_token"].delete_one({"sub": user_id})
             db["invalid_tokens"].insert_one(old_token)
+            db["refresh_token"].delete_one({"sub": user_id})
             return
         else:
             return
 
-    def add_cookie(self, access_token, encoded_refresh_token):
+    def add_cookie(self, access_token, encoded_refresh_token) -> dict:
         user_cookie = {
             "access_token": access_token,
             "refresh_token": encoded_refresh_token,
@@ -178,8 +179,6 @@ class native:
 @app.route("/access", methods=["POST"])
 def session_check():
     jwt_token = request.headers.get("token").replace('"', "")
-    print(jwt_token)
-
     if not jwt_token:
         return jsonify({"message": "トークンが見つかりません"}), 400
 
@@ -189,6 +188,7 @@ def session_check():
             key=os.getenv("JWT_SECRET"),
             algorithms=[os.getenv("JWT_ALGORITHM")],
         )
+        print(payload)
 
         return jsonify({"message": "トークンが有効です", "login": True}), 200
     except jwt.ExpiredSignatureError:
@@ -213,8 +213,8 @@ def session_check():
 @app.route("/refresh", methods=["POST"])
 def refresh():
     try:
-        refresh_token = request.headers.get("token").replace('"', "")
-        print(request.headers.get("token"))
+        refresh_token = request.get_json()
+        print(refresh_token)
         if not refresh_token:
             return jsonify({"message": "リフレッシュトークンが見つかりません"}), 400
 
@@ -225,14 +225,17 @@ def refresh():
         )
 
         # ユーザーのIDをペイロードから取得してDBのユーザー情報のIDを参照
-        jti = payload["jti"]
-        if db["refresh_token"].find_one({"jti": jti}):
-            user_id = payload["sub"]
-            user_type = db["user"].find_one({"id": user_id})["type"]
+        sub = payload["sub"]
+        print(sub)
+        if db["refresh_token"].find_one({"sub": sub}):
+            user_id = db["user"].find_one({"id": sub})["id"]
+            user_type = db["user"].find_one({"id": sub})["type"]
+        else:
+            print("no")
 
+        jwt_maneger().del_old_be_invalid(user_id)
         new_access_token = jwt_maneger().generate(user_id, user_type)[0]
         new_refresh_token = jwt_maneger().generate(user_id, user_type)[1]
-        jwt_maneger().del_old_refresh_token(user_id)
         return jsonify(
             {"access_token": new_access_token, "refresh_token": new_refresh_token}
         )
@@ -305,13 +308,17 @@ def native_login():
     result = native().login(email, password)
 
     if result == True:
-        user_id = db["user"].find_one({"email": email})["id"]
+        user_id = db["user"].find_one({"email": email})["id"]  # ユーザーのID取得
         if user_id:
+            jwt_maneger().del_old_be_invalid(
+                user_id
+            )  # 既存のリフレッシュトークンを無効にする
+
+            # 新しいアクセストークン、リフレエッシュトークンを生成
             token = jwt_maneger().generate(user_id, user_type)
-            cookie = jwt_maneger().add_cookie(
-                access_token=token[0], encoded_refresh_token=token[1]
-            )
-            jwt_maneger().del_old_refresh_token(user_id)
+            access_token = token[0]
+            encoded_refresh_token = token[1]
+            cookie = jwt_maneger().add_cookie(access_token, encoded_refresh_token)
 
             return jsonify(
                 {"login": True, "cookie": cookie}

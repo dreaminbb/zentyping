@@ -17,11 +17,11 @@ export class token_manager {
     //cookieが存在するかを確認
     public cookie_exit() {
         if (this.cookie) {
-            console.log(localStorage.getItem('cookie'))
+            // console.log(localStorage.getItem('cookie'))
             cookie_exist.value = true
         } else {
             cookie_exist.value = false
-            console.log(localStorage.getItem('cookie'))
+            // console.log(localStorage.getItem('cookie'))
         }
     }
 
@@ -41,23 +41,23 @@ export class token_manager {
                         "type": JSON.parse(this.cookie as string)["type"] as string
                     },
                 });
-                console.log(JSON.stringify(JSON.parse(this.cookie as string)["access_token"]) as string)
+                // console.log(JSON.stringify(JSON.parse(this.cookie as string)["access_token"]) as string)
                 const res = await request.json()
-                console.log(res)
                 if (res["login"] === true) {
+                    is_login.value = true
+                    console.log("welome back sir")
                     return true
                 } if (res["timeout"] === true) {
-                    if (await this.updata_token()) {
-                        setTimeout(() => {
-                            this.verify_access_token()
-                        }, 300)
-                    }
+                    console.log("token timeout")
+                    setTimeout(() => {
+                        this.updata_token()
+                    }, 300)
                 }
             } catch (error) {
-                return false
+                return
             }
         }
-        return false
+        return
     }
 
 
@@ -70,22 +70,20 @@ export class token_manager {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": import.meta.env.VITE_APP_API_KEY,
-                        "token": JSON.stringify(JSON.parse(this.cookie as string)["refresh_token"]) as string,
                         "type": JSON.parse(this.cookie as string)["type"] as string
                     },
+                    body: JSON.stringify(JSON.parse(this.cookie as string)["refresh_token"])
                 });
-                console.log(JSON.stringify(JSON.parse(this.cookie as string)["refresh_token"]) as string, 'refresh_token is might be none')
                 const res = await request.json()
                 if (res["access_token"]) {
-                    const current_cookie = JSON.parse(this.cookie as string)
-                    current_cookie["access_token"] = res["access_token"]
-                    current_cookie["refresh_token"] = res["refresh_token"]
-                    this.reset_cookie(JSON.stringify(current_cookie))
+                    const access_token = res["access_token"]
+                    const refresh_token = res["refresh_token"]
+                    this.update_token(access_token, refresh_token)
+                    console.log("token were updated")
                     return true
                 }
             }
             catch (error) {
-                console.log(error)
                 return false
             }
         } else {
@@ -99,6 +97,16 @@ export class token_manager {
         localStorage.removeItem('cookie')
         localStorage.setItem('cookie', JSON.stringify(new_cookie))
         console.log('removing cookie and setting new cookie...')
+    }
+
+    //cookieをJSON->トークンの中身を更新->そしてそれを再度JSONの文字列にしてcookieに保管
+    private update_token(access_token: string, refresh_token: string) {
+        if (localStorage.getItem('cookie')) {
+            const json_cookie = JSON.parse(this.cookie as string)
+            json_cookie["access_token"] = access_token
+            json_cookie["refresh_token"] = refresh_token
+            localStorage.setItem('cookie', JSON.stringify(json_cookie))
+        }
     }
 
     public logout() {
@@ -191,4 +199,6 @@ export class native_user {
 new token_manager().cookie_exit()
 if (await new token_manager().verify_access_token() === true) {
     is_login.value = true
+    console.log(JSON.stringify(JSON.parse(localStorage.getItem("cookie") as string)["refresh_token"]) as string,)
+    console.log(JSON.stringify(JSON.parse(localStorage.getItem("cookie") as string)["access_token"]) as string,)
 }
