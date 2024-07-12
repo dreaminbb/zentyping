@@ -7,7 +7,6 @@ import jwt
 from pymongo import MongoClient
 from app import config
 
-
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]
 
 
@@ -32,7 +31,7 @@ class jwt_manager:
                 "user_id": user_id,
                 "iat": datetime.datetime.now(datetime.timezone.utc),
                 "exp": datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(minutes=int(config.JWT_EXPIRES_IN)),
+                       + datetime.timedelta(minutes=int(config.JWT_EXPIRES_IN)),
                 "role": "user",
                 "type": user_type,
             },
@@ -45,7 +44,7 @@ class jwt_manager:
             "sub": user_id,
             # "aud": os.getenv("URL"),
             "exp": datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(days=self.expires_in_refresh),
+                   + datetime.timedelta(days=self.expires_in_refresh),
             "jti": self.jti,
         }
 
@@ -60,12 +59,11 @@ class jwt_manager:
 
     def verify_access_token(self, jwt_token: str | None) -> Response:
 
-        print(jwt_token)
-
         if not jwt_token:
             print("no token")
             return jsonify(
                 {
+                    "success": False,
                     "token": False,
                     "message": "エラーが発生しましたログインし直してください",
                 }
@@ -77,9 +75,9 @@ class jwt_manager:
                 key=self.key,
                 algorithms=[self.algorithm]
             )
-            print(payload)
+            print("good token")
 
-            return jsonify({"token": True, "massege": "おかえり！！"})
+            return jsonify({"success": True, "massage": "おかえり！！"})
         except jwt.ExpiredSignatureError:  # 期限切れ
             db["invalid_tokens"].insert_one(
                 {
@@ -88,7 +86,7 @@ class jwt_manager:
                 }
             )
             print("timeout")
-            return jsonify({"timout": True})
+            return jsonify({"success": False, "timeout": True, "message": "再ログインしてください..."})
 
         except jwt.InvalidTokenError:
             db["invalid_tokens"].insert_one(
@@ -98,7 +96,7 @@ class jwt_manager:
                 }
             )
             print("invalid token")
-            return jsonify({"message": ".........."})
+            return jsonify({"success": False, "message": ".........."})
 
         except Exception as e:
             print(e)
@@ -119,52 +117,54 @@ class jwt_manager:
         user_cookie = {
             "access_token": access_token,
             "refresh_token": encoded_refresh_token,
+            "type": user_type,
             "path": "/",
-            "httponly": True,
+            # "httponly": True,
             # "Secure": True,
             # "sameSite": "None",
         }
         return user_cookie
 
-    def verify_updata_refresh(self, jwt_token: str | None) -> Response:
-
+    def verify_update_refresh(self, jwt_token: str | None) -> Response:
         try:
-            if not jwt_token:
-                return make_response(
-                    {"message": "ログインし直してください....ごめんぴょ"}, 404
-                )
-            payload = jwt.decode(jwt_token, key=self.key, algorithm=self.algorithm)
-            sub = payload["sub"]
-            result = db["refresh_token"].find_one({"id": sub})
-            if result:
+            try:
+                if jwt_token is None:
+                    return make_response(
+                        {"message": "ログインし直してください....ごめんぴょ"}, 404
+                    )
+                print(jwt_token)
+                payload = jwt.decode(jwt_token, key=self.key, algorithms=[self.algorithm])
+                print(payload)
+                sub = payload["sub"]
+                result = db["refresh_token"].find_one({"sub": sub})
                 user_record = db["user"].find_one({"id": sub})
-                if user_record:
+                if result and user_record:
                     user_id = user_record["id"]
                     user_type = user_record["type"]
-                    jwt_manager().token_be_invalid(user_id)
-                    new_access_tokne = jwt_manager().generate(user_id, user_type)[0]
-                    new_refresh_token = jwt_manager().generate(user_id, user_type)[1]
+                    self.token_be_invalid(user_id)
+                    new_access_token = self.generate(user_id, user_type)[0]
+                    new_refresh_token = self.generate(user_id, user_type)[1]
                     return make_response(
                         {
-                            "access_token": new_access_tokne,
+                            "access_token": new_access_token,
                             "refresh_token": new_refresh_token,
-                        }
+                        },
+                        200,
                     )
-                elif not user_record:
-                    return make_response(
-                        {"message": config.TOKEN_OWNER_NOT_FOUND_MASSEGE}, 404
-                    )
-            else:
-                return make_response({"message": config.TOKEN_NOT_FOUND_MASSEGE})
-        except jwt.ExpiredSignatureError:
-            db["invalid_tokens"].insert_one(
-                {
-                    "token": jwt_token,
-                    "detected_at": datetime.datetime.now(datetime.timezone.utc),
-                }
-            )
-            return make_response({"message": config.TOKEN_TIMEOUT_MASSEGE}, 401)
+                else:
+                    print("there are no token owner")
+                    return make_response({"message": config.TOKEN_OWNER_NOT_FOUND_MASSEGE}, 404)
+            except jwt.ExpiredSignatureError:
+                print("timeout~~~ amm have a good day men")
+                db["invalid_tokens"].insert_one(
+                    {
+                        "token": jwt_token,
+                        "detected_at": datetime.datetime.now(datetime.timezone.utc),
+                    }
+                )
+                return make_response({"message": config.TOKEN_TIMEOUT_MASSEGE}, 401)
         except jwt.InvalidTokenError as e:
+            print("invalid token maybe bey bey")
             db["invalid_tokens"].insert_one(
                 {
                     "token": jwt_token,
@@ -172,31 +172,32 @@ class jwt_manager:
                 }
             )
             print(e)
-            return make_response({"message": config.INVALID_TOKEN_MASSEGE}, 401)
+        return make_response({"message": config.INVALID_TOKEN_MASSEGE}, 401)
 
-        return make_response({"message": "ちんこ"}, 500)
-        # リフレッシュトークンを検証して有効だったら新しいアクセストークンを
-        # return jsonify(
-        #     {"access_token": new_access_token, "refresh_token": new_refresh_token}
-        # )
 
-    def refresh(self, refresh_token: str) -> dict | None:
-        payload = jwt.decode(refresh_token, key=self.key, algorithms=[self.algorithm])
-        sub = payload["sub"]
+# return make_response({"message": "なぜこれを返しているのでしょうか？"}, 500)
+# リフレッシュトークンを検証して有効だったら新しいアクセストークンを
+# return jsonify(
+#     {"access_token": new_access_token, "refresh_token": new_refresh_token}
+# )
 
-        user_data = db["user"].find_one({"id": sub})
-        if user_data is not None:
-            user_id = user_data["id"]
-            user_type = user_data["type"]
-        else:
-            return None
+def refresh(self, refresh_token: str) -> dict | None:
+    payload = jwt.decode(refresh_token, key=self.key, algorithms=[self.algorithm])
+    sub = payload["sub"]
 
-        self.token_be_invalid(user_id)
+    user_data = db["user"].find_one({"id": sub})
+    if user_data is not None:
+        user_id = user_data["id"]
+        user_type = user_data["type"]
+    else:
+        return None
 
-        new_access_token = jwt_manager().generate(user_id, user_type)[0]
-        new_refresh_token = jwt_manager().generate(user_id, user_type)[1]
+    self.token_be_invalid(user_id)
 
-        return {"access_token": new_access_token, "refresh_token": new_refresh_token}
+    new_access_token = jwt_manager().generate(user_id, user_type)[0]
+    new_refresh_token = jwt_manager().generate(user_id, user_type)[1]
+
+    return {"access_token": new_access_token, "refresh_token": new_refresh_token}
 
 
 class native:
@@ -233,8 +234,8 @@ class native:
             salt = os.urandom(32)
             # ここでパスワードをハッシュ化して適切なJSONに変換している
             hashed_password = (
-                hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
-                + salt
+                    hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
+                    + salt
             )
 
             # ユーザーIDの生成
@@ -254,8 +255,9 @@ class native:
             print(e)
             return False
 
-    def login(self, email: str, password: str):
+    def login(self, email: str, password: str) -> tuple[Response, int]:
         try:
+            print(email, password)
             user = db["user"].find_one({"email": email})
             if not user:
                 return jsonify({"message": "ユーザーが見つかりません"}), 404
@@ -265,15 +267,16 @@ class native:
 
             if decoded_password == hashed_password:
                 print("correct password")
-                return True
+                new_cookie = jwt_manager().add_cookie(user_id=user["id"], user_type=user["type"])
+                return jsonify({"new_cookie": new_cookie}), 200
+
             else:
-                print("incorrect password")
-                return False
+                print("incorrect password", 401)
+                return jsonify({"message": "パスワードまたはメールアドレスが違います"}), 401
 
         except Exception as e:
             print(e)
             return jsonify({"error": ("error")}), 500
-
 
 # def i_just_chenged_():
 #     try:

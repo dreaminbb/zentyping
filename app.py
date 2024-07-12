@@ -1,6 +1,7 @@
-from app import create_app
+from app import create_app , config
 from dotenv import load_dotenv
 import os
+
 
 # 本番環境で変更すること
 # cookieの設定(Secure HTTPOnly)

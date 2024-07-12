@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { inject, type Ref, provide } from 'vue'
 
-const is_login = inject('is_login') as Ref<boolean>
-console.log(is_login.value)
+// const is_login = inject('is_login') as Ref<boolean>
 
 const tools = inject('tools') as Ref<boolean>
 const header_focus_class = inject('header_focus_class') as Ref<boolean>

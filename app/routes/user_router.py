@@ -1,20 +1,40 @@
 from flask import Blueprint, request, Response
-from ..model.auth import jwt_manager
+from ..model.auth import jwt_manager, native
 
 user_bp = Blueprint("user_bp", __name__)
 
 @user_bp.route("/access", methods=["POST"])
 def verify_session():
+    print(request.headers.get("Authorization").replace('"',''))
     res: Response = jwt_manager().verify_access_token(
-        jwt_token=request.headers.get("Authorization") or None
+        jwt_token=request.headers.get("Authorization").replace('"' , '') or None
     )
     return res
 
 
 @user_bp.route("/refresh", methods=["POST"])
 def refresh():
-    res: Response = jwt_manager().verify_updata_refresh(
-        jwt_token=request.headers.get("Authorization") or None
+    res: Response = jwt_manager().verify_update_refresh(
+        jwt_token=request.headers.get("Authorization").replace('"' , '') or None
+    )
+    return res
+
+@user_bp.route("/native_login", methods=["POST"])
+def native_login():
+    print(request.json["email"] , request.json["password"])
+    res: tuple[Response, int] = native().login(
+        email=request.json["email"],
+        password=request.json["password"],
+    )
+    return res
+
+@user_bp.route("/native_register", methods=["POST"])
+def native_register():
+    res: tuple[Response, int] = native().register(
+        email=request.json["email"],
+        name=request.json["name"],
+        password=request.json["password"],
+        user_type=request.json["type"],
     )
     return res
 
