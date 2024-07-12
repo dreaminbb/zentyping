@@ -112,6 +112,7 @@ export class token_manager {
     public logout() {
         is_login.value = false
         localStorage.removeItem("cookie")
+        window.location.reload()
     }
 
 }

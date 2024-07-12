@@ -1,9 +1,0 @@
-Flask~=3.0.3
-requests~=2.32.3
-Flask-Cors
-python-dotenv~=1.0.1
-pymongo~=4.0.1
-Authlib
-waitress
-itsdangerous==2.2.0
-PyJWT~=2.8.0

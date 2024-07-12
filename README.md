@@ -37,3 +37,11 @@ npm run build
 ```sh
 npm run lint
 ```
+
+============================================================
+
+### this is a flask API all lib list are reqiremnts.txt so run
+
+```sh
+pip install -r requirements.txt
+```
