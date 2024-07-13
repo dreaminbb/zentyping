@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 # mode_typing
+=======
+===========================================
+# lets Coding !!!!!!!!!!!!!!!!
+===========================================
+>>>>>>> a5c96d1 (Update README.md)
 
 This template should help get you started developing with Vue 3 in Vite.
 
