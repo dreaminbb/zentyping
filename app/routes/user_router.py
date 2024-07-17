@@ -1,5 +1,5 @@
 import uuid
-from flask import Blueprint, request, Response, jsonify, redirect
+from flask import Blueprint, make_response, request, Response, jsonify, redirect
 from app import config
 import json
 from ..model.auth import jwt_manager, native, github, cookie_maneger
@@ -40,10 +40,13 @@ def verify_session():
             if (
                 refresh_token_result.get("success") == True
             ):  # 返り値にユーザーIDとユーザータイプがある
-                user_id: str = refresh_token_result["user_id"]
-                user_type: str = refresh_token_result["user_type"]
-                new_cookie = cookie_maneger().make_cookie(user_id, user_type)
-                return jsonify({"cookie": new_cookie, "success": True}), 200
+                user_id: str = refresh_token_result["id"]
+                user_type: str = refresh_token_result["type"]
+                new_cookie = str(cookie_maneger().make_cookie(user_id, user_type))
+                response = make_response(jsonify({"success": True}))
+                response.set_cookie(new_cookie)
+                # return response
+                return response
 
             elif refresh_token_result.get("timeout") == True:
                 return (
