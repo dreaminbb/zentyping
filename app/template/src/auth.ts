@@ -1,4 +1,4 @@
-import { ref, type Ref, resolveDirective } from 'vue'
+import { ref, type Ref } from 'vue'
 import router from './router'
 
 export const is_login: Ref<boolean> = ref(false)
@@ -8,7 +8,6 @@ export const cookie_exist: Ref<boolean> = ref(false)
 export class token_manager {
 
   private readonly cookie: string | null = null
-  apiKey: string | undefined
 
   constructor() {
     this.cookie = localStorage.getItem('cookie')
@@ -16,7 +15,6 @@ export class token_manager {
 
 
   public cookie_exit(): void {
-
     cookie_exist.value = !!this.cookie
   }
 
@@ -68,11 +66,10 @@ export class token_manager {
             'type': JSON.parse(this.cookie as string)['type'] as string
           }
         })
-        // console.log(JSON.stringify(JSON.parse(this.cookie as string)["access_token"]) as string)
         const res = await request.json()
         console.log(res)
 
-        if (res['login'] === true) {
+        if (res['success']) {
           is_login.value = true
           console.log('welcome back sir')
           return true
@@ -80,7 +77,7 @@ export class token_manager {
         if (res['timeout'] === true) {
           console.log('token timeout')
           setTimeout(async (): Promise<void> => {
-            const update_result = await this.update_token()
+            const update_result:boolean = await this.update_token()
             console.log(update_result)
             if (update_result) {
               is_login.value = true
@@ -140,7 +137,7 @@ export class native_user {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/register', {
+      const response: Response = await fetch('http://localhost:8000/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -183,7 +180,6 @@ export class native_user {
       const res = await response.json()
       console.log(res)
       if (response.status === 200) {
-        console.log("its fucking working")
         const new_cookie = res['new_cookie']
         new token_manager().reset_cookie(new_cookie)
         is_login.value = true
@@ -194,10 +190,10 @@ export class native_user {
     }
   }
 }
+
+
 new token_manager().cookie_exit()
 new token_manager().verify_access_token()
-
-console.log(localStorage.getItem("cookie"))
 
 // if (await new token_manager().verify_access_token() === false) {
 //   is_login.value = true
