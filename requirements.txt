@@ -35,3 +35,6 @@ URLObject==2.4.3
 Werkzeug==3.0.3
 zope.event==5.0
 zope.interface==6.4.post2
+PyJWT~=2.8.0
+Flask~=3.0.3
+pymongo~=4.8.0
