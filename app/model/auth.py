@@ -1,5 +1,5 @@
 import json
-from flask import jsonify, make_response, Response, redirect, url_for
+from flask import jsonify, make_response, Response, redirect, url_for, request
 import requests
 import datetime
 import uuid
@@ -123,19 +123,58 @@ class cookie_maneger:
         refresh_token: str = json_cookie["refresh_token"]
         return access_token, refresh_token
 
-    def make_cookie(self, user_id: str, user_type: str) -> dict:
-        access_token = jwt_manager().generate(user_id, user_type)[0]
+    def make_cookie(
+        self, user_id: str, user_type: str, ip_address: str, user_agent: str
+    ) -> dict:
+        encoded_access_token = jwt_manager().generate(user_id, user_type)[0]
         encoded_refresh_token = jwt_manager().generate(user_id, user_type)[1]
-
-        return {
-            "access_token": access_token,
+        session_id = str(uuid.uuid4().hex)
+        
+        user_cookie = {
+            "access_token": encoded_access_token,
             "refresh_token": encoded_refresh_token,
+            "session_id": session_id,
+            " expiry": (
+                datetime.datetime.now()
+                + datetime.timedelta(minutes=config.COOKIE_EXPIRES_IN_DAY)
+            ).isoformat(),
             # "type": user_type,
             # "path": "/",
             # "httponly": True,
             # "Secure": True,
             # "sameSite": "None",
         }
+
+        server_cookie = {
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+            "user_id": user_id,
+            "access_token": encoded_access_token,
+            "refresh_token": encoded_refresh_token,
+            "session_id": session_id,
+            "start_time": datetime.datetime.now().isoformat(),
+            "expiry_time": (
+                datetime.datetime.now()
+                + datetime.timedelta(minutes=config.SESSION_EXPIRES_IN)
+            ).isoformat(),
+            "last_access_time": datetime.datetime.now().isoformat(),
+        }
+        db["valid_cookies"].insert_one(server_cookie)
+
+        return user_cookie
+
+    def cookie_be_invalid(self, cookie: str) -> bool:
+        if not cookie:
+            return False
+        try:
+            result = db["valid_cookies"].find_one_and_delete(cookie)
+            if result:
+                db["invalid_cookies"].insert_one(cookie)
+                return True
+        except Exception as e:
+            return False
+
+    # session、期限の検証をする
 
 
 class native:
@@ -248,9 +287,14 @@ class github:
                 )
 
                 if result:
+                    ip_address = request.remote_addr
+                    user_agent = request.headers.get("User-Agent")
                     cookie = str(
                         cookie_maneger().make_cookie(
-                            user_id=user_id, user_type="github"
+                            user_id=user_id,
+                            user_type="github",
+                            ip_address=ip_address,
+                            user_agent=user_agent,
                         )
                     )
                     print("you are not first time men")

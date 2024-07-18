@@ -5,6 +5,7 @@ import os
 
 # 本番環境で変更すること
 # cookieの設定(Secure HTTPOnly)
+# scrf対策
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".", ".env")
 load_dotenv(dotenv_path)

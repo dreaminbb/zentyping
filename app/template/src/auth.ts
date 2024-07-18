@@ -28,13 +28,13 @@ export class token_manager {
           }
         })
         const response = await request.json()
-        if (response["success"]){
+        if (response["success"]) {
           is_login.value = true
         }
-        if (response["error"]){
+        if (response["error"]) {
           is_login.value = false
         }
-        if (response["invalid"]){
+        if (response["invalid"]) {
           is_login.value = false
         }
         return
@@ -47,66 +47,6 @@ export class token_manager {
     }
   }
 
-
-
-
-  // public async verify_access_token(): Promise<boolean | void> {
-  //   if (document.cookie) {
-  //     try {
-  //       const request: Response = await fetch('http://localhost:8000/user/access', {
-  //         method: 'POST',
-  //         credentials: 'same-origin',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': this.cookie as string
-  //         }
-  //       })
-  //       const res = await request.json()
-  //       if (res['success']) {
-  //         is_login.value = true
-  //         console.log('welcome back sir')
-  //         return true
-  //       }
-  //     } catch (error) {
-  //       console.log(error)
-  //       return
-  //     }
-  //   }
-  //   return
-  // }
-
-  //bearerをつけてトークンを送る
-  // public async update_token(): Promise<boolean> {
-  //   if (document.cookie) {
-  //     try {
-  //       const response: Response = await fetch('http://localhost:8000/user/refresh', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': this.cookie as string,
-  //         }
-  //       })
-
-  //       if (!response.ok) {
-  //         return false
-  //       }
-  //       const res = await response.json()
-  //       console.log(res)
-  //       if (res['access_token']) {
-  //         const access_token = res['access_token']
-  //         const refresh_token = res['refresh_token']
-  //         is_login.value = true
-  //         this.restore_token(access_token, refresh_token)
-  //         console.log('token were updated')
-  //         return true
-  //       }
-  //     } catch (error) {
-  //       console.log('error')
-  //       return false
-  //     }
-  //   }
-  //   return false
-  // }
 
   public reset_cookie(new_cookie: string): void {
     localStorage.removeItem('cookie')
@@ -125,8 +65,15 @@ export class token_manager {
   }
 
   public logout(): void {
+    const resonse = fetch('http://localhost:8000/user/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.cookie as string
+      }
+    })
+    document.cookie = ''
     is_login.value = false
-    localStorage.removeItem('cookie')
     window.location.reload()
   }
 }
@@ -227,3 +174,5 @@ export class github {
 
 new token_manager().cookie_exit()
 new token_manager().verify_session()
+
+console.log(document.cookie)

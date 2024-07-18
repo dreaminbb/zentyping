@@ -5,6 +5,7 @@ import json
 from ..model.auth import jwt_manager, native, github, cookie_maneger
 from ..model.user import user
 
+
 user_bp = Blueprint("user_bp", __name__)
 verify_bp = Blueprint("verify_bp", __name__)
 github_bp = Blueprint("github", __name__)
@@ -35,17 +36,20 @@ def verify_session():
                 jwt_token=refresh_token
             )
 
-            print(refresh_token_result, "refresh result")
-
             if (
                 refresh_token_result.get("success") == True
             ):  # 返り値にユーザーIDとユーザータイプがある
                 user_id: str = refresh_token_result["id"]
                 user_type: str = refresh_token_result["type"]
-                new_cookie = str(cookie_maneger().make_cookie(user_id, user_type))
+                ip_address = request.remote_addr
+                user_agent = request.headers.get("User-Agent")
+                new_cookie = str(
+                    cookie_maneger().make_cookie(
+                        user_id, user_type, ip_address, user_agent
+                    )
+                )
                 response = make_response(jsonify({"success": True}))
                 response.set_cookie(new_cookie)
-                # return response
                 return response
 
             elif refresh_token_result.get("timeout") == True:
@@ -111,8 +115,9 @@ def native_register():
     )
     if not create:
         return jsonify({"message": "問題発生？"}), 500
-
-    cookie = jwt_manager().make_cookie(user_id, user_type)
+    ip_address = request.remote_addr
+    user_agent = request.headers.get("User-Agent")
+    cookie = jwt_manager().make_cookie(user_id, user_type, ip_address, user_agent)
     return jsonify({"cookie": cookie}), 200
 
 
