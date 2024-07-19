@@ -10,8 +10,6 @@ const user_password = ref('')
 const verify_pw = ref('')
 const user_name = ref('')
 
-console.log(localStorage.getItem('cookie'))
-
 const email_check = (email: string) => {
   const email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   return email_regex.test(email)

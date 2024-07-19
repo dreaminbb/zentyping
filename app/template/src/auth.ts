@@ -74,7 +74,12 @@ export class token_manager {
     })
     document.cookie = ''
     is_login.value = false
-    window.location.reload()
+    const cookies = document.cookie.split(";")
+    for (let i = 0; i < cookies.length; i++) {
+      const eq_pos = cookies[i].indexOf('=')
+      const name = eq_pos > -1 ? cookies[i].substr(0, eq_pos) : cookies[i]
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    }
   }
 }
 

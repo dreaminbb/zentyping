@@ -9,9 +9,12 @@ from app import config, db
 from ..model.user import user
 
 
+# todo
+# 1. cookieを検証して新しく作った場合は古いvalid cookieを無効にする
+
 class jwt_manager:
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  
 
         if config.JWT_SECRET and config.JWT_ALGORITHM:
             self.url = config.URL
@@ -129,7 +132,7 @@ class cookie_maneger:
         encoded_access_token = jwt_manager().generate(user_id, user_type)[0]
         encoded_refresh_token = jwt_manager().generate(user_id, user_type)[1]
         session_id = str(uuid.uuid4().hex)
-        
+
         user_cookie = {
             "access_token": encoded_access_token,
             "refresh_token": encoded_refresh_token,
