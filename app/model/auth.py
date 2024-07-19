@@ -12,9 +12,10 @@ from ..model.user import user
 # todo
 # 1. cookieを検証して新しく作った場合は古いvalid cookieを無効にする
 
+
 class jwt_manager:
 
-    def __init__(self) -> None:  
+    def __init__(self) -> None:
 
         if config.JWT_SECRET and config.JWT_ALGORITHM:
             self.url = config.URL
@@ -126,6 +127,11 @@ class cookie_maneger:
         refresh_token: str = json_cookie["refresh_token"]
         return access_token, refresh_token
 
+    def formater(self, cookie: str) -> dict:
+        cookie_value: str = cookie.replace("=", "").replace("'", '"')
+        formated_cookie: dict = json.loads(cookie_value)
+        return formated_cookie
+
     def make_cookie(
         self, user_id: str, user_type: str, ip_address: str, user_agent: str
     ) -> dict:
@@ -162,19 +168,21 @@ class cookie_maneger:
             ).isoformat(),
             "last_access_time": datetime.datetime.now().isoformat(),
         }
-        db["valid_cookies"].insert_one(server_cookie)
+        db["session"].insert_one(server_cookie)
 
         return user_cookie
 
-    def cookie_be_invalid(self, cookie: str) -> bool:
-        if not cookie:
-            return False
+    def del_cookie(self, cookie: str) -> bool:
         try:
-            result = db["valid_cookies"].find_one_and_delete(cookie)
-            if result:
-                db["invalid_cookies"].insert_one(cookie)
-                return True
+            user_id = cookie["session_id"]
+            if user_id:
+                result = db["session"].find_one_and_delete({"session_id": user_id})
+                if result:
+                    return True
+                if not result:
+                    return False
         except Exception as e:
+            print(e)
             return False
 
     # session、期限の検証をする
@@ -285,9 +293,7 @@ class github:
                 if not user_email:
                     raise ValueError("メールアドレスが見つかりません")
 
-                result = user().find_by_all(
-                    user_email=user_email, user_name=user_name, user_id=user_id
-                )
+                result = user().find_by_id(user_id=user_id)
 
                 if result:
                     ip_address = request.remote_addr

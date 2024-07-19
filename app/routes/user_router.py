@@ -99,6 +99,21 @@ def native_login():
     return "fix later"
 
 
+# cookieを取得->cookieをdictに変換->変換したものがDBにあるかを確認->あれば消して、なかったらエラーを返す
+@user_bp.route("/logout", methods=["POST"])
+def logout():
+    cookie = request.headers.get("Authorization")
+    if not cookie:
+        return jsonify({"message": "cookie not found"}), 401
+    formated_cookie = cookie_maneger().formater(cookie)
+    del_cookie_result = cookie_maneger().del_cookie(formated_cookie)
+
+    if del_cookie_result == False:  # cookieがDBに存在しない場合
+        return jsonify({"message": "no cookie?", "success": False}), 404
+    if del_cookie_result == True:
+        return jsonify({"message": "success", "success": True}), 200
+
+
 @user_bp.route("/native_register", methods=["POST"])
 def native_register():
     if not request.json:

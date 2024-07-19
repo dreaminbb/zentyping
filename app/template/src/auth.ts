@@ -64,22 +64,28 @@ export class token_manager {
     }
   }
 
-  public logout(): void {
-    const resonse = fetch('http://localhost:8000/user/logout', {
+  public async logout(): Promise<void> {
+    const req: Response = await fetch('http://localhost:8000/user/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': this.cookie as string
       }
     })
-    document.cookie = ''
-    is_login.value = false
+    const response = await req.json()
+    if (response["success"]) {
+      document.cookie = ''
+      is_login.value = false
+    } if (!response["success"]) {
+      console.log('error logging out')
+    }
     const cookies = document.cookie.split(";")
     for (let i = 0; i < cookies.length; i++) {
       const eq_pos = cookies[i].indexOf('=')
       const name = eq_pos > -1 ? cookies[i].substr(0, eq_pos) : cookies[i]
       document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT'
     }
+    window.location.reload()
   }
 }
 
