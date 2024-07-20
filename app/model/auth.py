@@ -108,18 +108,18 @@ class jwt_manager:
 
     # 0 = access token , 1 = refresh token
 
-    def cookie_verify_and_update_token(self, cookie: str | None) -> Response:
-        if not cookie:
-            return make_response({"message": config.SESSION_TIMEOUT_MESSAGE})
+    # def cookie_verify_and_update_token(self, cookie: str | None) -> Response:
+    #     if not cookie:
+    #         return make_response({"message": config.SESSION_TIMEOUT_MESSAGE})
 
-        cookie_value = cookie.replace("=", "").replace("'", '"')
-        json_cookie = json.loads(cookie_value)
-        access_token = json_cookie["access_token"]
+    #     cookie_value = cookie.replace("=", "").replace("'", '"')
+    #     json_cookie = json.loads(cookie_value)
+    #     access_token = json_cookie["access_token"]
 
-        return make_response({"message": config.ERROE_MESSAGE})
+    #     return make_response({"message": config.ERROE_MESSAGE})
 
 
-class cookie_maneger:
+class cookie_manager:
     def token_essencer(self, cookie) -> tuple[str, str]:
         cookie_value = cookie.replace("=", "").replace("'", '"')
         json_cookie = json.loads(cookie_value)
@@ -139,43 +139,49 @@ class cookie_maneger:
         encoded_refresh_token = jwt_manager().generate(user_id, user_type)[1]
         session_id = str(uuid.uuid4().hex)
 
-        user_cookie = {
-            "access_token": encoded_access_token,
-            "refresh_token": encoded_refresh_token,
-            "session_id": session_id,
-            " expiry": (
-                datetime.datetime.now()
-                + datetime.timedelta(minutes=config.COOKIE_EXPIRES_IN_DAY)
-            ).isoformat(),
-            # "type": user_type,
-            # "path": "/",
-            # "httponly": True,
-            # "Secure": True,
-            # "sameSite": "None",
-        }
+        try:
 
-        server_cookie = {
-            "ip_address": ip_address,
-            "user_agent": user_agent,
-            "user_id": user_id,
-            "access_token": encoded_access_token,
-            "refresh_token": encoded_refresh_token,
-            "session_id": session_id,
-            "start_time": datetime.datetime.now().isoformat(),
-            "expiry_time": (
-                datetime.datetime.now()
-                + datetime.timedelta(minutes=config.SESSION_EXPIRES_IN)
-            ).isoformat(),
-            "last_access_time": datetime.datetime.now().isoformat(),
-        }
-        db["session"].insert_one(server_cookie)
+            user_cookie = {
+                "access_token": encoded_access_token,
+                "refresh_token": encoded_refresh_token,
+                "session_id": session_id,
+                "expires": (
+                    datetime.datetime.now()
+                    + datetime.timedelta(minutes=config.COOKIE_EXPIRES_IN_DAY)
+                ).isoformat(),
+                # "type": user_type,
+                # "path": "/",
+                # "httponly": True,
+                # "Secure": True,
+                # "sameSite": "None",
+            }
 
-        return user_cookie
+            server_cookie = {
+                "ip_address": ip_address,
+                "user_agent": user_agent,
+                "user_id": user_id,
+                "access_token": encoded_access_token,
+                "refresh_token": encoded_refresh_token,
+                "session_id": session_id,
+                "start_time": datetime.datetime.now().isoformat(),
+                "expires": (
+                    datetime.datetime.now()
+                    + datetime.timedelta(minutes=config.SESSION_EXPIRES_IN)
+                ).isoformat(),
+                "last_access_time": datetime.datetime.now().isoformat(),
+            }
+            db["session"].insert_one(server_cookie)
+
+            return user_cookie
+        except Exception as e:
+            print(e)
+            return {"error": "error"}
 
     def del_cookie(self, cookie: str) -> bool:
         try:
             user_id = cookie["session_id"]
             if user_id:
+                print(user_id, "this is the user id motherfucker")
                 result = db["session"].find_one_and_delete({"session_id": user_id})
                 if result:
                     return True
@@ -189,9 +195,8 @@ class cookie_maneger:
 
 
 class native:
-
     @staticmethod
-    def login(email: str, password: str) -> tuple[Response, int]:
+    def verify_password(email: str, password: str) -> bool | dict:
         try:
             print(email, password)
             user = db["user"].find_one({"email": email})
@@ -204,21 +209,14 @@ class native:
 
             if decoded_password == hashed_password:
                 print("correct password")
-                new_cookie = jwt_manager().make_cookie(
-                    user_id=user["id"], user_type=user["type"]
-                )
-                return jsonify({"new_cookie": new_cookie}), 200
+                return True
 
             else:
-                print("incorrect password", 401)
-                return (
-                    jsonify({"message": "パスワードまたはメールアドレスが違います"}),
-                    401,
-                )
+                return False
 
         except Exception as e:
             print(e)
-            return jsonify({"error": "error"}), 500
+            return {"error": True}
 
 
 class github:
@@ -299,7 +297,7 @@ class github:
                     ip_address = request.remote_addr
                     user_agent = request.headers.get("User-Agent")
                     cookie = str(
-                        cookie_maneger().make_cookie(
+                        cookie_manager().make_cookie(
                             user_id=user_id,
                             user_type="github",
                             ip_address=ip_address,
@@ -311,7 +309,6 @@ class github:
                     if config.URL is not None:
                         response = make_response(redirect(config.URL))
                         response.set_cookie(cookie)
-                        print(response.set_cookie)
                         return response
                     else:
                         return jsonify({"message": "エラーが発生しました"}), 500
@@ -323,12 +320,14 @@ class github:
                         user_id, user_name, user_email, password, user_type="github"
                     )
                     cookie = str(
-                        jwt_manager().make_cookie(user_id=user_id, user_type="github")
+                        cookie_manager().make_cookie(
+                            user_id=user_id, user_type="github"
+                        )
                     )
+
                     if config.URL:
                         response = make_response(redirect(config.URL))
                         response.set_cookie(cookie)
-                        print(response.set_cookie)
                         return response
                     else:
                         return jsonify({"message": "エラーが発生しました"}), 500

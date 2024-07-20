@@ -28,14 +28,20 @@ export class token_manager {
           }
         })
         const response = await request.json()
+
         if (response["success"]) {
           is_login.value = true
         }
-        if (response["error"]) {
-          is_login.value = false
+
+        if (response["cookie"]) {
+          console.log(response["cookie"])
+          document.cookie = response["cookie"]
+          window.location.reload()
         }
-        if (response["invalid"]) {
+
+        if (response["error"] || response["invalid"]) {
           is_login.value = false
+          this.logout()
         }
         return
       } catch (error) {
@@ -48,44 +54,20 @@ export class token_manager {
   }
 
 
-  public reset_cookie(new_cookie: string): void {
-    localStorage.removeItem('cookie')
-    localStorage.setItem('cookie', JSON.stringify(new_cookie))
-    console.log('removing cookie and setting new cookie...')
-  }
 
-  //cookieをJSON->トークンの中身を更新->そしてそれを再度JSONの文字列にしてcookieに保管
-  private restore_token(access_token: string, refresh_token: string): void {
-    if (localStorage.getItem('cookie')) {
-      const json_cookie = JSON.parse(this.cookie as string)
-      json_cookie['access_token'] = access_token
-      json_cookie['refresh_token'] = refresh_token
-      localStorage.setItem('cookie', JSON.stringify(json_cookie))
-    }
-  }
 
-  public async logout(): Promise<void> {
-    const req: Response = await fetch('http://localhost:8000/user/logout', {
+
+
+  public logout(): void {
+    fetch('http://localhost:8000/user/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': this.cookie as string
       }
     })
-    const response = await req.json()
-    if (response["success"]) {
-      document.cookie = ''
-      is_login.value = false
-    } if (!response["success"]) {
-      console.log('error logging out')
-    }
-    const cookies = document.cookie.split(";")
-    for (let i = 0; i < cookies.length; i++) {
-      const eq_pos = cookies[i].indexOf('=')
-      const name = eq_pos > -1 ? cookies[i].substr(0, eq_pos) : cookies[i]
-      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT'
-    }
-    window.location.reload()
+    document.cookie = "inlaid cookie!!!!!!!!!"
+    window.location.href = '/'
   }
 }
 
@@ -95,20 +77,18 @@ export class native_user {
 
   private email_password: { email: string, password: string, type: 'native' } | null = null
 
-  public async register(email: string, password: string, name: string) {
+  public async register(email: string, password: string, name: string): Promise<void> {
 
     interface data_interface {
       email: string,
       password: string
       name: string
-      type: string
     }
 
     const user_data: data_interface = {
       email: email,
       password: password,
-      name: name,
-      type: 'native'
+      name: name
     }
 
     try {
@@ -119,27 +99,28 @@ export class native_user {
         },
         body: JSON.stringify(user_data)
       })
-
       const res = await response.json()
-      if (res && res['cookie']) {
-        const new_cookie = res['cookie']
-        new token_manager().reset_cookie(new_cookie)
-        window.location.href = '/account'
+      if (res["success"]) {
+        document.cookie = res["cookie"]
+        window.location.href = "/"
+        is_login.value = true
       } else {
-        console.log(res['message'])
+        console.log("no cookie motherfucker")
       }
-
     } catch (error) {
       console.error('Error sing up:', error)
     }
   }
 
 
+
+
+  //cookieを更新させるコードを書く
   public async login(email: string, password: string): Promise<void> {
-    this.email_password = {
+
+    const email_password = {
       email: email,
-      password: password,
-      type: 'native'
+      password: password
     }
 
     try {
@@ -149,15 +130,13 @@ export class native_user {
           'Content-Type': 'application/json',
           Authorization: import.meta.env.VITE_APP_API_KEY
         },
-        body: JSON.stringify(this.email_password)
+        body: JSON.stringify(email_password)
       })
 
       const res = await response.json()
-      console.log(res)
-      if (response.status === 200) {
-        const new_cookie = res['new_cookie']
-        new token_manager().reset_cookie(new_cookie)
-        window.location.reload()
+      if (res["success"] && res["cookie"]) {
+        document.cookie = res["cookie"]
+        window.location.href = '/'
         is_login.value = true
       }
     } catch (error) {
@@ -165,6 +144,7 @@ export class native_user {
     }
   }
 }
+
 
 export class github {
   public auth(): void {

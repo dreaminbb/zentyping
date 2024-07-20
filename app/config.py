@@ -32,10 +32,13 @@ class config:
     GITHUB_API_BASE_URL = "https://api.github.com/"
     GITHUB_REDIRECT_URL = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&scope=user:email"
 
+    FAILED_TO_AUTH_MESSAGE = "認証に失敗しました"
     ERROE_MESSAGE = "エラーが発生しました、、、"
     USER_NOT_FOUND_MESSAGE = "ユーザーが見つかりません"
     USER_ALREADY_EXISTS_MESSAGE = "ユーザーが既に存在しています"
     USER_CREATED_MESSAGE = "ユーザーが作成されました"
+    USER_EMAIL_EXISTS_MESSAGE = "そのメールアドレスはすでに登録されています"
+    USER_NAME_EXISTS_MESSAGE = "その名前はすでに登録されています"
     INVALID_TOKEN_MESSAGE = "ん？......"
     TOKEN_NOT_FOUND_MESSAGE = "ログインし直してください....ごめんぴょ"
     TOKEN_OWNER_NOT_FOUND_MESSAGE = "ログインし直してください....ごめんぴょ"

@@ -18,10 +18,11 @@ class user:
         try:
             salt = os.urandom(32)
             # ここでパスワードをハッシュ化して適切なJSONに変換している
-            hashed_password = (
-                hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
-                + salt
-            )
+            if password is not None:
+                hashed_password = (
+                    hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
+                    + salt
+                )
 
             # ユーザーIDの生成
             user_profile = {
@@ -77,6 +78,19 @@ class user:
                 return True
             if not result:
                 return False
+        except Exception as e:
+            print(e)
+            return None
+
+    @staticmethod
+    def find_and_get_user_info(email: str, user_type: str) -> dict | None:
+        try:
+            query = {"email": email, "type": user_type}
+            result = db["user"].find_one(query)
+            if result:
+                return result
+            if not result:
+                return None
         except Exception as e:
             print(e)
             return None
