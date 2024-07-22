@@ -11,8 +11,7 @@ from flask import (
     url_for,
 )
 from app import config
-import json
-from ..model.auth import jwt_manager, native, github, cookie_manager
+from ..model.auth import session_manager, native, github, cookie_manager
 from ..model.user import user
 
 user_bp = Blueprint("user_bp", __name__)
@@ -22,96 +21,40 @@ github_bp = Blueprint("github", __name__)
 # 新しいトークンを生成したらその都度DBのユーザーのaccess_atをトークン生成の中の関数で更新している
 
 
-# token essencer[0] = access_token, token essencer[1] = refresh_token
 @user_bp.route("/session", methods=["POST"])
-def verify_session():
-    cookie = request.headers.get("Authorization")
-    if cookie:
-        token_essencer = cookie_manager().token_essencer(cookie=cookie)
-        access_token_result: dict = jwt_manager().verify_token(
-            jwt_token=token_essencer[0]
-        )
-        print(access_token_result)
-
-        if access_token_result.get("success") == True:
-            return jsonify({"success": True}), 200
-
-        elif access_token_result.get("timeout") == True:
-
-            refresh_token: str = token_essencer[1]
-            refresh_token_result: dict = jwt_manager().verify_token(
-                jwt_token=refresh_token
-            )
-
-            if (
-                refresh_token_result.get("success") == True
-            ):  # 返り値にユーザーIDとユーザータイプがある
-                user_id: str = refresh_token_result["id"]
-                user_type: str = refresh_token_result["type"]
-                ip_address = request.remote_addr
-                user_agent = request.headers.get("User-Agent")
-                response = make_response(redirect(config.URL))
-
-                return response
-
-            elif refresh_token_result.get("timeout") == True:
-                return (
-                    jsonify(
-                        {"message": config.TOKEN_TIMEOUT_MESSAGE, "success": False}
-                    ),
-                    401,
-                )
-
-            elif refresh_token_result.get("invalid") == True:
-                return (
-                    jsonify(
-                        {"message": config.TOKEN_INVALID_MESSAGE, "success": False}
-                    ),
-                    401,
-                )
-
-        elif access_token_result.get("invalid") == True:
-            return (
-                jsonify({"message": config.TOKEN_INVALID_MESSAGE, "success": False}),
-                401,
-            )
-
-        elif access_token_result.get("error") == True:
-            return (
-                jsonify({"message": config.ERROE_MESSAGE, "success": False}),
-                500,
-            )
-
-    else:
-        return (
-            jsonify({"message": config.TOKEN_NOT_FOUND_MESSAGE, "success": False}),
-            401,
-        )
+def session():
+    access_token = request.cookies.get("access_token")
+    refresh_token = request.cookies.get("refresh_token")
+    print(request.cookies.get("session_id"))
+    if not access_token or not refresh_token:
+        return jsonify({"message": config.TOKEN_NOT_FOUND_MESSAGE}), 401
+    response = session_manager().verify(
+        access_token=access_token, refresh_token=refresh_token
+    )
+    return response
 
 
 # cookieを取得->cookieをdictに変換->変換したものがDBにあるかを確認->あれば消して、なかったらエラーを返す
 @user_bp.route("/logout", methods=["POST"])
 def logout():
-    cookie = request.headers.get("Authorization")
-    formated_cookie = cookie_manager().formater(cookie)
-    del_cookie_result = cookie_manager().del_cookie(formated_cookie)
+    session_id: str = request.cookies.get("session_id")
+    del_cookie_result = cookie_manager().del_cookie(session_id)
 
-    if del_cookie_result == False:  # cookieがDBに存在しない場合
-        return print("there no cookie such a this")
-    if del_cookie_result == True:
-        print("cookie removed")
-    res = make_response(redirect("/login"))
+    # if del_cookie_result == False:  # cookieがDBに存在しない場合
+        # print("there no cookie such a this")
+        # return
+    # if del_cookie_result == True:
+        # print("cookie removed")
+    res = make_response(redirect("/"))
     res.delete_cookie("access_token")
-    res.delate_cookie("refresh_token")
+    res.delete_cookie("refresh_token")
     res.delete_cookie("expires")
-
     return res
 
 
 # 同じメールアドレスがDBにあるかを確認->なければ作る、あったらありますと返す->cookie付与
 
 
-# リダイレクトはクライアントサイドで行う
 @user_bp.route("/native_register", methods=["POST"])
 def native_register():
     if request.content_type != "application/json":
@@ -165,8 +108,7 @@ def native_register():
 @user_bp.route("/native_login", methods=["POST"])
 def native_login():
     # if request.A != "application/json":
-    # print(request.content_type)
-    # return jsonify({"message": "Unsupported Media Type"}), 415
+    #     return jsonify({"message": "Unsupported Media Type"}), 415
 
     email: str = request.json["email"]
     password: str = request.json["password"]
@@ -177,38 +119,12 @@ def native_login():
             user_id = user_info["id"]
             ip_address = request.remote_addr
             user_agent = request.headers.get("User-Agent")
-            response = make_response(redirect("/"))
-            auth_dict = cookie_manager().save_and_set(
+            redirect_url = "/"
+            response = cookie_manager().set_cookie_response(
                 user_id=user_id,
-                user_type="native",
                 ip_address=ip_address,
                 user_agent=user_agent,
-            )
-            half_hour = int(datetime.datetime.now().timestamp()) + 60 * 30
-            ten_day = int(datetime.datetime.now().timestamp()) + 60 * 60 * 24 * 10
-            response.set_cookie(
-                "access_token",
-                auth_dict["access_token"],
-                expires=half_hour,
-                # secure=True,
-                # httponly=True,
-                # samesite="None",
-            )
-            response.set_cookie(
-                "refresh_token",
-                auth_dict["refresh_token"],
-                expires=ten_day,
-                # secure=True,
-                # httponly=True,
-                # samesite="None",
-            )
-            response.set_cookie(
-                "session_id",
-                auth_dict["session_id"],
-                expires=half_hour,
-                # secure=True,
-                # httponly=True,
-                # samesite="None",
+                redirect_url=redirect_url,
             )
             return response, 200
         if verify_password == False:

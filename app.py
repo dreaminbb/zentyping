@@ -1,7 +1,7 @@
 from app import config
 from dotenv import load_dotenv
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from pymongo import MongoClient
 from app.routes.user_router import user_bp, github_bp, verify_bp
 
@@ -40,7 +40,12 @@ except Exception as e:
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+    access_token = request.cookies.get("access_token")
+    refresh_token = request.cookies.get("refresh_token")
+    if access_token and refresh_token is None:
+        return render_template("index.html", is_login=False)
+
+    return render_template("index.html", is_login=True)
 
 
 if __name__ == "__main__":

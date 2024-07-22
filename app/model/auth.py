@@ -1,5 +1,5 @@
 import json
-from flask import jsonify, make_response, Response, redirect, url_for, request
+from flask import jsonify, make_response, Response, redirect, request
 import requests
 import datetime
 import uuid
@@ -26,7 +26,7 @@ class jwt_manager:
             self.jti = str(uuid.uuid4())
         pass
 
-    def generate(self, user_id: str, user_type: str) -> tuple[str, str]:
+    def generate(self, user_id: str) -> dict:
 
         access_token: str = jwt.encode(
             {
@@ -36,7 +36,6 @@ class jwt_manager:
                 "exp": datetime.datetime.now(datetime.timezone.utc)
                 + datetime.timedelta(minutes=config.JWT_EXPIRES_IN),
                 "role": "user",
-                "type": user_type,
             },
             key=self.key,
             algorithm=self.algorithm,
@@ -48,7 +47,6 @@ class jwt_manager:
             # "aud": os.getenv("URL"),
             "exp": datetime.datetime.now(datetime.timezone.utc)
             + datetime.timedelta(days=self.expires_in_refresh),
-            "type": user_type,
             "jti": self.jti,
         }
 
@@ -56,12 +54,7 @@ class jwt_manager:
             refresh_token, key=self.key, algorithm=self.algorithm
         )
 
-        self.token_be_invalid(token=refresh_token)
-
-        db["refresh_token"].find_one_and_delete({"sub": user_id})
-        db["refresh_token"].insert_one(refresh_token)
-
-        return access_token, encoded_refresh_token
+        return {"access_token": access_token, "refresh_token": encoded_refresh_token}
 
     def verify_token(self, jwt_token: str) -> dict:
         if not jwt_token:
@@ -70,7 +63,7 @@ class jwt_manager:
         try:
             payload = jwt.decode(jwt_token, key=self.key, algorithms=[self.algorithm])
             print(payload["sub"], "sub sub sub")
-            return {"success": True, "id": payload["sub"], "type": payload["type"]}
+            return {"success": True, "id": payload["sub"]}
 
         except jwt.ExpiredSignatureError:
             db["invalid_tokens"].insert_one(
@@ -79,7 +72,7 @@ class jwt_manager:
                     "detected_at": datetime.datetime.now(datetime.timezone.utc),
                 }
             )
-            return {"timeout": True}
+            return {"timeout": True, "user_id": payload["sub"]}
 
         except jwt.InvalidTokenError:
             db["invalid_tokens"].insert_one(
@@ -95,50 +88,82 @@ class jwt_manager:
             print(e, "this is why the error")
             return {"error": True}
 
-    def token_be_invalid(self, token: dict) -> None:
-        old_token = db["refresh_token"].find_one(token)
-        if old_token:
-            db["invalid_tokens"].insert_one(old_token)
-            db["refresh_token"].delete_one(old_token)
-            return
-        else:
-            return
 
-    # 0 = access token , 1 = refresh token
+class session_manager:
 
-    # def cookie_verify_and_update_token(self, cookie: str | None) -> Response:
-    #     if not cookie:
-    #         return make_response({"message": config.SESSION_TIMEOUT_MESSAGE})
+    def verify(self, access_token: str, refresh_token: str) -> Response:
+        try:
+            at_result = jwt_manager().verify_token(access_token)
+            if at_result["success"]:
+                return (
+                    make_response(
+                        {
+                            "message": "success",
+                            "session": True,
+                            "success": True,
+                            "login": True,
+                        }
+                    ),
+                    200,
+                )
 
-    #     cookie_value = cookie.replace("=", "").replace("'", '"')
-    #     json_cookie = json.loads(cookie_value)
-    #     access_token = json_cookie["access_token"]
+            if at_result["timeout"]:
+                rt_result = jwt_manager().verify_token(refresh_token)
 
-    #     return make_response({"message": config.ERROE_MESSAGE})
+                if rt_result["success"]:
+                    new_tokens = jwt_manager().generate(user_id=rt_result["id"])
+                    response = make_response({"success": True, "session": True})
+                    response.set_cookie("access_token", new_tokens["access_token"])
+                    response.set_cookie("refresh_token", new_tokens["refresh_token"])
+                    return response, 200
+
+                if rt_result["timeout"]:
+                    return (
+                        jsonify(
+                            {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}
+                        ),
+                        401,
+                    )
+
+                if rt_result["invalid"]:
+                    return (
+                        jsonify(
+                            {"message": config.INVALID_TOKEN_MESSAGE, "session": False}
+                        ),
+                        401,
+                    )
+
+            if at_result["timeout"]:
+                return (
+                    jsonify(
+                        {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}
+                    ),
+                    401,
+                )
+
+            if at_result["invalid"]:
+                return (
+                    jsonify(
+                        {"message": config.INVALID_TOKEN_MESSAGE, "session": False}
+                    ),
+                    401,
+                )
+
+        except Exception as e:
+            print(e)
+            return jsonify({"error": "error", "session": False}), 500
+
+    def be_invalid(self, user_id: str) -> None:
+        db["session"].delete_many({"user_id": user_id})
 
 
 class cookie_manager:
-    def token_essencer(self, cookie) -> tuple[str, str] | None:
-        if not cookie:
-            return None
-        cookie_value = cookie.replace("=", "").replace("'", '"')
-        json_cookie = json.loads(cookie_value)
-        access_token: str = json_cookie["access_token"]
-        refresh_token: str = json_cookie["refresh_token"]
-        return access_token, refresh_token
-
-    def formater(self, cookie: str) -> dict:
-        cookie_value: str = cookie.replace("=", "").replace("'", '"')
-        formated_cookie: dict = json.loads(cookie_value)
-        return formated_cookie
 
     # cookie作成→DBに保存→レスポンスにcookieをセットして返す
-    def save_and_set(
-        self, user_id: str, user_type: str, ip_address: str, user_agent: str
-    ) -> Response:
-
-        encoded_access_token = jwt_manager().generate(user_id, user_type)[0]
-        encoded_refresh_token = jwt_manager().generate(user_id, user_type)[1]
+    def save_and_set(self, user_id: str, ip_address: str, user_agent: str) -> Response:
+        tokens: dict = jwt_manager().generate(user_id=user_id)
+        encoded_access_token = tokens["access_token"]
+        encoded_refresh_token = tokens["refresh_token"]
         session_id = str(uuid.uuid4().hex)
 
         try:
@@ -171,9 +196,8 @@ class cookie_manager:
             print(e)
             return {"error": "error"}
 
-    def del_cookie(self, cookie: str) -> bool:
+    def del_cookie(self, session_id: str) -> bool:
         try:
-            session_id = cookie["session_id"]
             if session_id:
                 result = db["session"].find_one_and_delete({"session_id": session_id})
                 if result:
@@ -184,7 +208,48 @@ class cookie_manager:
             print(e)
             return False
 
-    # session、期限の検証をする
+    def set_cookie_response(
+        self, user_id: str, ip_address: str, user_agent: str, redirect_url: str
+    ) -> Response:
+
+        if not all([user_id, ip_address, user_agent, redirect_url]):
+            return make_response({"error": "error"}), 500
+
+        auth_dict: dict = self.save_and_set(
+            user_id=user_id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        half_hour: int = int(datetime.datetime.now().timestamp()) + 60 * 30
+        ten_day: int = int(datetime.datetime.now().timestamp()) + 60 * 60 * 24 * 10
+
+        response = make_response(redirect(redirect_url))
+        response.set_cookie(
+            "access_token",
+            auth_dict["access_token"],
+            expires=half_hour,
+            # secure=True,
+            # httponly=True,
+            # samesite="None",
+        )
+        response.set_cookie(
+            "refresh_token",
+            auth_dict["refresh_token"],
+            expires=ten_day,
+            # secure=True,
+            # httponly=True,
+            # samesite="None",
+        )
+        response.set_cookie(
+            "session_id",
+            auth_dict["session_id"],
+            expires=half_hour,
+            # secure=True,
+            # httponly=True,
+            # samesite="None",
+        )
+
+        return response
 
 
 class native:

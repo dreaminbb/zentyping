@@ -4,7 +4,7 @@
     "env.d.ts",
     "src/**/*",
     "src/**/*.vue ",
-    "src/main.ts",
+    "src/assets/main.ts",
     "src/components/user_login.vue"
   ],
   "exclude": ["src/**/__tests__/*"],

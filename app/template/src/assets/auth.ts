@@ -5,50 +5,48 @@ export const cookie_exist: Ref<boolean> = ref(false)
 
 export class token_manager {
 
-  public async verify_session(): Promise<void> {
-    if (document.cookie) {
-      try {
-        const request: Response = await fetch('http://localhost:8000/user/session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': document.cookie
-          }
-        })
-        const response = await request.json()
+  // public async verify_session(): Promise<void> {
+  //   if (document.cookie) {
+  //     try {
+  //       const request: Response = await fetch('http://localhost:8000/user/session', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': document.cookie
+  //         }
+  //       })
+  //       const response = await request.json()
+  //       if (response["success"]) {
+  //         is_login.value = true
+  //       }
 
-        if (response["success"]) {
-          is_login.value = true
-        }
+  //       if (response["cookie"]) {
+  //         console.log(response["cookie"])
+  //         window.location.reload()
+  //       }
 
-        if (response["cookie"]) {
-          console.log(response["cookie"])
-          window.location.reload()
-        }
-
-        if (response["error"] || response["invalid"]) {
-          is_login.value = false
-          this.logout()
-        }
-        return
-      } catch (error) {
-        console.log(error)
-      }
-    } else {
-      console.log("no cookie?")
-      return
-    }
-  }
+  //       if (response["error"] || response["invalid"]) {
+  //         is_login.value = false
+  //         this.logout()
+  //       }
+  //       return
+  //     } catch (error) {
+  //       console.log(error)
+  //     }
+  //   } else {
+  //     console.log("no cookie?")
+  //     return
+  //   }
+  // }
 
   public logout(): void {
     fetch('http://localhost:8000/user/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': document.cookie
       }
     })
-    // access_tokenとrefresh_tokenのcookieを削除する
+    window.location.href = '/'
   }
 }
 
@@ -107,7 +105,7 @@ export class native_user {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': import.meta.env.VITE_APP_API_KEY,
-          'dataType': 'json',
+          // 'dataType': 'json',
         },
         body: JSON.stringify(email_password),
         // credentials: 'include'
@@ -148,5 +146,3 @@ export class github {
     }
   }
 }
-
-new token_manager().verify_session()
