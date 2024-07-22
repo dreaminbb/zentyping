@@ -23,6 +23,8 @@ class config:
     SESSION_EXPIRES_IN = int(os.getenv("SESSION_EXPIRES_IN", 30))
     SERVER_API_KEY = os.getenv("SERVER_API_KEY", None)
     NEVER_GONNA_GIVE_YOU_UP_URL = os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL")
+    ACCOUNT_URL = f"{URL}/account"
+    COOKIE_AGE = 0.5  # 時間単位
     PIECE = os.getenv("PIECE")
 
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
@@ -49,31 +51,3 @@ class config:
 
 
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]
-
-
-def create_app() -> Flask:
-    from app.routes.user_router import user_bp, github_bp, verify_bp
-
-    app = Flask(__name__)
-    app.config.from_object(config)
-    client = MongoClient(config.MONGO_URL)
-    app.config["RATELIMIT_HEADERS_ENABLED"] = True
-
-    # リクエスト回数の制限
-    # limiter = Limiter(
-    #     get_remote_address,
-    #     app=app,
-    #     default_limits=["200 per day", "50 per hour" , "15 per minutes"],
-    #     # storage_uri="memory://",
-    # )
-
-    app.register_blueprint(github_bp, url_prefix="/github")
-    app.register_blueprint(user_bp, url_prefix="/user")
-    app.register_blueprint(verify_bp, url_prefix="/verify")
-    try:
-        client.admin.command("ismaster")
-        print("MongoDB connection successful")
-    except Exception as e:
-        print("MongoDB connection failed", e)
-    CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
-    return app

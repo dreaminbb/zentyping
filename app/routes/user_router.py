@@ -1,15 +1,23 @@
+import datetime
 import uuid
-from flask import Blueprint, make_response, request, Response, jsonify, redirect
+from flask import (
+    Blueprint,
+    make_response,
+    request,
+    Flask,
+    Response,
+    jsonify,
+    redirect,
+    url_for,
+)
 from app import config
 import json
 from ..model.auth import jwt_manager, native, github, cookie_manager
 from ..model.user import user
 
-
 user_bp = Blueprint("user_bp", __name__)
 verify_bp = Blueprint("verify_bp", __name__)
 github_bp = Blueprint("github", __name__)
-
 
 # 新しいトークンを生成したらその都度DBのユーザーのaccess_atをトークン生成の中の関数で更新している
 
@@ -17,7 +25,6 @@ github_bp = Blueprint("github", __name__)
 # token essencer[0] = access_token, token essencer[1] = refresh_token
 @user_bp.route("/session", methods=["POST"])
 def verify_session():
-
     cookie = request.headers.get("Authorization")
     if cookie:
         token_essencer = cookie_manager().token_essencer(cookie=cookie)
@@ -43,12 +50,8 @@ def verify_session():
                 user_type: str = refresh_token_result["type"]
                 ip_address = request.remote_addr
                 user_agent = request.headers.get("User-Agent")
-                new_cookie = str(
-                    cookie_manager().make_cookie(
-                        user_id, user_type, ip_address, user_agent
-                    )
-                )
-                response = jsonify({"success": True, "cookie": new_cookie})
+                response = make_response(redirect(config.URL))
+
                 return response
 
             elif refresh_token_result.get("timeout") == True:
@@ -90,22 +93,19 @@ def verify_session():
 @user_bp.route("/logout", methods=["POST"])
 def logout():
     cookie = request.headers.get("Authorization")
-    if not cookie:
-        return jsonify({"message": "cookie not found"}), 401
     formated_cookie = cookie_manager().formater(cookie)
-    print(formated_cookie, "this is the formated cookie")
     del_cookie_result = cookie_manager().del_cookie(formated_cookie)
-    print(del_cookie_result, "this is the result of removing cookie")
 
     if del_cookie_result == False:  # cookieがDBに存在しない場合
-        return (
-            jsonify(
-                {"message": "no cookie?", "success": False, "no_cookie_in_db": True}
-            ),
-            404,
-        )
+        return print("there no cookie such a this")
     if del_cookie_result == True:
-        return jsonify({"message": "success", "success": True}), 200
+        print("cookie removed")
+    res = make_response(redirect("/login"))
+    res.delete_cookie("access_token")
+    res.delate_cookie("refresh_token")
+    res.delete_cookie("expires")
+
+    return res
 
 
 # 同じメールアドレスがDBにあるかを確認->なければ作る、あったらありますと返す->cookie付与
@@ -140,21 +140,20 @@ def native_register():
 
             ip_address: str = request.remote_addr
             user_agent: str = request.headers.get("User-Agent")
-            cookie = str(
-                cookie_manager().make_cookie(
-                    user_id=user_id,
-                    user_type=user_type,
-                    ip_address=ip_address,
-                    user_agent=user_agent,
-                )
-            )
-            response = jsonify(
-                {
-                    "success": True,
-                    "message": config.USER_CREATED_MESSAGE,
-                    "cookie": cookie,
-                }
-            )
+            # cookie = cookie_manager().make_cookie_response(
+            #     user_id=user_id,
+            #     user_type=user_type,
+            #     ip_address=ip_address,
+            #     user_agent=user_agent,
+            #     redirect_url=config.ACCOUTN_URL,
+            # )
+            # response = jsonify(
+            #     {
+            #         "success": True,
+            #         "message": config.USER_CREATED_MESSAGE,
+            #         "cookie": cookie,
+            #     }
+            # )
             return response
         except Exception as e:
             print(e)
@@ -165,8 +164,9 @@ def native_register():
 
 @user_bp.route("/native_login", methods=["POST"])
 def native_login():
-    if request.content_type != "application/json":
-        return jsonify({"message": "Unsupported Media Type"}), 415
+    # if request.A != "application/json":
+    # print(request.content_type)
+    # return jsonify({"message": "Unsupported Media Type"}), 415
 
     email: str = request.json["email"]
     password: str = request.json["password"]
@@ -175,15 +175,46 @@ def native_login():
         if verify_password == True:
             user_info = user.find_and_get_user_info(email, "native")
             user_id = user_info["id"]
-            user_type = "native"
             ip_address = request.remote_addr
             user_agent = request.headers.get("User-Agent")
-            new_cookie = str(
-                cookie_manager().make_cookie(user_id, user_type, ip_address, user_agent)
+            response = make_response(redirect("/"))
+            auth_dict = cookie_manager().save_and_set(
+                user_id=user_id,
+                user_type="native",
+                ip_address=ip_address,
+                user_agent=user_agent,
             )
-            return jsonify({"success": True, "cookie": new_cookie}), 200
+            half_hour = int(datetime.datetime.now().timestamp()) + 60 * 30
+            ten_day = int(datetime.datetime.now().timestamp()) + 60 * 60 * 24 * 10
+            response.set_cookie(
+                "access_token",
+                auth_dict["access_token"],
+                expires=half_hour,
+                # secure=True,
+                # httponly=True,
+                # samesite="None",
+            )
+            response.set_cookie(
+                "refresh_token",
+                auth_dict["refresh_token"],
+                expires=ten_day,
+                # secure=True,
+                # httponly=True,
+                # samesite="None",
+            )
+            response.set_cookie(
+                "session_id",
+                auth_dict["session_id"],
+                expires=half_hour,
+                # secure=True,
+                # httponly=True,
+                # samesite="None",
+            )
+            return response, 200
         if verify_password == False:
-            return jsonify({"message": config.FAILED_TO_AUTH_MESSAGE}), 401
+            return "444", 444  # パスワードかユーザー名が違う
+        if verify_password == None:
+            return "446", 446  # DBにユーザーがいない
 
     if not email or password:
         return jsonify({"message": "wahts a data 👀"}), 400
@@ -200,6 +231,8 @@ def github_callback():
     if not code:
         return jsonify({"message": "エラーが発生しました"})
     response = github().sign_in_login(code)
+    response = redirect(config.ACCOUTN_URL)
+
     return response
 
 

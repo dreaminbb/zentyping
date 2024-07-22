@@ -5,18 +5,6 @@ export const cookie_exist: Ref<boolean> = ref(false)
 
 export class token_manager {
 
-  private readonly cookie: string | null = null
-
-  constructor() {
-    this.cookie = document.cookie
-  }
-
-
-  public cookie_exit(): void {
-    cookie_exist.value = !!this.cookie
-  }
-
-
   public async verify_session(): Promise<void> {
     if (document.cookie) {
       try {
@@ -24,7 +12,7 @@ export class token_manager {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': this.cookie as string
+            'Authorization': document.cookie
           }
         })
         const response = await request.json()
@@ -35,7 +23,6 @@ export class token_manager {
 
         if (response["cookie"]) {
           console.log(response["cookie"])
-          document.cookie = response["cookie"]
           window.location.reload()
         }
 
@@ -53,29 +40,21 @@ export class token_manager {
     }
   }
 
-
-
-
-
-
   public logout(): void {
     fetch('http://localhost:8000/user/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': this.cookie as string
+        'Authorization': document.cookie
       }
     })
-    document.cookie = "inlaid cookie!!!!!!!!!"
-    window.location.href = '/'
+    // access_tokenとrefresh_tokenのcookieを削除する
   }
 }
 
 
 // ユーザーのアカウント作成、ログイン、ログアウト
 export class native_user {
-
-  private email_password: { email: string, password: string, type: 'native' } | null = null
 
   public async register(email: string, password: string, name: string): Promise<void> {
 
@@ -101,7 +80,6 @@ export class native_user {
       })
       const res = await response.json()
       if (res["success"]) {
-        document.cookie = res["cookie"]
         window.location.href = "/"
         is_login.value = true
       } else {
@@ -124,23 +102,31 @@ export class native_user {
     }
 
     try {
-      const response: Response = await fetch('http://localhost:8000/user/native_login', {
+      fetch('http://localhost:8000/user/native_login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: import.meta.env.VITE_APP_API_KEY
+          'Authorization': import.meta.env.VITE_APP_API_KEY,
+          'dataType': 'json',
         },
-        body: JSON.stringify(email_password)
+        body: JSON.stringify(email_password),
+        // credentials: 'include'
       })
-
-      const res = await response.json()
-      if (res["success"] && res["cookie"]) {
-        document.cookie = res["cookie"]
-        window.location.href = '/'
-        is_login.value = true
-      }
+        .then(response => {
+          if (response.status === 200) {
+            console.log("it working")
+            window.location.href = 'http://localhost:8000/'
+          } else if (response.status === 444) {
+            console.log("パスワードまたはユーザー名に誤りがあります");
+          } else if (response.status === 446) {
+            console.log("ユーザー登録がありません");
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 }
@@ -163,7 +149,4 @@ export class github {
   }
 }
 
-new token_manager().cookie_exit()
 new token_manager().verify_session()
-
-console.log(document.cookie)

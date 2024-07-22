@@ -1,1 +1,1 @@
-from .config import config , create_app,db
+from .config import config, db
