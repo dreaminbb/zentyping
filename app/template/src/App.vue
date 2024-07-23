@@ -93,7 +93,7 @@ const logout = () => {
       </router-link>
     </div>
 
-    <div id="tools" ref="tools" v-if="!is_login && $route.name === 'home'">
+    <div id="tools" ref="tools" v-if="is_login && $route.name === 'home'">
       <svg
         class="tool_svg"
         id="terminal"

@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from '../App.vue'
 import router from './router'
-import { is_login } from './auth'
+import { token_manager } from './auth'
 
 
 export const apiKey: string = import.meta.env.VITE_APP_API_KEY
@@ -21,35 +21,3 @@ createApp(App).use(router).mount('#app')
 //    },
 //  })
 // })
-const verify_session = async (): Promise<void> => {
-    if (document.cookie) {
-        try {
-            fetch('http://localhost:8000/user/session', {
-                method: 'POST',
-                // "credentials": 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data)
-                    if (data["session"]) {
-                        console.log("session is valid")
-                        is_login.value = true
-                    } else if (!data["session"]) {
-                        console.log("session is timeout")
-                        is_login.value = false
-                    } else if (data["error"]) {
-                        console.log("sometihnnig went worng")
-                        is_login.value = false
-                    }
-                })
-        } catch (error) {
-            console.error('Error verifying session:', error)
-        }
-    } else {
-        return
-    }
-}
-verify_session()

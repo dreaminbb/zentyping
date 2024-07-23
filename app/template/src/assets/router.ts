@@ -3,6 +3,7 @@ import home from '@/components/user_home.vue'
 import play from '@/components/play.vue'
 import login from '@/components/user_login.vue'
 import account from '@/components/user_account.vue'
+import { token_manager } from './auth'
 
 
 const router = createRouter({
@@ -11,6 +12,10 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      beforeEnter: async (to, from, next) => {
+        await new token_manager().verify_session()
+        next()
+      },
       component: home
     },
     {
@@ -22,7 +27,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       beforeEnter: async (to, from, next) => {
-        // await new token_manager().verify_session()
+        await new token_manager().verify_session()
         next()
       },
       component: login
@@ -31,7 +36,7 @@ const router = createRouter({
       path: '/account',
       name: 'account',
       beforeEnter: async (to, from, next) => {
-        // await new token_manager().verify_session()
+        await new token_manager().verify_session()
         next()
       },
       component: account

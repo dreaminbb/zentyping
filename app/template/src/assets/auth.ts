@@ -1,44 +1,43 @@
 import { ref, type Ref } from 'vue'
-import router from './router'
 
 export const is_login: Ref<boolean> = ref(false)
 export const cookie_exist: Ref<boolean> = ref(false)
 
 export class token_manager {
 
-  // public async verify_session(): Promise<void> {
-  //   if (document.cookie) {
-  //     try {
-  //       const request: Response = await fetch('http://localhost:8000/user/session', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': document.cookie
-  //         }
-  //       })
-  //       const response = await request.json()
-  //       if (response["success"]) {
-  //         is_login.value = true
-  //       }
+  public async verify_session(): Promise<void> {
+    if (document.cookie) {
+      try {
+        fetch('http://localhost:8000/user/session', {
+          method: 'POST',
+          // "credentials": 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            if (data["session"]) {
+              console.log("session is valid")
+              is_login.value = true
+            } else if (!data["session"]) {
+              console.log("session is timeout")
+              is_login.value = false
+            } else if (data["error"]) {
+              console.log("sometihnnig went worng")
+              is_login.value = false
+            }
+          })
+      } catch (error) {
+        console.error('Error verifying session:', error)
+      }
+    } else {
+      return
+    }
+  }
 
-  //       if (response["cookie"]) {
-  //         console.log(response["cookie"])
-  //         window.location.reload()
-  //       }
 
-  //       if (response["error"] || response["invalid"]) {
-  //         is_login.value = false
-  //         this.logout()
-  //       }
-  //       return
-  //     } catch (error) {
-  //       console.log(error)
-  //     }
-  //   } else {
-  //     console.log("no cookie?")
-  //     return
-  //   }
-  // }
 
   public logout(): void {
     fetch('http://localhost:8000/user/logout', {
