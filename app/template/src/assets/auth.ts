@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue'
+import router from './router'
 
 export const is_login: Ref<boolean> = ref(false)
 export const cookie_exist: Ref<boolean> = ref(false)
@@ -69,20 +70,14 @@ export class native_user {
     }
 
     try {
-      const response: Response = await fetch('http://localhost:8000/user/native_register', {
+      fetch('http://localhost:8000/user/native_register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(user_data)
       })
-      const res = await response.json()
-      if (res["success"]) {
-        window.location.href = "/"
-        is_login.value = true
-      } else {
-        console.log("no cookie motherfucker")
-      }
+      window.location.href = 'http://localhost:8000/'
     } catch (error) {
       console.error('Error sing up:', error)
     }

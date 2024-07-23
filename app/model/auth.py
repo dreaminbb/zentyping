@@ -212,7 +212,7 @@ class cookie_manager:
         self, user_id: str, ip_address: str, user_agent: str, redirect_url: str
     ) -> Response:
 
-        if not all([user_id, ip_address, user_agent, redirect_url]):
+        if not all([user_id, ip_address, user_agent]):
             return make_response({"error": "error"}), 500
 
         auth_dict: dict = self.save_and_set(
@@ -223,7 +223,11 @@ class cookie_manager:
         half_hour: int = int(datetime.datetime.now().timestamp()) + 60 * 30
         ten_day: int = int(datetime.datetime.now().timestamp()) + 60 * 60 * 24 * 10
 
-        response = make_response(redirect(redirect_url))
+        if redirect_url:
+            response = make_response(redirect(redirect_url), {"success": True, "login": True})
+        if not redirect_url:
+            response = make_response(redirect("/"), {"success": True, "login": True})
+
         response.set_cookie(
             "access_token",
             auth_dict["access_token"],
@@ -344,7 +348,7 @@ class github:
                 )
 
                 user_email = email_response.json()[0]["email"]
-                user_id = str(user_data["id"])
+                user_id = str(uuid.uuid4().hex)
                 user_name = user_data["login"]
                 if not user_email:
                     raise ValueError("メールアドレスが見つかりません")
@@ -354,34 +358,36 @@ class github:
                 if result:
                     ip_address = request.remote_addr
                     user_agent = request.headers.get("User-Agent")
-                    response(redirect(config.ACCOUTN_URL))
-                    response = cookie_manager().make_cookie(
+                    response = cookie_manager().set_cookie_response(
                         user_id=user_id,
-                        user_type="github",
                         ip_address=ip_address,
                         user_agent=user_agent,
+                        redirect_url="/"
                     )
-                    print("you are not first time men")
+                    print(response.json())
                     return response
 
                 if not result:
+                    user_id = user_id
                     password = None
-                    print("you are virgin")
                     user().create_save(
-                        user_id, user_name, user_email, password, user_type="github"
+                        user_id,
+                        user_name,
+                        user_email,
+                        password,
+                        user_type="github",
                     )
-                    cookie = str(
-                        cookie_manager().make_cookie(
-                            user_id=user_id, user_type="github"
-                        )
+                    ip_address = request.remote_addr
+                    user_agent = request.headers.get("User-Agent")
+                    response = cookie_manager().set_cookie_response(
+                        user_id=user_id,
+                        ip_address=ip_address,
+                        user_agent=user_agent,
+                        redirect_url="/"
                     )
-
-                    if config.URL:
-                        response = make_response(redirect(config.URL))
-                        response.set_cookie(cookie)
-                        return response
-                    else:
-                        return jsonify({"message": "エラーが発生しました"}), 500
+                    return response
+                else:
+                    return jsonify({"message": "エラーが発生しました"}), 500
 
             except Exception as e:
                 print(e)

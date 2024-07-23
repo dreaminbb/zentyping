@@ -18,8 +18,6 @@ user_bp = Blueprint("user_bp", __name__)
 verify_bp = Blueprint("verify_bp", __name__)
 github_bp = Blueprint("github", __name__)
 
-# 新しいトークンを生成したらその都度DBのユーザーのaccess_atをトークン生成の中の関数で更新している
-
 
 @user_bp.route("/session", methods=["POST"])
 def session():
@@ -34,25 +32,16 @@ def session():
     return response
 
 
-# cookieを取得->cookieをdictに変換->変換したものがDBにあるかを確認->あれば消して、なかったらエラーを返す
 @user_bp.route("/logout", methods=["POST"])
 def logout():
     session_id: str = request.cookies.get("session_id")
-    del_cookie_result = cookie_manager().del_cookie(session_id)
-
-    # if del_cookie_result == False:  # cookieがDBに存在しない場合
-        # print("there no cookie such a this")
-        # return
-    # if del_cookie_result == True:
-        # print("cookie removed")
+    cookie_manager().del_cookie(session_id)
     res = make_response(redirect("/"))
     res.delete_cookie("access_token")
     res.delete_cookie("refresh_token")
+    res.delete_cookie("session_id")
     res.delete_cookie("expires")
     return res
-
-
-# 同じメールアドレスがDBにあるかを確認->なければ作る、あったらありますと返す->cookie付与
 
 
 @user_bp.route("/native_register", methods=["POST"])
@@ -62,7 +51,6 @@ def native_register():
 
     email: str = request.json["email"]
     name: str = request.json["name"]
-    print(email, name)
     if email and name:
         try:
 
@@ -77,27 +65,18 @@ def native_register():
             password: str = request.json["password"]
             user_type: str = "native"
             create = user().create_save(user_id, email, password, name, user_type)
-            print(create, "this is the result of create user")
             if not create:
                 return jsonify({"message": config.ERROE_MESSAGE}), 500
+            user_agent = request.headers.get("User-Agent")
+            ip_address = request.remote_addr
+            response = cookie_manager().set_cookie_response(
+                user_agent=user_agent,
+                ip_address=ip_address,
+                user_id=user_id,
+                redirect_url="/",
+            )
+            return response, 200
 
-            ip_address: str = request.remote_addr
-            user_agent: str = request.headers.get("User-Agent")
-            # cookie = cookie_manager().make_cookie_response(
-            #     user_id=user_id,
-            #     user_type=user_type,
-            #     ip_address=ip_address,
-            #     user_agent=user_agent,
-            #     redirect_url=config.ACCOUTN_URL,
-            # )
-            # response = jsonify(
-            #     {
-            #         "success": True,
-            #         "message": config.USER_CREATED_MESSAGE,
-            #         "cookie": cookie,
-            #     }
-            # )
-            return response
         except Exception as e:
             print(e)
             return jsonify({"message": config.ERROE_MESSAGE}), 500
@@ -119,12 +98,12 @@ def native_login():
             user_id = user_info["id"]
             ip_address = request.remote_addr
             user_agent = request.headers.get("User-Agent")
-            redirect_url = "/"
+
             response = cookie_manager().set_cookie_response(
                 user_id=user_id,
                 ip_address=ip_address,
                 user_agent=user_agent,
-                redirect_url=redirect_url,
+                redirect_url="/",
             )
             return response, 200
         if verify_password == False:
@@ -147,7 +126,6 @@ def github_callback():
     if not code:
         return jsonify({"message": "エラーが発生しました"})
     response = github().sign_in_login(code)
-    response = redirect(config.ACCOUTN_URL)
 
     return response
 
