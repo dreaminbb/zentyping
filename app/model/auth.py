@@ -33,8 +33,10 @@ class jwt_manager:
                 # "iss": url,
                 "sub": user_id,
                 "iat": datetime.datetime.now(datetime.timezone.utc),
-                "exp": datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(minutes=config.JWT_EXPIRES_IN),
+                "exp": (
+                    datetime.datetime.now(datetime.timezone.utc)
+                    + datetime.timedelta(minutes=config.JWT_EXPIRES_IN)
+                ),
                 "role": "user",
             },
             key=self.key,
@@ -45,8 +47,10 @@ class jwt_manager:
             "iss": self.url,
             "sub": user_id,
             # "aud": os.getenv("URL"),
-            "exp": datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(days=self.expires_in_refresh),
+            "exp": (
+                datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(days=self.expires_in_refresh)
+            ),
             "jti": self.jti,
         }
 
@@ -58,45 +62,49 @@ class jwt_manager:
 
     def verify_token(self, jwt_token: str) -> dict:
         if not jwt_token:
-            return {"no_token": True}
+            return {"success": False, "no_token": True}
 
         try:
             payload = jwt.decode(jwt_token, key=self.key, algorithms=[self.algorithm])
-            print(payload["sub"], "sub sub sub")
             return {"success": True, "id": payload["sub"]}
 
         except jwt.ExpiredSignatureError:
             db["invalid_tokens"].insert_one(
                 {
                     "token": jwt_token,
-                    "detected_at": datetime.datetime.now(datetime.timezone.utc),
+                    "detected_at": datetime.datetime.now(
+                        datetime.timezone.utc
+                    ).isoformat(),
                 }
             )
-            return {"timeout": True, "user_id": payload["sub"]}
+
+            return {"timeout": True, "success": False}
 
         except jwt.InvalidTokenError:
             db["invalid_tokens"].insert_one(
                 {
                     "token": jwt_token,
-                    "detected_at": datetime.datetime.now(datetime.timezone.utc),
+                    "detected_at": datetime.datetime.now(
+                        datetime.timezone.utc
+                    ).isoformat(),
                 }
             )
-            print("invalid token")
-            return {"invalid": True}
+            return {"invalid": True, "success": False}
 
         except Exception as e:
-            print(e, "this is why the error")
-            return {"error": True}
+            return {"error": True, "success": False}
 
 
 class session_manager:
 
     def verify(self, access_token: str, refresh_token: str) -> Response:
         try:
-            at_result = jwt_manager().verify_token(access_token)
-            if at_result["success"]:
+            at_result = jwt_manager().verify_token(jwt_token=access_token)
+            # print(at_result, "at_resssssssssssssssssss")
+            print(type(at_result), "at_result")
+            if at_result["success"] == True:
                 return (
-                    make_response(
+                    jsonify(
                         {
                             "message": "success",
                             "session": True,
@@ -107,17 +115,17 @@ class session_manager:
                     200,
                 )
 
-            if at_result["timeout"]:
-                rt_result = jwt_manager().verify_token(refresh_token)
+            if at_result["timeout"] == True:
+                rt_result = jwt_manager().verify_token(jwt_token=refresh_token)
 
-                if rt_result["success"]:
+                if rt_result["success"] == True:
                     new_tokens = jwt_manager().generate(user_id=rt_result["id"])
                     response = make_response({"success": True, "session": True})
                     response.set_cookie("access_token", new_tokens["access_token"])
                     response.set_cookie("refresh_token", new_tokens["refresh_token"])
                     return response, 200
 
-                if rt_result["timeout"]:
+                if rt_result["timeout"] == True:
                     return (
                         jsonify(
                             {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}
@@ -125,7 +133,7 @@ class session_manager:
                         401,
                     )
 
-                if rt_result["invalid"]:
+                if rt_result["invalid"] == True:
                     return (
                         jsonify(
                             {"message": config.INVALID_TOKEN_MESSAGE, "session": False}
@@ -133,15 +141,7 @@ class session_manager:
                         401,
                     )
 
-            if at_result["timeout"]:
-                return (
-                    jsonify(
-                        {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}
-                    ),
-                    401,
-                )
-
-            if at_result["invalid"]:
+            if at_result["invalid"] == True:
                 return (
                     jsonify(
                         {"message": config.INVALID_TOKEN_MESSAGE, "session": False}
@@ -153,8 +153,17 @@ class session_manager:
             print(e)
             return jsonify({"error": "error", "session": False}), 500
 
-    def be_invalid(self, user_id: str) -> None:
-        db["session"].delete_many({"user_id": user_id})
+    # def delete(self, user_id: str) -> bool:
+    #     try:
+    #         if user_id:
+    #             result = db["session"].find_one_and_delete({"user_id": user_id})
+    #             if result:
+    #                 return True
+    #             if not result:
+    #                 return False
+    #     except Exception as e:
+    #         print(e)
+    #         return False
 
 
 class cookie_manager:
@@ -182,6 +191,7 @@ class cookie_manager:
                 ).isoformat(),
                 "last_access_time": datetime.datetime.now().isoformat(),
             }
+            db["session"].delete_many({"session_id": session_id})
             db["session"].insert_one(server_cookie)
 
             auth_dict = {
@@ -224,7 +234,9 @@ class cookie_manager:
         ten_day: int = int(datetime.datetime.now().timestamp()) + 60 * 60 * 24 * 10
 
         if redirect_url:
-            response = make_response(redirect(redirect_url), {"success": True, "login": True})
+            response = make_response(
+                redirect(redirect_url), {"success": True, "login": True}
+            )
         if not redirect_url:
             response = make_response(redirect("/"), {"success": True, "login": True})
 
@@ -348,12 +360,13 @@ class github:
                 )
 
                 user_email = email_response.json()[0]["email"]
-                user_id = str(uuid.uuid4().hex)
+                user_id = hashlib.sha256(str(user_data["id"]).encode()).hexdigest()
                 user_name = user_data["login"]
+                print(email_response.json(), "email", user_name, "name")
                 if not user_email:
                     raise ValueError("メールアドレスが見つかりません")
 
-                result = user().find_by_id(user_id=user_id)
+                result = db["user"].find_one({"id": user_id})
 
                 if result:
                     ip_address = request.remote_addr
@@ -362,9 +375,8 @@ class github:
                         user_id=user_id,
                         ip_address=ip_address,
                         user_agent=user_agent,
-                        redirect_url="/"
+                        redirect_url="/",
                     )
-                    print(response.json())
                     return response
 
                 if not result:
@@ -383,7 +395,7 @@ class github:
                         user_id=user_id,
                         ip_address=ip_address,
                         user_agent=user_agent,
-                        redirect_url="/"
+                        redirect_url="/",
                     )
                     return response
                 else:

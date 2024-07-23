@@ -23,7 +23,6 @@ github_bp = Blueprint("github", __name__)
 def session():
     access_token = request.cookies.get("access_token")
     refresh_token = request.cookies.get("refresh_token")
-    print(request.cookies.get("session_id"))
     if not access_token or not refresh_token:
         return jsonify({"message": config.TOKEN_NOT_FOUND_MESSAGE}), 401
     response = session_manager().verify(

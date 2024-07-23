@@ -21,9 +21,6 @@ export class token_manager {
             if (data["session"]) {
               console.log("session is valid")
               is_login.value = true
-            } else if (!data["session"]) {
-              console.log("session is timeout")
-              is_login.value = false
             } else if (data["error"]) {
               console.log("sometihnnig went worng")
               is_login.value = false
@@ -46,7 +43,7 @@ export class token_manager {
         'Content-Type': 'application/json',
       }
     })
-    window.location.href = '/'
+    window.location.reload()
   }
 }
 

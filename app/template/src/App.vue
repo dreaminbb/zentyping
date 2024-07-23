@@ -8,7 +8,6 @@ const login_button = ref(true)
 const user_profile: Ref<boolean> = ref(false)
 const header_normal_class = ref(true)
 const header_focus_class = ref(false)
-//ログインしていたらログインボタンを消す
 
 provide('is_login', is_login)
 provide('tools', tools)
@@ -93,7 +92,7 @@ const logout = () => {
       </router-link>
     </div>
 
-    <div id="tools" ref="tools" v-if="is_login && $route.name === 'home'">
+    <div id="tools" ref="tools">
       <svg
         class="tool_svg"
         id="terminal"

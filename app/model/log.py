@@ -24,8 +24,17 @@ class recorder:
             if not result:
                 print('no user')
                 return
+            
+    # @staticmethod
+    # def user_exit(user_id:str)->None:
+    #     find_result = db["user"].find_one({"id":user_id})
+    #     if find_result:
+    #         find_result[""]
+
 
 
         except Exception as e:
             print(e)
             return
+        
+    

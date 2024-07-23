@@ -30,9 +30,12 @@ class user:
                 "type": user_type,
                 "email": email,
                 "password": hashed_password,
-                "name": name,
-                "access_at": datetime.datetime.now(datetime.timezone.utc),
+                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "access_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "role": {"user": True},
                 "play_info": {"total_play": 0, "total_time": 0},
+                "profile": {"icon": None, "bio": None, "name": name},
                 "play_history": {},
             }
 

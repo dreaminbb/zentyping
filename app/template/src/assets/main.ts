@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import App from '../App.vue'
 import router from './router'
-import { token_manager } from './auth'
 
 
 export const apiKey: string = import.meta.env.VITE_APP_API_KEY
@@ -10,14 +9,15 @@ export const github_oauth_url: string = `https://github.com/is_login/oauth/autho
 
 createApp(App).use(router).mount('#app')
 
-//最後に離れた時間をサーバーに送信
-// window.addEventListener('beforeunload', ():void => {
-//  fetch("http://localhost:8080/user/exit",{
-//    method: 'POST',
-//    headers: {
-//      'Content-Type':apiKey,
-//      "Token" : JSON.parse(localStorage.getItem("cookie") as string)['refresh_token'] as string,
-//      Authorization: JSON.stringify(JSON.parse(localStorage.getItem("cookie") as string)["refresh_token"]) as string ,
-//    },
-//  })
-// })
+// 最後に離れた時間をサーバーに送信
+window.addEventListener('beforeunload', (): void => {
+    fetch("http://localhost:8000/user/exit", {
+        method: 'POST',
+        headers: {
+            'Content-Type': apiKey,
+            "Token": JSON.parse(localStorage.getItem("cookie") as string)['refresh_token'] as string,
+            Authorization: JSON.stringify(JSON.parse(localStorage.getItem("cookie") as string)["refresh_token"]) as string,
+        },
+    })
+    return
+})
