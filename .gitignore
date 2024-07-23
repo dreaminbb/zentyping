@@ -3,7 +3,7 @@
 .idea
 .DS_Store
 .env
-/app/template/dist
+app/template/dist
 __pycache__
 /app/template/node_modules
 
