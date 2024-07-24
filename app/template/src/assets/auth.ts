@@ -43,7 +43,9 @@ export class token_manager {
         'Content-Type': 'application/json',
       }
     })
-    window.location.reload()
+    setInterval(() => {
+      window.location.reload()
+    }, 1000)
   }
 }
 

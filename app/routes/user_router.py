@@ -12,7 +12,7 @@ from ..model.auth import session_manager, native, github, cookie_manager
 from ..model.user import user
 from ..model.log import recorder
 from ..main import limiter
-from app import config 
+from app import config, db
 
 
 user_bp = Blueprint("user_bp", __name__)
@@ -44,7 +44,8 @@ def user_exit():
 @user_bp.route("/logout", methods=["POST"])
 def logout():
     session_id: str = request.cookies.get("session_id")
-    cookie_manager().del_cookie(session_id)
+    refresh_token: str = request.cookies.get("refresh_token")
+    db["session"].delete_one({"session_id": session_id, "refresh_token": refresh_token})
     res = make_response(redirect("/"))
     res.delete_cookie("access_token")
     res.delete_cookie("refresh_token")

@@ -1,2 +1,2 @@
 from .config import config, db
-from .main import app, limiter
+from .main import app
