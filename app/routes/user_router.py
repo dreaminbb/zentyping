@@ -13,6 +13,7 @@ from flask import (
 from app import config
 from ..model.auth import session_manager, native, github, cookie_manager
 from ..model.user import user
+from ..model.log import recorder
 
 user_bp = Blueprint("user_bp", __name__)
 verify_bp = Blueprint("verify_bp", __name__)
@@ -29,6 +30,13 @@ def session():
         access_token=access_token, refresh_token=refresh_token
     )
     return response
+
+
+@user_bp.route("/exit", methods=["POST"])
+def user_exit():
+    session_id = request.cookies.get("session_id")
+    recorder().access_time_session_user_db(session_id=session_id)
+    return jsonify({"message": "🫡"})
 
 
 @user_bp.route("/logout", methods=["POST"])
@@ -127,11 +135,3 @@ def github_callback():
     response = github().sign_in_login(code)
 
     return response
-
-
-# @user_bp.route("/exit" , methods=["POST"])
-# def user_exit():
-#     jwt_token:str = request.headers.get("Token").replace('"', '')
-#     print(jwt_token)
-#     recorder.access_time(jwt_token)
-#     return

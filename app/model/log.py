@@ -8,33 +8,36 @@ class recorder:
         pass
 
     @staticmethod
-    def access_at(user_id: str) -> None:
+    def access_time_session_user_db(session_id: str) -> None:
         try:
-            print(user_id)
-            query = {"id": user_id}
-            update_value = {"$set": {"access_at": datetime.datetime.now()}}
+            # sessionコレクションを更新
+            query = {"session_id": session_id}
+            update_value = {
+                "$set": {"last_access_time": datetime.datetime.now().isoformat()}
+            }
 
-            result = db["user"].find_one_and_update(
+            update_result = db["session"].find_one_and_update(
                 query, update_value, return_document=True
             )
 
-            if result:
-                print("access at was updated")
+            if update_result:
+                # ユーザーコレクションを更新
+                user_id = update_result["user_id"]
+                print(f"user_id: {user_id}")
+                query = {"id": user_id}
+                update_value = {
+                    "$set": {"access_at": datetime.datetime.now().isoformat()}
+                }
+                db["user"].find_one_and_update(
+                    query, update_value, return_document=False
+                )
+                print(
+                    f"access_time_session_user_db: {session_id},{datetime.datetime.now().isoformat()}"
+                )
                 return
-            if not result:
-                print('no user')
+            if not update_result:
                 return
-            
-    # @staticmethod
-    # def user_exit(user_id:str)->None:
-    #     find_result = db["user"].find_one({"id":user_id})
-    #     if find_result:
-    #         find_result[""]
-
-
 
         except Exception as e:
             print(e)
             return
-        
-    

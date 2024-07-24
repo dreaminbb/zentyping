@@ -91,7 +91,7 @@ class jwt_manager:
             )
             return {"invalid": True, "success": False}
 
-        except Exception as e:
+        except Exception:
             return {"error": True, "success": False}
 
 
@@ -100,8 +100,29 @@ class session_manager:
     def verify(self, access_token: str, refresh_token: str) -> Response:
         try:
             at_result = jwt_manager().verify_token(jwt_token=access_token)
-            # print(at_result, "at_resssssssssssssssssss")
-            print(type(at_result), "at_result")
+            find_session = db["session"].find_one(
+                {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "session_id": request.cookies.get("session_id"),
+                }
+            )
+            if not find_session:
+                response = make_response(
+                    {"message": config.SESSION_DOSENT_EXIST_MESSAGE}
+                )
+
+                del_cookie: list = [
+                    "access_token",
+                    "refresh_token",
+                    "session_id",
+                    "expires",
+                ]
+                for cookie in del_cookie:
+                    response.delete_cookie(cookie)
+
+                return response
+            
             if at_result["success"] == True:
                 return (
                     jsonify(
@@ -153,18 +174,6 @@ class session_manager:
             print(e)
             return jsonify({"error": "error", "session": False}), 500
 
-    # def delete(self, user_id: str) -> bool:
-    #     try:
-    #         if user_id:
-    #             result = db["session"].find_one_and_delete({"user_id": user_id})
-    #             if result:
-    #                 return True
-    #             if not result:
-    #                 return False
-    #     except Exception as e:
-    #         print(e)
-    #         return False
-
 
 class cookie_manager:
 
@@ -191,7 +200,8 @@ class cookie_manager:
                 ).isoformat(),
                 "last_access_time": datetime.datetime.now().isoformat(),
             }
-            db["session"].delete_many({"session_id": session_id})
+
+            db["session"].delete_many({"user_id": user_id})
             db["session"].insert_one(server_cookie)
 
             auth_dict = {
@@ -206,17 +216,8 @@ class cookie_manager:
             print(e)
             return {"error": "error"}
 
-    def del_cookie(self, session_id: str) -> bool:
-        try:
-            if session_id:
-                result = db["session"].find_one_and_delete({"session_id": session_id})
-                if result:
-                    return True
-                if not result:
-                    return False
-        except Exception as e:
-            print(e)
-            return False
+
+
 
     def set_cookie_response(
         self, user_id: str, ip_address: str, user_agent: str, redirect_url: str

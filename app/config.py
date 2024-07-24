@@ -35,6 +35,7 @@ class config:
     GITHUB_REDIRECT_URL = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&scope=user:email"
 
     FAILED_TO_AUTH_MESSAGE = "認証に失敗しました"
+    SESSION_DOSENT_EXIST_MESSAGE = "セッションが見つかりません。ログインし直してください。。。"
     ERROE_MESSAGE = "エラーが発生しました、、、"
     USER_NOT_FOUND_MESSAGE = "ユーザーが見つかりません"
     USER_ALREADY_EXISTS_MESSAGE = "ユーザーが既に存在しています"
