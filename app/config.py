@@ -2,10 +2,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from pymongo import MongoClient
-
 
 class config:
     dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
@@ -35,7 +32,9 @@ class config:
     GITHUB_REDIRECT_URL = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&scope=user:email"
 
     FAILED_TO_AUTH_MESSAGE = "認証に失敗しました"
-    SESSION_DOSENT_EXIST_MESSAGE = "セッションが見つかりません。ログインし直してください。。。"
+    SESSION_DOSENT_EXIST_MESSAGE = (
+        "セッションが見つかりません。ログインし直してください。。。"
+    )
     ERROE_MESSAGE = "エラーが発生しました、、、"
     USER_NOT_FOUND_MESSAGE = "ユーザーが見つかりません"
     USER_ALREADY_EXISTS_MESSAGE = "ユーザーが既に存在しています"
@@ -49,6 +48,7 @@ class config:
     FAILED_TO_AUTH_MESSAGE = "認証に失敗しました🙁"
     SESSION_TIMEOUT_MESSAGE = "セッションが途切れました"
     TOO_MUCH_REQEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
+
 
 
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]

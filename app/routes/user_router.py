@@ -1,19 +1,19 @@
-import datetime
 import uuid
 from flask import (
     Blueprint,
     make_response,
     request,
-    Flask,
     Response,
     jsonify,
     redirect,
-    url_for,
 )
-from app import config
+from flask_limiter.util import get_remote_address
 from ..model.auth import session_manager, native, github, cookie_manager
 from ..model.user import user
 from ..model.log import recorder
+from ..main import limiter
+from app import config 
+
 
 user_bp = Blueprint("user_bp", __name__)
 verify_bp = Blueprint("verify_bp", __name__)
@@ -21,6 +21,7 @@ github_bp = Blueprint("github", __name__)
 
 
 @user_bp.route("/session", methods=["POST"])
+@limiter.limit("10 per minute", key_func=get_remote_address)
 def session():
     access_token = request.cookies.get("access_token")
     refresh_token = request.cookies.get("refresh_token")
@@ -33,6 +34,7 @@ def session():
 
 
 @user_bp.route("/exit", methods=["POST"])
+@limiter.limit("10 per minute", key_func=get_remote_address)
 def user_exit():
     session_id = request.cookies.get("session_id")
     recorder().access_time_session_user_db(session_id=session_id)
