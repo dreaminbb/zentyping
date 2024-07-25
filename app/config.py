@@ -1,8 +1,7 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask
-from flask_cors import CORS
 from pymongo import MongoClient
+
 
 class config:
     dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
@@ -11,6 +10,8 @@ class config:
     URL = os.getenv("URL")
     PORT = int(os.getenv("PORT", 8000))
     MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/")
+    API_KEY = os.getenv("SERVER_API_KEY", None)
+    SEND_PLAY_INFO_API_KEY = os.getenv("SEND_PLAY_INFO_API_KEY", None)
     MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "mode-typing")
     JWT_SECRET = os.getenv("JWT_SECRET", None)
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", None)
@@ -22,7 +23,7 @@ class config:
     NEVER_GONNA_GIVE_YOU_UP_URL = os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL")
     ACCOUNT_URL = f"{URL}/account"
     COOKIE_AGE = 0.5  # 時間単位
-    PIECE = os.getenv("PIECE")
+    PIECE = 5
 
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
     GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", None)
@@ -48,7 +49,6 @@ class config:
     FAILED_TO_AUTH_MESSAGE = "認証に失敗しました🙁"
     SESSION_TIMEOUT_MESSAGE = "セッションが途切れました"
     TOO_MUCH_REQEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
-
 
 
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]

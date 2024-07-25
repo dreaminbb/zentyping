@@ -13,6 +13,18 @@ from ..model.user import user
 # 1. cookieを検証して新しく作った場合は古いvalid cookieを無効にする
 
 
+def require_api_key(f):
+    def decorated_function(*args, **kwargs):
+        api_key = request.headers.get("Authorization")
+        if api_key != config.SEND_PLAY_INFO_API_KEY:
+            response = jsonify({"message": "Unauthorized"})
+            response.status_code = 401
+            return response
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 class jwt_manager:
 
     def __init__(self) -> None:
@@ -66,7 +78,7 @@ class jwt_manager:
 
         try:
             payload = jwt.decode(jwt_token, key=self.key, algorithms=[self.algorithm])
-            return {"success": True, "id": payload["sub"]}
+            return {"success": True, "user_id": payload["sub"]}
 
         except jwt.ExpiredSignatureError:
             db["invalid_tokens"].insert_one(
@@ -278,7 +290,7 @@ class native:
             user = db["user"].find_one({"email": email})
 
             if not user:
-                return None
+                return {"user": None}
 
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             decoded_password = user["password"][:64].decode("utf-8")

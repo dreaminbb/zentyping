@@ -1,53 +1,57 @@
-import os
-from dotenv import load_dotenv
-from flask import Response, redirect, make_response, request
-from pymongo import MongoClient
-from flask import Flask, jsonify
-import datetime
-import uuid
+from flask import Response, make_response
 import json
-import hashlib
-import requests
-from flask_cors import CORS
 from bson import json_util
-from typing import Tuple
-import jwt
 from app import db
+from app.model.auth import jwt_manager
 
 
-# 問題取得
-short_collection = db.short
-normal_collection = db.normal
-long_collection = db.long
+class play:
 
+    def __init__(self):
+        self.piece: int = 5
 
-@app.route("/get_problem", methods=["GET"])
-def get_problem():
-    try:
-        client_key = request.headers.get("Authorization")
-        server_key = os.getenv("SERVER_GET_PROBLEM_API_KEY")
-
-        piece = int(os.getenv("PIECE", 5))
-        if client_key == server_key:
+    def get_problem(self):
+        try:
             short_doc = [
                 json.loads(json_util.dumps(document))
-                for document in db["short"].aggregate([{"$sample": {"size": piece}}])
+                for document in db["short"].aggregate(
+                    [{"$sample": {"size": self.piece}}]
+                )
             ]
             normal_doc = [
                 json.loads(json_util.dumps(document))
-                for document in db["normal"].aggregate([{"$sample": {"size": piece}}])
+                for document in db["normal"].aggregate(
+                    [{"$sample": {"size": self.piece}}]
+                )
             ]
             long_doc = [
                 json.loads(json_util.dumps(document))
-                for document in db["long"].aggregate([{"$sample": {"size": piece}}])
+                for document in db["long"].aggregate(
+                    [{"$sample": {"size": self.piece}}]
+                )
             ]
+            print(self.piece)
+
+            print(json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False))
 
             return Response(
                 json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False),
                 mimetype="application/json",
             )
-        else:
-            return jsonify({"error": "Invalid API key"}), 401
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        except Exception as e:
+            print(self.piece)
+            print((e))
+            return make_response({"message": "サーバーでエラーが発生しました"}, 500)
+
+    def save_result(self, access_token: str, play_info: dict) -> bool:
+        token_result = jwt_manager().verify_token(access_token)
+        user_id = token_result["user_id"]
+        is_exist_session = db["session"].find_one({"user_id": user_id})
+        is_exist_user = db["user"].find_one({"id": user_id})
+        if is_exist_session and is_exist_user:
+            level = play_info["level"]
+            before_play_history = is_exist_user["play_history"]
+            query = {"id": user_id}
+            # update_value = {"$set": {"access_at":}
+            db["user"].find_one_and_update

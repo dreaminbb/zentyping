@@ -8,7 +8,13 @@ from flask import (
     redirect,
 )
 from flask_limiter.util import get_remote_address
-from ..model.auth import session_manager, native, github, cookie_manager
+from ..model.auth import (
+    session_manager,
+    native,
+    github,
+    cookie_manager,
+    require_api_key,
+)
 from ..model.user import user
 from ..model.log import recorder
 from ..main import limiter
@@ -18,7 +24,6 @@ from app import config, db
 user_bp = Blueprint("user_bp", __name__)
 verify_bp = Blueprint("verify_bp", __name__)
 github_bp = Blueprint("github", __name__)
-
 
 @user_bp.route("/session", methods=["POST"])
 @limiter.limit("10 per minute", key_func=get_remote_address)

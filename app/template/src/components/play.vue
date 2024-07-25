@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
-// import { apiKey } from '@/main'
 import { pie_chart, line_chart } from './chart'
+import { play_api_key, send_play_result_url } from '@/assets/main'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
-
-// const login = inject('login') as Ref<boolean>
 
 const type_input = ref('')
 const char = ref('')
@@ -13,7 +11,10 @@ const type = ref('')
 const time = ref(0)
 const correct_count = ref(0)
 const correct_rate = ref(0)
+const level = ref('')
+const level_num = ref(0)
 const pun_count = ref(0)
+const pbm_id = ref('')
 const correct_every_second = ref<number[]>([])
 const input_every_second = ref<number[]>([])
 
@@ -53,17 +54,18 @@ const capslockchecker = ref(false)
 
 async function get_from_api() {
   try {
-    const response = await fetch('http://localhost:8000/get_problem', {
+    const response = await fetch('http://localhost:8000/play/get_pbm', {
       method: 'GET',
       headers: {
-        // Authorization: apiKey
+        Authorization: play_api_key
       }
     })
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    if (response.status === 200) {
+      const data: JSON = await response.json()
+      return data
+    } else {
+      console.error('server error')
     }
-    const data = await response.json()
-    return data
   } catch (error) {
     console.error('Error fetching data:', error)
   }
@@ -174,16 +176,19 @@ onMounted(async () => {
         type.value = get_problem_data_from_api.value[0][0].type
         char.value = get_problem_data_from_api.value[0][0].char
         active_buttons.short = true
+        level.value = 'short'
       }
       if (active_buttons_object.normal === true) {
         active_buttons.normal = true
         type.value = get_problem_data_from_api.value[1][0].type
         char.value = get_problem_data_from_api.value[1][0].char
+        level.value = 'normal'
       }
       if (active_buttons_object.long === true) {
-        active_buttons.long = true
         type.value = get_problem_data_from_api.value[2][0].type
         char.value = get_problem_data_from_api.value[2][0].char
+        active_buttons.long = true
+        level.value = 'long'
       }
     } catch (error) {
       console.error('Error parsing active_buttons from localStorage:', error)
@@ -210,6 +215,7 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
       active_buttons[key as 'short' | 'normal' | 'long'] = false
     }
   }
+
   if (
     short_count === get_problem_data_from_api.value[0].length ||
     normal_count === get_problem_data_from_api.value[0].length ||
@@ -415,29 +421,73 @@ function result() {
   tools.value = true
   header_focus_class.value = false
   window.addEventListener('keydown', back_game_focus)
+
+  if (level_num.value === 0) {
+    pbm_id.value = get_problem_data_from_api.value[0][short_count - 1]['id']
+  }
+  if (level_num.value === 1) {
+    pbm_id.value = get_problem_data_from_api.value[1][normal_count - 1]['id']
+  }
+  if (level_num.value === 2) {
+    pbm_id.value = get_problem_data_from_api.value[2][long_count - 1]['id']
+  }
+  console.log(short_count)
+  console.log(pbm_id.value)
+
+  //サーバーにデーターを送信する
+  const result_data: object = {
+    id: pbm_id,
+    level: level.value,
+    time: time.value,
+    correct_rate: correct_rate.value,
+    correct_count: correct_count.value,
+    incorrect_count: type_input.value.length - correct_count.value,
+    input_every_second: input_every_second.value,
+    correct_every_second: correct_every_second.value,
+    lenght: char.value.length,
+    pun_count: pun_count.value
+  }
+
+  fetch(send_play_result_url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: play_api_key
+    },
+    body: JSON.stringify(result_data)
+  })
 }
 </script>
-
 <template>
   <body>
     <main id="play" ref="play" v-if="play_page">
       <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
         <button
-          @click="identify_level('short'), play_init(), short_count++"
+          @click="
+            identify_level('short'), play_init(), short_count++, (level_num = 0), (level = 'short')
+          "
           :class="{ active: active_buttons.short }"
           class="level"
         >
           short
         </button>
         <button
-          @click="identify_level('normal'), play_init(), normal_count++"
+          @click="
+            identify_level('normal'),
+              play_init(),
+              normal_count++,
+              (level_num = 1),
+              (level = 'normal')
+          "
           :class="{ active: active_buttons.normal }"
           class="level"
         >
           normal
         </button>
         <button
-          @click="identify_level('long'), play_init(), long_count++"
+          @click="
+            identify_level('long'), play_init(), long_count++, (level_num = 2), (level = 'long')
+          "
           :class="{ active: active_buttons.long }"
           class="level"
         >
@@ -571,7 +621,6 @@ function result() {
     </button>
   </main>
 </template>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 

@@ -135,7 +135,7 @@ export class github {
         console.error('Error redirecting to GitHub authentication page:', error)
       }
     } else {
-      console.log('you have cookie')
+      new token_manager().logout()
     }
   }
 }

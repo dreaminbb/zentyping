@@ -31,9 +31,6 @@ class recorder:
                 db["user"].find_one_and_update(
                     query, update_value, return_document=False
                 )
-                print(
-                    f"access_time_session_user_db: {session_id},{datetime.datetime.now().isoformat()}"
-                )
                 return
             if not update_result:
                 return

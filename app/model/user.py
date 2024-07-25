@@ -36,7 +36,14 @@ class user:
                 "role": {"user": True},
                 "play_info": {"total_play": 0, "total_time": 0},
                 "profile": {"icon": None, "bio": None, "name": name},
-                "play_history": {},
+                "play_history": {
+                    "short": [],
+                    "normal": [],
+                    "long": [],
+                    "short_pun": [],
+                    "normal_pun": [],
+                    "long_pun": [],
+                },
             }
 
             db["user"].insert_one(user_profile)
@@ -97,3 +104,10 @@ class user:
         except Exception as e:
             print(e)
             return None
+
+    # def save_play_info(seld, user_id:str)->bool:
+    #     try:
+
+    #     except Exception as e:
+    #         print(e)
+    #         return False
