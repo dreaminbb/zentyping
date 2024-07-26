@@ -1,5 +1,6 @@
 from flask import Response, make_response
 import json
+import datetime
 from bson import json_util
 from app import db
 from app.model.auth import jwt_manager
@@ -44,14 +45,31 @@ class play:
             print((e))
             return make_response({"message": "サーバーでエラーが発生しました"}, 500)
 
-    def save_result(self, access_token: str, play_info: dict) -> bool:
-        token_result = jwt_manager().verify_token(access_token)
-        user_id = token_result["user_id"]
-        is_exist_session = db["session"].find_one({"user_id": user_id})
-        is_exist_user = db["user"].find_one({"id": user_id})
-        if is_exist_session and is_exist_user:
-            level = play_info["level"]
-            before_play_history = is_exist_user["play_history"]
-            query = {"id": user_id}
-            # update_value = {"$set": {"access_at":}
-            db["user"].find_one_and_update
+    def save_result(self, access_token: str, play_info: dict) -> bool | None:
+        try:
+            token_result = jwt_manager().verify_token(access_token)
+            user_id = token_result["user_id"]
+            print(user_id)
+
+            is_exist_session = db["session"].find_one({"user_id": user_id})
+            is_exist_user = db["user"].find_one({"id": user_id})
+
+            if is_exist_session and is_exist_user:
+                level = play_info["level"]
+                play_info["played_at"] = datetime.datetime.now().isoformat()
+                user_info = db["user"].find_one({"id": user_id})
+                play_history: list = user_info[level]
+                print(play_history, "これがプレイ履歴")
+                play_history.append(play_info)
+
+                new_play_history_value: dict = {"$set": {level: play_history}}
+                db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
+                return True
+
+            else:
+                print("who the fuck is this")
+                return None
+
+        except Exception as e:
+            print(e)
+            return False

@@ -30,12 +30,11 @@ limiter = Limiter(
 )
 
 # リクエスト回数の制限
-from app.routes.user_router import user_bp, github_bp, verify_bp
+from app.routes.user_router import user_bp, github_bp
 from app.routes.server_router import play_bp
 
 app.register_blueprint(github_bp, url_prefix="/github")
 app.register_blueprint(user_bp, url_prefix="/user")
-app.register_blueprint(verify_bp, url_prefix="/verify")
 app.register_blueprint(play_bp, url_prefix="/play")
 # CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 

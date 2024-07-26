@@ -431,12 +431,10 @@ function result() {
   if (level_num.value === 2) {
     pbm_id.value = get_problem_data_from_api.value[2][long_count - 1]['id']
   }
-  console.log(short_count)
-  console.log(pbm_id.value)
 
   //サーバーにデーターを送信する
   const result_data: object = {
-    id: pbm_id,
+    id: pbm_id.value,
     level: level.value,
     time: time.value,
     correct_rate: correct_rate.value,
@@ -448,7 +446,7 @@ function result() {
     pun_count: pun_count.value
   }
 
-  fetch(send_play_result_url, {
+  fetch('http://localhost:8000/play/result', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

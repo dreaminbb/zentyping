@@ -13,7 +13,6 @@ from ..model.auth import (
     native,
     github,
     cookie_manager,
-    require_api_key,
 )
 from ..model.user import user
 from ..model.log import recorder
@@ -22,7 +21,6 @@ from app import config, db
 
 
 user_bp = Blueprint("user_bp", __name__)
-verify_bp = Blueprint("verify_bp", __name__)
 github_bp = Blueprint("github", __name__)
 
 @user_bp.route("/session", methods=["POST"])

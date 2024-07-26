@@ -23,6 +23,8 @@ class user:
                     hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
                     + salt
                 )
+            else:
+                hashed_password = None
 
             # ユーザーIDの生成
             user_profile = {
@@ -36,14 +38,13 @@ class user:
                 "role": {"user": True},
                 "play_info": {"total_play": 0, "total_time": 0},
                 "profile": {"icon": None, "bio": None, "name": name},
-                "play_history": {
-                    "short": [],
-                    "normal": [],
-                    "long": [],
-                    "short_pun": [],
-                    "normal_pun": [],
-                    "long_pun": [],
-                },
+                # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
+                "short": [],
+                "normal": [],
+                "long": [],
+                "short_pun": [],
+                "normal_pun": [],
+                "long_pun": [],
             }
 
             db["user"].insert_one(user_profile)
