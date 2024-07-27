@@ -52,15 +52,14 @@ def github_signin():
 
 @github_bp.route("/callback")
 def github_callback():
-    # csrfトークンを検証する
     code = request.args.get("code")
     csrf_token: str = request.cookies.get("token")
     velidate: bool = csrf_maneger().velidate(token=csrf_token)
-    if velidate == True:
+    if velidate == True and code:
         print("トークンもあってるしコードもちゃんとある")
-        if not code:
-            return jsonify({"message": "エラーが発生しました"})
-        return github().sign_in_login(code)
+        response: Response = github().sign_in_login(code)
+        response.delete_cookie("token")
+        return response
     if velidate == False:
         print("トークンがおかしい")
         return make_response({"message": "エラーが発生しました"})
