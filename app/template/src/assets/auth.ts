@@ -125,17 +125,13 @@ export class native_user {
 
 export class github {
   public auth(): void {
-    if (!document.cookie) {
-      try {
-        window.location.href = 'http://localhost:8000/github/'
-        if (document.cookie) {
-          is_login.value = true
-        }
-      } catch (error) {
-        console.error('Error redirecting to GitHub authentication page:', error)
+    try {
+      window.location.href = 'http://localhost:8000/github/'
+      if (document.cookie) {
+        is_login.value = true
       }
-    } else {
-      new token_manager().logout()
+    } catch (error) {
+      console.error('Error redirecting to GitHub authentication page:', error)
     }
   }
 }

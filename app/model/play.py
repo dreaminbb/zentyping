@@ -59,15 +59,12 @@ class play:
                 play_info["played_at"] = datetime.datetime.now().isoformat()
                 user_info = db["user"].find_one({"id": user_id})
                 play_history: list = user_info[level]
-                print(play_history, "これがプレイ履歴")
                 play_history.append(play_info)
-
                 new_play_history_value: dict = {"$set": {level: play_history}}
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
                 return True
 
             else:
-                print("who the fuck is this")
                 return None
 
         except Exception as e:

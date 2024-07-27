@@ -1,9 +1,22 @@
-from flask import Blueprint, Response, request, redirect, jsonify
+import os
+import hashlib
+import hmac
+from flask import (
+    Blueprint,
+    Response,
+    request,
+    redirect,
+    jsonify,
+    make_response,
+)
 from flask_limiter.util import get_remote_address
+from ..config import config
 from ..model.play import play
 from ..main import limiter
+from ..model.auth import github, csrf_maneger
 
 play_bp = Blueprint("play_bp", __name__)
+github_bp = Blueprint("github", __name__)
 
 
 @play_bp.route("/get_pbm", methods=["GET"])
@@ -24,3 +37,30 @@ def save_result():
         return jsonify({"message": "保存に失敗しました。"}, 500)
 
     return jsonify({"message": "プレイ履歴を更新しました。"}, 200)
+
+
+@github_bp.route("/")
+def github_signin():
+    # CSRFトークンをつける
+    csrf_toen = csrf_maneger().generate()
+    print(csrf_toen, "csfrトークン")
+    response = make_response(redirect(config.GITHUB_REDIRECT_URL))
+    response.set_cookie("token", csrf_toen)
+    print("cookieにつけた")
+    return response
+
+
+@github_bp.route("/callback")
+def github_callback():
+    # csrfトークンを検証する
+    code = request.args.get("code")
+    csrf_token: str = request.cookies.get("token")
+    velidate: bool = csrf_maneger().velidate(token=csrf_token)
+    if velidate == True:
+        print("トークンもあってるしコードもちゃんとある")
+        if not code:
+            return jsonify({"message": "エラーが発生しました"})
+        return github().sign_in_login(code)
+    if velidate == False:
+        print("トークンがおかしい")
+        return make_response({"message": "エラーが発生しました"})

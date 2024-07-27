@@ -20,6 +20,7 @@ class config:
     COOKIE_EXPIRES_IN_DAY = int(os.getenv("COOKIE_EXPIRES_IN", 30))
     SESSION_EXPIRES_IN = int(os.getenv("SESSION_EXPIRES_IN", 30))
     SERVER_API_KEY = os.getenv("SERVER_API_KEY", None)
+    HMAC_SECRET_KEY = os.getenv("HMAC_SECRET_KEY", None)
     NEVER_GONNA_GIVE_YOU_UP_URL = os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL")
     ACCOUNT_URL = f"{URL}/account"
     COOKIE_AGE = 0.5  # 時間単位

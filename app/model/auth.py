@@ -1,4 +1,7 @@
+import base64
 import json
+import hmac
+import time
 from flask import jsonify, make_response, Response, redirect, request
 import requests
 import datetime
@@ -305,6 +308,36 @@ class native:
         except Exception as e:
             print(e)
             return {"error": True}
+
+
+class csrf_maneger:
+
+    def __init__(self) -> None:
+        self.hmac_secret = (config.HMAC_SECRET_KEY).encode()
+        pass
+
+    def generate(self) -> str:
+        timestamp = str(int(time.time())).encode()
+        token = base64.urlsafe_b64encode(
+            hmac.new(self.hmac_secret, timestamp, hashlib.sha256).digest()
+            + b":"
+            + timestamp
+        )
+        return token.decode()
+
+    def velidate(self, token: str) -> bool:
+        try:
+            decoded_token = base64.urlsafe_b64decode(token.encode())
+            token_hmac, timestamp = decoded_token.split(b":")
+            expected_hmac = hmac.new(
+                self.hmac_secret, timestamp, hashlib.sha256
+            ).digest()
+            if hmac.compare_digest(token_hmac, expected_hmac):
+                return True
+            return False
+        except Exception as e:
+            print(e)
+            return False
 
 
 class github:

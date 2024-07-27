@@ -21,7 +21,6 @@ from app import config, db
 
 
 user_bp = Blueprint("user_bp", __name__)
-github_bp = Blueprint("github", __name__)
 
 @user_bp.route("/session", methods=["POST"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
@@ -126,18 +125,3 @@ def native_login():
 
     if not email or password:
         return jsonify({"message": "wahts a data 👀"}), 400
-
-
-@github_bp.route("/")
-def github_signin():
-    return redirect(config.GITHUB_REDIRECT_URL)
-
-
-@github_bp.route("/callback")
-def github_callback():
-    code = request.args.get("code")
-    if not code:
-        return jsonify({"message": "エラーが発生しました"})
-    response = github().sign_in_login(code)
-
-    return response
