@@ -156,7 +156,7 @@ def github_signin():
 
 @github_bp.route("/callback")
 def github_callback():
-    code = request.args.get("code")
+    code:Optional[str] = request.args.get("code")
     csrf_token: Optional[str] = request.cookies.get("token")
     if csrf_token:
         velidate: bool = csrf_maneger().velidate(token=csrf_token)

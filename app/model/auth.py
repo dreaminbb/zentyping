@@ -8,7 +8,6 @@ import datetime
 import uuid
 import hashlib
 from app import config, db
-from app.model.user import user
 
 
 # todo
@@ -422,12 +421,14 @@ class github:
                         return response
 
                     else:
+                        from app.model.user import user
+
                         user_id = user_id
                         password = None
                         user().create_save(
                             user_id=user_id,
-                            name=user_name,
                             email=user_email,
+                            name=user_name,
                             password=password,
                             user_type="github",
                         )
