@@ -30,8 +30,8 @@ limiter = Limiter(
 )
 
 # リクエスト回数の制限
-from app.routes.user_router import user_bp
-from app.routes.server_router import play_bp, github_bp
+from app.routes.user_router import play_bp
+from app.routes.server_router import github_bp, user_bp
 
 app.register_blueprint(github_bp, url_prefix="/github")
 app.register_blueprint(user_bp, url_prefix="/user")

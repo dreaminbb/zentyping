@@ -1,15 +1,14 @@
 import base64
-import json
 import hmac
+import jwt
 import time
 from flask import jsonify, make_response, Response, redirect, request
 import requests
 import datetime
 import uuid
 import hashlib
-import jwt
 from app import config, db
-from ..model.user import user
+from app.model.user import user
 
 
 # todo
@@ -143,15 +142,13 @@ class session_manager:
                 return response
 
             if at_result["success"] == True:
-                return (
-                    jsonify(
-                        {
-                            "message": "success",
-                            "session": True,
-                            "success": True,
-                            "login": True,
-                        }
-                    ),
+                return make_response(
+                    {
+                        "message": "success",
+                        "session": True,
+                        "success": True,
+                        "login": True,
+                    },
                     200,
                 )
 
@@ -160,44 +157,38 @@ class session_manager:
 
                 if rt_result["success"] == True:
                     new_tokens = jwt_manager().generate(user_id=rt_result["id"])
-                    response = make_response({"success": True, "session": True})
+                    response = make_response({"success": True, "session": True}, 200)
                     response.set_cookie("access_token", new_tokens["access_token"])
                     response.set_cookie("refresh_token", new_tokens["refresh_token"])
-                    return response, 200
+                    return response
 
                 if rt_result["timeout"] == True:
-                    return (
-                        jsonify(
-                            {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}
-                        ),
-                        401,
+                    return make_response(
+                        {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}, 401
                     )
 
                 if rt_result["invalid"] == True:
-                    return (
-                        jsonify(
-                            {"message": config.INVALID_TOKEN_MESSAGE, "session": False}
-                        ),
-                        401,
+                    return make_response(
+                        {"message": config.INVALID_TOKEN_MESSAGE, "session": False}, 401
                     )
 
             if at_result["invalid"] == True:
-                return (
-                    jsonify(
-                        {"message": config.INVALID_TOKEN_MESSAGE, "session": False}
-                    ),
-                    401,
+                return make_response(
+                    {"message": config.INVALID_TOKEN_MESSAGE, "session": False}, 401
                 )
 
         except Exception as e:
             print(e)
-            return jsonify({"error": "error", "session": False}), 500
+            return make_response({"error": "error", "session": False}, 500)
+
+        # Add a default response at the end
+        return make_response({"error": "error", "session": False}, 500)
 
 
 class cookie_manager:
 
     # cookie作成→DBに保存→レスポンスにcookieをセットして返す
-    def save_and_set(self, user_id: str, ip_address: str, user_agent: str) -> Response:
+    def save_and_set(self, user_id: str, ip_address: str, user_agent: str) -> dict:
         tokens: dict = jwt_manager().generate(user_id=user_id)
         encoded_access_token = tokens["access_token"]
         encoded_refresh_token = tokens["refresh_token"]
@@ -223,7 +214,7 @@ class cookie_manager:
             db["session"].delete_one({"user_id": user_id})
             db["session"].insert_one(server_cookie)
 
-            auth_dict = {
+            auth_dict: dict = {
                 "access_token": encoded_access_token,
                 "refresh_token": encoded_refresh_token,
                 "session_id": session_id,
@@ -240,7 +231,7 @@ class cookie_manager:
     ) -> Response:
 
         if not all([user_id, ip_address, user_agent]):
-            return make_response({"error": "error"}), 500
+            return make_response({"error": "error"}, 500)
 
         auth_dict: dict = self.save_and_set(
             user_id=user_id,
@@ -313,7 +304,10 @@ class native:
 class csrf_maneger:
 
     def __init__(self) -> None:
-        self.hmac_secret = (config.HMAC_SECRET_KEY).encode()
+
+        if config.HMAC_SECRET_KEY is not None:
+            self.hmac_secret = config.HMAC_SECRET_KEY.encode()
+
         pass
 
     def generate(self) -> str:
@@ -414,37 +408,37 @@ class github:
                     raise ValueError("メールアドレスが見つかりません")
 
                 result = db["user"].find_one({"id": user_id})
+                ip_address = request.remote_addr
+                user_agent = request.headers.get("User-Agent")
+                if ip_address and user_agent:
 
-                if result:
-                    ip_address = request.remote_addr
-                    user_agent = request.headers.get("User-Agent")
-                    response = cookie_manager().set_cookie_response(
-                        user_id=user_id,
-                        ip_address=ip_address,
-                        user_agent=user_agent,
-                        redirect_url="/",
-                    )
-                    return response
+                    if result:
+                        response = cookie_manager().set_cookie_response(
+                            user_id=user_id,
+                            ip_address=ip_address,
+                            user_agent=user_agent,
+                            redirect_url="/",
+                        )
+                        return response
 
-                if not result:
-                    user_id = user_id
-                    password = None
-                    user().create_save(
-                        user_id,
-                        user_name,
-                        user_email,
-                        password,
-                        user_type="github",
-                    )
-                    ip_address = request.remote_addr
-                    user_agent = request.headers.get("User-Agent")
-                    response = cookie_manager().set_cookie_response(
-                        user_id=user_id,
-                        ip_address=ip_address,
-                        user_agent=user_agent,
-                        redirect_url="/",
-                    )
-                    return response
+                    else:
+                        user_id = user_id
+                        password = None
+                        user().create_save(
+                            user_id=user_id,
+                            name=user_name,
+                            email=user_email,
+                            password=password,
+                            user_type="github",
+                        )
+                        response = cookie_manager().set_cookie_response(
+                            user_id=user_id,
+                            ip_address=ip_address,
+                            user_agent=user_agent,
+                            redirect_url="/",
+                        )
+                        return response
+
                 else:
                     return jsonify({"message": "エラーが発生しました"}), 500
 

@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 from flask import (
     Blueprint,
@@ -8,120 +9,40 @@ from flask import (
     redirect,
 )
 from flask_limiter.util import get_remote_address
-from ..model.auth import (
-    session_manager,
-    native,
-    github,
-    cookie_manager,
-)
-from ..model.user import user
-from ..model.log import recorder
 from ..main import limiter
-from app import config, db
+from ..model.log import recorder
+from ..model.user import user, play
+
+play_bp = Blueprint("play_bp", __name__)
 
 
-user_bp = Blueprint("user_bp", __name__)
-
-@user_bp.route("/session", methods=["POST"])
+@play_bp.route("/get_pbm", methods=["GET"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
-def session():
-    access_token = request.cookies.get("access_token")
-    refresh_token = request.cookies.get("refresh_token")
-    if not access_token or not refresh_token:
-        return jsonify({"message": config.TOKEN_NOT_FOUND_MESSAGE}), 401
-    response = session_manager().verify(
-        access_token=access_token, refresh_token=refresh_token
-    )
-    return response
+def get_problem():
+    respnse = play().get_problem()
+    return respnse
 
 
-@user_bp.route("/exit", methods=["POST"])
-@limiter.limit("10 per minute", key_func=get_remote_address)
-def user_exit():
-    session_id = request.cookies.get("session_id")
-    recorder().access_time_session_user_db(session_id=session_id)
-    return jsonify({"message": "🫡"})
+@play_bp.route("/result", methods=["POST"])
+def save_result():
+    access_token: Optional[str] = request.cookies.get("access_token")
+    if request.json is not None and access_token:
+        try_save = play().save_result(access_token=access_token, play_info=request.json)
+        if try_save == None:
+            return make_response({"message": "ユーザーが存在しません"}, 404)
+        if try_save == False:
+            return make_response({"message": "保存に失敗しました。"}, 500)
+
+        return make_response({"message": "プレイ履歴を更新しました。"}, 200)
+
+    return make_response({"success": False, "message": "エラーが発生しました。"}, 500)
 
 
-@user_bp.route("/logout", methods=["POST"])
-def logout():
-    session_id: str = request.cookies.get("session_id")
-    refresh_token: str = request.cookies.get("refresh_token")
-    db["session"].delete_one({"session_id": session_id, "refresh_token": refresh_token})
-    res = make_response(redirect("/"))
-    res.delete_cookie("access_token")
-    res.delete_cookie("refresh_token")
-    res.delete_cookie("session_id")
-    res.delete_cookie("expires")
-    return res
-
-
-@user_bp.route("/native_register", methods=["POST"])
-def native_register():
-    if request.content_type != "application/json":
-        return jsonify({"message": "Unsupported Media Type"}), 415
-
-    email: str = request.json["email"]
-    name: str = request.json["name"]
-    if email and name:
-        try:
-
-            same_email_result = user().find_by_email(email)
-            same_name_result = user().find_by_name(name)
-            if same_email_result:
-                return jsonify({"message": config.USER_EMAIL_EXISTS_MESSAGE}), 409
-            if same_name_result:
-                return jsonify({"message": config.USER_NAME_EXISTS_MESSAGE}), 409
-
-            user_id: str = str(uuid.uuid4())
-            password: str = request.json["password"]
-            user_type: str = "native"
-            create = user().create_save(user_id, email, password, name, user_type)
-            if not create:
-                return jsonify({"message": config.ERROE_MESSAGE}), 500
-            user_agent = request.headers.get("User-Agent")
-            ip_address = request.remote_addr
-            response = cookie_manager().set_cookie_response(
-                user_agent=user_agent,
-                ip_address=ip_address,
-                user_id=user_id,
-                redirect_url="/",
-            )
-            return response, 200
-
-        except Exception as e:
-            print(e)
-            return jsonify({"message": config.ERROE_MESSAGE}), 500
+@play_bp.route("/info", methods=["GET"])
+def get_user_info() -> Response:
+    access_token: Optional[str] = request.cookies.get("access_token")
+    if access_token:
+        user_info: Optional[dict] = user().get_user_info(access_token=access_token)
+        return make_response({"success": True, "user_info": user_info})
     else:
-        return jsonify({"message": "wahts a data 👀"}), 400
-
-
-@user_bp.route("/native_login", methods=["POST"])
-def native_login():
-    # if request.A != "application/json":
-    #     return jsonify({"message": "Unsupported Media Type"}), 415
-
-    email: str = request.json["email"]
-    password: str = request.json["password"]
-    if email and password:
-        verify_password = native().verify_password(email, password)
-        if verify_password == True:
-            user_info = user.find_and_get_user_info(email, "native")
-            user_id = user_info["id"]
-            ip_address = request.remote_addr
-            user_agent = request.headers.get("User-Agent")
-
-            response = cookie_manager().set_cookie_response(
-                user_id=user_id,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                redirect_url="/",
-            )
-            return response, 200
-        if verify_password == False:
-            return "444", 444  # パスワードかユーザー名が違う
-        if verify_password == None:
-            return "446", 446  # DBにユーザーがいない
-
-    if not email or password:
-        return jsonify({"message": "wahts a data 👀"}), 400
+        return jsonify({"success": False, "message": "問題が発生しました"})

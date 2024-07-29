@@ -1,5 +1,6 @@
 from app import db
 import datetime
+from typing import Optional
 
 
 class recorder:
@@ -8,7 +9,7 @@ class recorder:
         pass
 
     @staticmethod
-    def access_time_session_user_db(session_id: str) -> None:
+    def access_time_session_user_db(session_id: Optional[str]) -> None:
         try:
             # sessionコレクションを更新
             query = {"session_id": session_id}

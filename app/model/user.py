@@ -2,10 +2,23 @@ import os
 from app import db
 import datetime
 import hashlib
-from flask import jsonify, Response
+from flask import Response, request, make_response
+from typing import Optional, Union, Any
+from .auth import jwt_manager
+from bson import json_util
+from app import db
+import json
+from .auth import jwt_manager
 
 
 class user:
+
+    def __init__(self) -> None:
+
+        self.access_token: Optional[str] = request.cookies.get("access_token")
+        self.session_id: Optional[str] = request.cookies.get("session_id")
+        self.salt = os.urandom(32)
+        pass
 
     def create_save(
         self,
@@ -16,12 +29,11 @@ class user:
         user_type: str | None,
     ) -> bool:
         try:
-            salt = os.urandom(32)
             # ここでパスワードをハッシュ化して適切なJSONに変換している
             if password is not None:
                 hashed_password = (
                     hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
-                    + salt
+                    + self.salt
                 )
             else:
                 hashed_password = None
@@ -48,7 +60,6 @@ class user:
             }
 
             db["user"].insert_one(user_profile)
-            print("its saved!!!")
             return True
         except Exception as e:
             print(e)
@@ -106,9 +117,104 @@ class user:
             print(e)
             return None
 
-    # def save_play_info(seld, user_id:str)->bool:
-    #     try:
+    def get_user_info(self, access_token: Optional[str]) -> Optional[dict]:
+        try:
+            if access_token:
 
-    #     except Exception as e:
-    #         print(e)
-    #         return False
+                valited_token: dict = jwt_manager().verify_token(jwt_token=access_token)
+                user_info = db["user"].find_one({"user_id": valited_token["user_id"]})
+                if valited_token["user_id"] is not None and user_info is not None:
+                    return_value: dict = {
+                        "success": True,
+                        "name": user_info["profile"]["name"],
+                        "bio": user_info["profile"]["bio"],
+                        "play_history": {
+                            "short": user_info["short"],
+                            "normal": user_info["normal"],
+                            "logn": user_info["long"],
+                        },
+                        "status_code": 200,
+                    }
+                    return return_value
+
+                if valited_token["user_id"] is None:
+                    return_value: dict = {
+                        "success": False,
+                        "message": "ログインし直してください",
+                        "status_code": 401,
+                    }
+                    return return_value
+
+        except Exception as e:
+            print(e)
+            return_value: dict = {
+                "success": False,
+                "user_info": None,
+                "status_code": 500,
+            }
+            return return_value
+
+
+class play:
+
+    def __init__(self):
+        self.piece: int = 5
+
+    def get_problem(self):
+        try:
+            short_doc = [
+                json.loads(json_util.dumps(document))
+                for document in db["short"].aggregate(
+                    [{"$sample": {"size": self.piece}}]
+                )
+            ]
+            normal_doc = [
+                json.loads(json_util.dumps(document))
+                for document in db["normal"].aggregate(
+                    [{"$sample": {"size": self.piece}}]
+                )
+            ]
+            long_doc = [
+                json.loads(json_util.dumps(document))
+                for document in db["long"].aggregate(
+                    [{"$sample": {"size": self.piece}}]
+                )
+            ]
+            print(self.piece)
+
+            print(json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False))
+
+            return Response(
+                json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False),
+                mimetype="application/json",
+            )
+
+        except Exception as e:
+            print(self.piece)
+            print((e))
+            return make_response({"message": "サーバーでエラーが発生しました"}, 500)
+
+    def save_result(self, access_token: str, play_info: dict) -> bool | None:
+        try:
+            token_result = jwt_manager().verify_token(access_token)
+            user_id = token_result["user_id"]
+            print(user_id)
+
+            is_exist_session = db["session"].find_one({"user_id": user_id})
+            user_info = db["user"].find_one({"id": user_id})
+
+            if is_exist_session and user_info:
+                level = play_info["level"]
+                play_info["played_at"] = datetime.datetime.now().isoformat()
+                play_history: list = user_info[level]
+                play_history.append(play_info)
+                new_play_history_value: dict = {"$set": {level: play_history}}
+                db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
+                return True
+
+            else:
+                return None
+
+        except Exception as e:
+            print(e)
+            return False
