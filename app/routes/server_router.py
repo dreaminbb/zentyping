@@ -16,17 +16,17 @@ from ..model.auth import (
     github,
     cookie_manager,
 )
+from ..main import app
 from ..model.log import recorder
 from ..main import limiter
 from app import config, db
 from ..model.user import user, play
 from ..model.auth import github, csrf_maneger, session_manager
 
+
 github_bp = Blueprint("github", __name__)
-user_bp = Blueprint("user_bp", __name__)
 
-
-@user_bp.route("/session", methods=["POST"])
+@app.route("/session", methods=["POST"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
 def session():
     access_token = request.cookies.get("access_token")
@@ -39,7 +39,7 @@ def session():
     return response
 
 
-@user_bp.route("/exit", methods=["POST"])
+@app.route("/exit", methods=["POST"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
 def user_exit():
     session_id: Optional[str] = request.cookies.get("session_id")
@@ -47,9 +47,8 @@ def user_exit():
     return jsonify({"message": "🫡"})
 
 
-@user_bp.route("/logout", methods=["POST"])
+@app.route("/logout", methods=["POST"])
 def logout():
-
     session_id: Optional[str] = request.cookies.get("session_id")
     refresh_token: Optional[str] = request.cookies.get("refresh_token")
     db["session"].delete_one({"session_id": session_id, "refresh_token": refresh_token})
@@ -61,7 +60,7 @@ def logout():
     return res
 
 
-@user_bp.route("/native_register", methods=["POST"])
+@app.route("/native_register", methods=["POST"])
 def native_register():
     if request.content_type != "application/json":
         return jsonify({"message": "Unsupported Media Type"}), 415
@@ -104,7 +103,7 @@ def native_register():
         return jsonify({"message": "wahts a data 👀"}), 400
 
 
-@user_bp.route("/native_login", methods=["POST"])
+@app.route("/native_login", methods=["POST"])
 def native_login():
 
     if request.content_type != "application/json":

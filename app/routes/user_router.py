@@ -14,6 +14,7 @@ from ..model.log import recorder
 from ..model.user import user, play
 
 play_bp = Blueprint("play_bp", __name__)
+user_bp = Blueprint("user_bp", __name__)
 
 
 @play_bp.route("/get_pbm", methods=["GET"])
@@ -38,11 +39,17 @@ def save_result():
     return make_response({"success": False, "message": "エラーが発生しました。"}, 500)
 
 
-@play_bp.route("/info", methods=["GET"])
+@user_bp.route("/info", methods=["GET"])
 def get_user_info() -> Response:
     access_token: Optional[str] = request.cookies.get("access_token")
     if access_token:
-        user_info: Optional[dict] = user().get_user_info(access_token=access_token)
-        return make_response({"success": True, "user_info": user_info})
-    else:
-        return jsonify({"success": False, "message": "問題が発生しました"})
+        tmp:Optional[dict] = user().get_user_info(access_token=access_token)
+        print(tmp)
+        if tmp is not None:
+            return make_response(tmp, tmp["status"])
+
+    elif not access_token:
+        return make_response({"success": False, "message": "no token?"}, 401)
+
+        # return make_response({"success": True, "user_info": user_info})
+    return make_response({"success": False, "message": "問題が発生しました"}, 500)

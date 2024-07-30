@@ -8,7 +8,7 @@ export class token_manager {
   public async verify_session(): Promise<void> {
     if (document.cookie) {
       try {
-        fetch('http://localhost:8000/user/session', {
+        fetch('http://localhost:8000/session', {
           method: 'POST',
           // "credentials": 'include',
           headers: {
@@ -19,10 +19,8 @@ export class token_manager {
           .then(data => {
             console.log(data)
             if (data["session"]) {
-              console.log("session is valid")
               is_login.value = true
             } else if (data["error"]) {
-              console.log("sometihnnig went worng")
               is_login.value = false
             }
           })
@@ -35,9 +33,8 @@ export class token_manager {
   }
 
 
-
   public logout(): void {
-    fetch('http://localhost:8000/user/logout', {
+    fetch('http://localhost:8000/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +65,7 @@ export class native_user {
     }
 
     try {
-      fetch('http://localhost:8000/user/native_register', {
+      fetch('http://localhost:8000/native_register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -93,7 +90,7 @@ export class native_user {
     }
 
     try {
-      fetch('http://localhost:8000/user/native_login', {
+      fetch('http://localhost:8000/native_login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +123,7 @@ export class native_user {
 export class github {
   public auth(): void {
     try {
-      window.location.href = 'http://localhost:8000/github/'
+      window.location.href = 'http://localhost:8000/auth/'
       if (document.cookie) {
         is_login.value = true
       }

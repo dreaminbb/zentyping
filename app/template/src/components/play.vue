@@ -347,7 +347,8 @@ function typing() {
     (type_input.value[type_input.value.length - 1] === '\n' &&
       type_input.value.length >= char.value.length)
   ) {
-    setTimeout(() => result(), 300)
+    textarea.value?.blur()
+    setTimeout(() => result(), 100)
   }
 }
 
@@ -414,10 +415,13 @@ function compositionEnd() {
 
 // 終わった時の処理
 function result() {
+  console.log('実行')
   clearInterval(timer)
   time.value = time.value / 10
-  play_page.value = false
-  result_page.value = true
+  setTimeout(() => {
+    play_page.value = false
+    result_page.value = true
+  }, 100)
   tools.value = true
   header_focus_class.value = false
   window.addEventListener('keydown', back_game_focus)
@@ -436,7 +440,7 @@ function result() {
   const result_data: object = {
     id: pbm_id.value,
     level: level.value,
-    time: time.value,
+    time: Number(time.value),
     correct_rate: correct_rate.value,
     correct_count: correct_count.value,
     incorrect_count: type_input.value.length - correct_count.value,
@@ -446,14 +450,16 @@ function result() {
     pun_count: pun_count.value
   }
 
-  fetch('http://localhost:8000/play/result', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: play_api_key
-    },
-    body: JSON.stringify(result_data)
-  })
+  setTimeout(() => {
+    fetch('http://localhost:8000/play/result', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: play_api_key
+      },
+      body: JSON.stringify(result_data)
+    })
+  }, 300)
 }
 </script>
 <template>

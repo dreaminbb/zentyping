@@ -14,6 +14,7 @@ from app import config, db
 # 1. cookieを検証して新しく作った場合は古いvalid cookieを無効にする
 
 
+
 def require_api_key(f):
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get("Authorization")

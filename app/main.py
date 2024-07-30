@@ -30,10 +30,10 @@ limiter = Limiter(
 )
 
 # リクエスト回数の制限
-from app.routes.user_router import play_bp
-from app.routes.server_router import github_bp, user_bp
+from app.routes.user_router import play_bp, user_bp
+from app.routes.server_router import github_bp
 
-app.register_blueprint(github_bp, url_prefix="/github")
+app.register_blueprint(github_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
 app.register_blueprint(play_bp, url_prefix="/play")
 # CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
@@ -54,9 +54,9 @@ except Exception as e:
 
 @app.route("/", methods=["GET"])
 def index():
-    access_token = request.cookies.get("access_token")
-    refresh_token = request.cookies.get("refresh_token")
-    if access_token and refresh_token is None:
-        return render_template("index.html")
+    # access_token = request.cookies.get("access_token")
+    # refresh_token = request.cookies.get("refresh_token")
+    # if access_token and refresh_token is None:
+    #     return render_template("index.html")
 
     return render_template("index.html")

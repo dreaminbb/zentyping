@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { is_login } from '@/assets/auth'
+import router from '@/assets/router'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 onMounted(() => {
   document.body.style.overflowX = 'hidden'
@@ -7,12 +9,60 @@ onMounted(() => {
   document.body.style.height = '200vh'
 })
 
+const user_name = ref<string>('')
+const total_time = ref<number>(0)
+const bio = ref<string>('')
+const created_at = ref<string>('')
+const play_count = ref<number>(0)
+const correct_rate = ref<number>(0)
+
+async function fetch_user_info(): Promise<void> {
+  console.log('penis')
+  if (document.cookie && is_login.value === true) {
+    try {
+      const response: Response = await fetch('http://localhost:8000/user/info', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      if (response.status === 200) {
+        const data = await response.json()
+        if (data) {
+          user_name.value = data['name'] as string
+          bio.value = data['bio'] as string
+          total_time.value = data['total_time'] as number
+          created_at.value = data['created_at'] as string
+          console.log(user_name.value, bio.value, total_time.value)
+        } else {
+          console.log('you are bad boy')
+          user_name.value = '(:)'
+          total_time.value = 0
+        }
+      } else if (response.status === 401) {
+        console.log('ログインし直してください')
+        return
+      } else if (response.status === 500) {
+        console.log('サーバー側でエラーが発生しました')
+        return
+      }
+    } catch (error) {
+      console.error(error)
+      return
+    }
+  } else {
+    console.log('no cookie???')
+    is_login.value = false
+    return
+  }
+}
+fetch_user_info()
+
 onUnmounted(() => {
   document.body.style.overflow = 'hidden' // スクロールを無効にする
   document.body.style.height = '' // 元の状態に戻す
   document.body.style.overflow = '' // 元の状態に戻す
 })
-
 </script>
 
 <template>
@@ -20,7 +70,7 @@ onUnmounted(() => {
     <div id="fm">
       <div id="user_fm">
         <div id="user_icon"></div>
-        <div id="user_name"></div>
+        <div id="user_name">{{ user_name }}</div>
         <div id="reg_day"></div>
       </div>
 
@@ -29,15 +79,15 @@ onUnmounted(() => {
       </div>
 
       <div id="play_count_fm" class="four_elm">
-        <div id="play_count"></div>
+        <div id="play_count">{{ play_count }}</div>
       </div>
 
-      <div id="best_ips_fm" class="four_elm">
-        <div id="best_ips"></div>
+      <div id="correct_rate" class="four_elm">
+        <div id="best_ips">{{ correct_rate }}</div>
       </div>
 
       <div id="total_time_fm" class="four_elm">
-        <div id="total_time"></div>
+        <div id="total_time">{{ total_time }}</div>
       </div>
 
       <div id="active_day"></div>

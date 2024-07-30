@@ -48,9 +48,10 @@ class user:
                 "access_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "role": {"user": True},
-                "play_info": {"total_play": 0, "total_time": 0},
-                "profile": {"icon": None, "bio": None, "name": name},
+                "profile": {"icon": None, "bio": "", "name": name},
                 # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
+                "play_count": 0,
+                "total_time": 0,
                 "short": [],
                 "normal": [],
                 "long": [],
@@ -122,37 +123,54 @@ class user:
             if access_token:
 
                 valited_token: dict = jwt_manager().verify_token(jwt_token=access_token)
-                user_info = db["user"].find_one({"user_id": valited_token["user_id"]})
-                if valited_token["user_id"] is not None and user_info is not None:
-                    return_value: dict = {
-                        "success": True,
-                        "name": user_info["profile"]["name"],
-                        "bio": user_info["profile"]["bio"],
-                        "play_history": {
-                            "short": user_info["short"],
-                            "normal": user_info["normal"],
-                            "logn": user_info["long"],
-                        },
-                        "status_code": 200,
-                    }
-                    return return_value
+                print(valited_token)
+                if valited_token["user_id"] is not None:
+                    user_info = db["user"].find_one({"id": valited_token["user_id"]})
+                    if user_info is not None:
+                        return_value: dict = {
+                            "success": True,
+                            "name": user_info["profile"]["name"],
+                            "bio": user_info["profile"]["bio"],
+                            "created_at": user_info["created_at"],
+                            "total_time": user_info["total_time"],
+                            "play_history": {
+                                "short": user_info["short"],
+                                "normal": user_info["normal"],
+                                "logn": user_info["long"],
+                            },
+                            "status": 200,
+                        }
+                        print(return_value, "期待しているレスポンス")
+                        return return_value
+                    else:
+                        return {
+                            "success": False,
+                            "name": None,
+                            "bio": None,
+                            "play_history": None,
+                            "status": 404,
+                        }
 
                 if valited_token["user_id"] is None:
-                    return_value: dict = {
+                    invalid_token: dict = {
                         "success": False,
+                        "auth": False,
+                        "user_info": None,
                         "message": "ログインし直してください",
-                        "status_code": 401,
+                        "status": 401,
                     }
-                    return return_value
+                    print(invalid_token, "無効なトークン")
+                    return invalid_token
 
         except Exception as e:
             print(e)
-            return_value: dict = {
+            erroe_value: dict = {
                 "success": False,
                 "user_info": None,
-                "status_code": 500,
+                "status": 500,
             }
-            return return_value
+            print("エラーだお")
+            return erroe_value
 
 
 class play:
@@ -194,6 +212,8 @@ class play:
             print((e))
             return make_response({"message": "サーバーでエラーが発生しました"}, 500)
 
+    # play_info = クライアント側から送信されたプレイデーター
+    # user_info = DBから取得したユーザーのプレイデーター
     def save_result(self, access_token: str, play_info: dict) -> bool | None:
         try:
             token_result = jwt_manager().verify_token(access_token)
@@ -204,11 +224,17 @@ class play:
             user_info = db["user"].find_one({"id": user_id})
 
             if is_exist_session and user_info:
+                print("penis")
                 level = play_info["level"]
                 play_info["played_at"] = datetime.datetime.now().isoformat()
                 play_history: list = user_info[level]
+                updated_time: int = user_info["total_time"] + int(play_info["time"])
                 play_history.append(play_info)
-                new_play_history_value: dict = {"$set": {level: play_history}}
+                new_play_history_value: dict = {
+                    "$set": {level: play_history},
+                    "$set": {"total_time": updated_time},
+                    "$set": {"play_count": user_info["play_count"] + 1},
+                }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
                 return True
 

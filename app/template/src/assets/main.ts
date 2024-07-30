@@ -16,7 +16,7 @@ createApp(App).use(router).mount('#app')
 // 最後に離れた時間をサーバーに送信
 window.addEventListener('beforeunload', (): void => {
     if (document.cookie) {
-        navigator.sendBeacon("http://localhost:8000/user/exit", document.cookie)
+        navigator.sendBeacon("http://localhost:8000/exit", document.cookie)
         return
     } else {
         return
