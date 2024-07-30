@@ -36,7 +36,8 @@ def save_result():
 
         return make_response({"message": "プレイ履歴を更新しました。"}, 200)
 
-    return make_response({"success": False, "message": "エラーが発生しました。"}, 500)
+    else:
+        return make_response({"success": False, "message": "プレイ情報がありません"}, 400)
 
 
 @user_bp.route("/info", methods=["GET"])

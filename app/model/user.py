@@ -51,7 +51,7 @@ class user:
                 "profile": {"icon": None, "bio": "", "name": name},
                 # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
                 "play_count": 0,
-                "total_time": 0,
+                "total_time": 0.0,
                 "short": [],
                 "normal": [],
                 "long": [],
@@ -224,16 +224,18 @@ class play:
             user_info = db["user"].find_one({"id": user_id})
 
             if is_exist_session and user_info:
-                print("penis")
                 level = play_info["level"]
                 play_info["played_at"] = datetime.datetime.now().isoformat()
                 play_history: list = user_info[level]
-                updated_time: int = user_info["total_time"] + int(play_info["time"])
+                updated_time: float = user_info["total_time"] + play_info["time"]
                 play_history.append(play_info)
+
                 new_play_history_value: dict = {
-                    "$set": {level: play_history},
-                    "$set": {"total_time": updated_time},
-                    "$set": {"play_count": user_info["play_count"] + 1},
+                    "$set": {
+                        level: play_history,
+                        "total_time": updated_time,
+                        "play_count": user_info["play_count"] + 1,
+                    }
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
                 return True

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { is_login } from '@/assets/auth'
-import router from '@/assets/router'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 onMounted(() => {

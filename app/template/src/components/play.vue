@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
 import { pie_chart, line_chart } from './chart'
-import { play_api_key, send_play_result_url } from '@/assets/main'
+import { play_api_key } from '@/assets/main'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 
@@ -104,8 +104,8 @@ async function play_init() {
 function start_timer() {
   timer = setInterval(() => {
     time.value++
-    correct_every_second.value.push(correct_count.value / (time.value / 10))
-    input_every_second.value.push(type_count / (time.value / 10))
+    correct_every_second.value.push(Math.floor(correct_count.value / (time.value / 10)) / 10)
+    input_every_second.value.push(Math.floor(type_count / (time.value / 10)) / 10)
   }, 100)
 }
 
@@ -440,7 +440,7 @@ function result() {
   const result_data: object = {
     id: pbm_id.value,
     level: level.value,
-    time: Number(time.value),
+    time: Number((time.value * 10) / 10),
     correct_rate: correct_rate.value,
     correct_count: correct_count.value,
     incorrect_count: type_input.value.length - correct_count.value,
