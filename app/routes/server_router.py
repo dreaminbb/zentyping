@@ -23,8 +23,8 @@ from app import config, db
 from ..model.user import user, play
 from ..model.auth import github, csrf_maneger, session_manager
 
-
 github_bp = Blueprint("github", __name__)
+
 
 @app.route("/session", methods=["POST"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
@@ -105,7 +105,6 @@ def native_register():
 
 @app.route("/native_login", methods=["POST"])
 def native_login():
-
     if request.content_type != "application/json":
         return jsonify({"message": "Unsupported Media Type"}), 415
 
@@ -124,7 +123,6 @@ def native_login():
             user_info = user.find_and_get_user_info(email, "native")
             user_id: Optional[str] = user_info["id"] if user_info else None
             if user_id is not None:
-
                 response = cookie_manager().set_cookie_response(
                     user_id=user_id,
                     ip_address=ip_address,
@@ -155,7 +153,7 @@ def github_signin():
 
 @github_bp.route("/callback")
 def github_callback():
-    code:Optional[str] = request.args.get("code")
+    code: Optional[str] = request.args.get("code")
     csrf_token: Optional[str] = request.cookies.get("token")
     if csrf_token:
         velidate: bool = csrf_maneger().velidate(token=csrf_token)
@@ -163,6 +161,6 @@ def github_callback():
             response: Response = github().sign_in_login(code)
             response.delete_cookie("token")
             return response
-        if velidate == False:
+        if not velidate:
             return make_response({"message": "エラーが発生しました"})
     return make_response({"message": "エラーが発生しました"})

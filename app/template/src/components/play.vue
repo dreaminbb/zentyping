@@ -5,16 +5,16 @@ import { play_api_key } from '@/assets/main'
 const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 
-const type_input = ref('')
-const char = ref('')
-const type = ref('')
-const time = ref(0)
-const correct_count = ref(0)
-const correct_rate = ref(0)
-const level = ref('')
-const level_num = ref(0)
-const pun_count = ref(0)
-const pbm_id = ref('')
+const type_input = ref<string>('')
+const char = ref<string>('')
+const type = ref<string>('')
+const level = ref<string>('')
+const pbm_id = ref<string>('')
+const time = ref<number>(0)
+const correct_count = ref<number>(0)
+const correct_rate = ref<number>(0)
+const level_num = ref<number>(0)
+const pun_count = ref<number>(0)
 const correct_every_second = ref<number[]>([])
 const input_every_second = ref<number[]>([])
 
@@ -450,7 +450,7 @@ function result() {
     pun_count: pun_count.value
   }
 
-  setTimeout(() => {
+  setTimeout((): void => {
     fetch('http://localhost:8000/play/result', {
       method: 'POST',
       headers: {

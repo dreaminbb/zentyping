@@ -49,9 +49,14 @@ class user:
                 "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "role": {"user": True},
                 "profile": {"icon": None, "bio": "", "name": name},
+                "total_results": {
+                    "play_count": 0,
+                    "total_time": 0.0,
+                    "short_correct_rate": 0.0,
+                    "normal_correct_rate": 0.0,
+                    "long_correct_rate": 0.0,
+                },
                 # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
-                "play_count": 0,
-                "total_time": 0.0,
                 "short": [],
                 "normal": [],
                 "long": [],
@@ -136,7 +141,7 @@ class user:
                             "play_history": {
                                 "short": user_info["short"],
                                 "normal": user_info["normal"],
-                                "logn": user_info["long"],
+                                "long": user_info["long"],
                             },
                             "status": 200,
                         }
@@ -226,20 +231,57 @@ class play:
             if is_exist_session and user_info:
                 level = play_info["level"]
                 play_info["played_at"] = datetime.datetime.now().isoformat()
+
                 play_history: list = user_info[level]
-                updated_time: float = user_info["total_time"] + play_info["time"]
                 play_history.append(play_info)
+                total_results: dict = user_info["total_results"]
+                print(total_results["play_count"])
+                total_results["play_count"] += 1
+                total_results["total_time"] += play_info["time"]
+
+                # 平均正入力を計算するアルゴリズム
+                level_len = len(user_info[level])
+                level_sum = sum([entry["correct_rate"] for entry in user_info[level]])
+
+                level_ave = level_sum / level_len
+
+                total_results[f"{level}_correct_rate"] = level_ave
 
                 new_play_history_value: dict = {
                     "$set": {
                         level: play_history,
-                        "total_time": updated_time,
-                        "play_count": user_info["play_count"] + 1,
+                        "total_results": total_results,
                     }
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
-                return True
 
+
+                # total_results[f"{level}_correct_rate"] = 
+
+                # for i in range(short_len):
+                #     short_sum += user_info["short"][i]["correct_rate"]
+                # short_ave: float = short_sum / short_len
+
+                # for i in range(normal_len):
+                #     normal_sum += user_info["normal"][i]["correct_rate"]
+                # normal_ave: float = normal_sum / normal_len
+
+                # for i in range(long_len):
+                #     long_sum += user_info["long"][i]["correct_rate"]
+                # long_ave: float = long_sum / long_len
+
+                # total_ave:float = (short_sum+normal_sum+long_sum) /
+
+                # shortは　shortに加えるよう再計算するアルゴリズムを設計
+
+                # new_play_history_value: dict = {
+                #     "$set": {
+                #         level: play_history,
+                #         "total_results": total_results,
+                #     }
+                # }
+                # db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
+                return True
             else:
                 return None
 

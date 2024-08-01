@@ -25,14 +25,13 @@ async function fetch_user_info(): Promise<void> {
           'Content-Type': 'application/json'
         }
       })
+      const data = await response.json()
       if (response.status === 200) {
-        const data = await response.json()
         if (data) {
           user_name.value = data['name'] as string
           bio.value = data['bio'] as string
           total_time.value = data['total_time'] as number
           created_at.value = data['created_at'] as string
-          console.log(user_name.value, bio.value, total_time.value)
         } else {
           console.log('you are bad boy')
           user_name.value = '(:)'
