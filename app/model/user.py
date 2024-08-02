@@ -21,19 +21,19 @@ class user:
         pass
 
     def create_save(
-        self,
-        user_id: str,
-        email: str | None,
-        password: str | None,
-        name: str | None,
-        user_type: str | None,
+            self,
+            user_id: str,
+            email: str | None,
+            password: str | None,
+            name: str | None,
+            user_type: str | None,
     ) -> bool:
         try:
             # ここでパスワードをハッシュ化して適切なJSONに変換している
             if password is not None:
                 hashed_password = (
-                    hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
-                    + self.salt
+                        hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
+                        + self.salt
                 )
             else:
                 hashed_password = None
@@ -214,7 +214,7 @@ class play:
 
         except Exception as e:
             print(self.piece)
-            print((e))
+            print(e)
             return make_response({"message": "サーバーでエラーが発生しました"}, 500)
 
     # play_info = クライアント側から送信されたプレイデーター
@@ -241,6 +241,8 @@ class play:
 
                 # 平均正入力を計算するアルゴリズム
                 level_len = len(user_info[level])
+
+                # レベル別の全てのcorrect　rateを集めた配列を作成してsumで全てを足している
                 level_sum = sum([entry["correct_rate"] for entry in user_info[level]])
 
                 level_ave = level_sum / level_len
@@ -255,8 +257,7 @@ class play:
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
 
-
-                # total_results[f"{level}_correct_rate"] = 
+                # total_results[f"{level}_correct_rate"] =
 
                 # for i in range(short_len):
                 #     short_sum += user_info["short"][i]["correct_rate"]

@@ -141,7 +141,7 @@ class session_manager:
 
                 return response
 
-            if at_result["success"] == True:
+            if at_result["success"]:
                 return make_response(
                     {
                         "message": "success",
@@ -152,27 +152,27 @@ class session_manager:
                     200,
                 )
 
-            if at_result["timeout"] == True:
+            if at_result["timeout"]:
                 rt_result = jwt_manager().verify_token(jwt_token=refresh_token)
 
-                if rt_result["success"] == True:
+                if rt_result["success"]:
                     new_tokens = jwt_manager().generate(user_id=rt_result["id"])
                     response = make_response({"success": True, "session": True}, 200)
                     response.set_cookie("access_token", new_tokens["access_token"])
                     response.set_cookie("refresh_token", new_tokens["refresh_token"])
                     return response
 
-                if rt_result["timeout"] == True:
+                if rt_result["timeout"]:
                     return make_response(
                         {"message": config.TOKEN_TIMEOUT_MESSAGE, "session": False}, 401
                     )
 
-                if rt_result["invalid"] == True:
+                if rt_result["invalid"]:
                     return make_response(
                         {"message": config.INVALID_TOKEN_MESSAGE, "session": False}, 401
                     )
 
-            if at_result["invalid"] == True:
+            if at_result["invalid"]:
                 return make_response(
                     {"message": config.INVALID_TOKEN_MESSAGE, "session": False}, 401
                 )

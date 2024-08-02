@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { is_login } from '@/assets/auth'
-import { onMounted, onUnmounted, ref } from 'vue'
+import {is_login} from '@/assets/auth'
+import {onMounted, onUnmounted, ref} from 'vue'
 
 onMounted(() => {
   document.body.style.overflowX = 'hidden'
@@ -13,11 +13,13 @@ const total_time = ref<number>(0)
 const bio = ref<string>('')
 const created_at = ref<string>('')
 const play_count = ref<number>(0)
-const correct_rate = ref<number>(0)
+const short_correct_rate = ref<number>(0)
+const normal_correct_rate = ref<number>(0)
+const long_correct_rate = ref<number>(0)
+
 
 async function fetch_user_info(): Promise<void> {
-  console.log('penis')
-  if (document.cookie && is_login.value === true) {
+  if (document.cookie && is_login.value) {
     try {
       const response: Response = await fetch('http://localhost:8000/user/info', {
         method: 'GET',
@@ -30,8 +32,13 @@ async function fetch_user_info(): Promise<void> {
         if (data) {
           user_name.value = data['name'] as string
           bio.value = data['bio'] as string
-          total_time.value = data['total_time'] as number
+          play_count.value = data['play_count'] as number
           created_at.value = data['created_at'] as string
+          total_time.value = data['total_time'] as number
+          short_correct_rate.value = data["short_correct_rate"] as number
+          normal_correct_rate.value = data['normal_correct_rate'] as number
+          long_correct_rate.value = data['long_correct_rate'] as number
+
         } else {
           console.log('you are bad boy')
           user_name.value = '(:)'
@@ -54,6 +61,7 @@ async function fetch_user_info(): Promise<void> {
     return
   }
 }
+
 fetch_user_info()
 
 onUnmounted(() => {
@@ -65,31 +73,44 @@ onUnmounted(() => {
 
 <template>
   <body>
-    <div id="fm">
-      <div id="user_fm">
-        <div id="user_icon"></div>
-        <div id="user_name">{{ user_name }}</div>
-        <div id="reg_day"></div>
-      </div>
+  <div id="fm">
 
-      <div id="cps_fm" class="four_elm">
-        <div id="cps_chart"></div>
-      </div>
-
-      <div id="play_count_fm" class="four_elm">
-        <div id="play_count">{{ play_count }}</div>
-      </div>
-
-      <div id="correct_rate" class="four_elm">
-        <div id="best_ips">{{ correct_rate }}</div>
-      </div>
-
-      <div id="total_time_fm" class="four_elm">
-        <div id="total_time">{{ total_time }}</div>
-      </div>
-
-      <div id="active_day"></div>
+    <div id="user_fm">
+      <div id="user_icon"></div>
+      <div id="user_name">{{ user_name }}</div>
+      <div id="reg_day"></div>
+      <div id="bio"></div>
     </div>
+
+
+    <div id="total_results">
+      <div id=""></div>
+
+    </div>
+
+    <div id="active_day"></div>
+
+
+
+
+    <!--    <div id="cps_fm" class="four_elm">-->
+    <!--      <div id="cps_chart"></div>-->
+    <!--    </div>-->
+
+    <!--    <div id="play_count_fm" class="four_elm">-->
+    <!--      <div id="play_count">{{ play_count }}</div>-->
+    <!--    </div>-->
+
+    <!--    <div id="correct_rate" class="four_elm">-->
+
+    <!--    </div>-->
+
+    <!--    <div id="total_time_fm" class="four_elm">-->
+    <!--      <div id="total_time">{{ total_time }}</div>-->
+    <!--    </div>-->
+
+    <!--    <div id="active_day"></div>-->
+  </div>
   </body>
 </template>
 
@@ -105,116 +126,103 @@ body {
   min-height: 100%;
   justify-content: center;
   justify-self: center;
+
+  #fm {
+    width: 80%;
+    height: 150%;
+    position: absolute;
+    top: 15%;
+    left: 10%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+
+
+    //ユーザーの名前、登録日、アイコンなど
+    #user_fm {
+      position: relative;
+      display: flex;
+      height: 50%;
+      width: 40%;
+      top: 0;
+      right: 30%;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(4.4px);
+      -webkit-backdrop-filter: blur(4.4px);
+      border: 1px solid rgba(255, 255, 255, 0.56);
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ccc;
+
+      #reg_day {
+        position: absolute;
+        display: flex;
+        width: 80%;
+        height: 5%;
+        right: 10%;
+        top: 0;
+        background-color: yellow;
+      }
+
+      #user_icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -150%);
+        display: flex;
+        width: 10vw;
+        height: 20vh;
+        background-color: #ccc;
+        border-radius: 50%;
+      }
+
+      #user_name {
+        position: absolute;
+        display: flex;
+        width: 90%;
+        height: 10%;
+        left: 5%;
+        background-color: red;
+      }
+
+      #bio {
+        position: absolute;
+        display: flex;
+        width: 90%;
+        height: 30%;
+        left: 5%;
+        bottom: 10%;
+        background-color: blue;
+      }
+    }
+
+    #total_results{
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 60%;
+      height: 25%;
+      left: 25%;
+      top: -50%;
+      background: red;
+    }
+
+    #active_day {
+      position: relative;
+      display: flex;
+      width: 60%;
+      height: 20%;
+      left: 25%;
+      top: -45%;
+      background: blue;
+    }
+
+  }
 }
 
-#fm {
-  width: 80%;
-  height: 150%;
-  position: absolute;
-  top: 16%;
-  left: 10%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: transparent;
-
-  //ユーザーの名前、登録日、アイコンなど
-  #user_fm {
-    display: flex;
-    position: absolute;
-    top: 5%;
-    left: 0;
-    height: 15%;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(4.4px);
-    -webkit-backdrop-filter: blur(4.4px);
-    border: 1px solid rgba(255, 255, 255, 0.56);
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ccc;
-
-    #user_icon {
-      position: absolute;
-      left: 2%;
-      width: 10%;
-      height: 70%;
-      background-color: #ccc;
-      border-radius: 50%;
-    }
-
-    #user_name {
-      position: absolute;
-      display: flex;
-      width: 50%;
-      height: 60%;
-      left: 20%;
-      background-color: red;
-    }
-
-    #reg_day {
-      position: absolute;
-      display: flex;
-      width: 20%;
-      height: 60%;
-      right: 5%;
-      background-color: yellow;
-    }
-  }
-
-  // プレイ情報
-
-  .four_elm {
-    position: absolute;
-    display: flex;
-    height: 10%;
-    width: 20%;
-    top: 25%;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(4.4px);
-    -webkit-backdrop-filter: blur(4.4px);
-    border: 1px solid rgba(255, 255, 255, 0.56);
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ccc;
-  }
-
-  #cps_fm {
-    left: 0;
-  }
-
-  #play_count_fm {
-    left: 25%;
-  }
-
-  #best_ips_fm {
-    left: 55%;
-  }
-
-  #total_time_fm {
-    left: 80%;
-  }
-
-  #active_day {
-    position: absolute;
-    display: flex;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(4.4px);
-    -webkit-backdrop-filter: blur(4.4px);
-    border: 1px solid rgba(255, 255, 255, 0.56);
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ccc;
-    height: 30%;
-    width: 100%;
-    top: 40%;
-  }
-}
+// プレイ情報
 </style>

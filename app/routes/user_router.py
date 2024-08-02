@@ -29,9 +29,9 @@ def save_result():
     access_token: Optional[str] = request.cookies.get("access_token")
     if request.json is not None and access_token:
         try_save = play().save_result(access_token=access_token, play_info=request.json)
-        if try_save == None:
+        if try_save is None:
             return make_response({"message": "ユーザーが存在しません"}, 404)
-        if try_save == False:
+        if not try_save:
             return make_response({"message": "保存に失敗しました。"}, 500)
 
         return make_response({"message": "プレイ履歴を更新しました。"}, 200)

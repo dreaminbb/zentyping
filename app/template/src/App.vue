@@ -153,13 +153,12 @@ const logout = () => {
     transition: 0.5s;
     transform: translateY(-1px);
     filter: brightness(150%);
-    box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
   }
 
   body {
     margin: 0;
     padding: 0;
-    background: linear-gradient(#8258b8, #68506a, #4f3b4f);
+    background: #070707;
     display: flex;
     align-items: center;
     height: 100vh;
