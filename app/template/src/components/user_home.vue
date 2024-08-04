@@ -70,7 +70,7 @@ provide('header_normal_class', header_normal_class)
   </body>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #usr_info_frame {
   position: absolute;
   display: flex;

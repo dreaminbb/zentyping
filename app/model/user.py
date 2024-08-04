@@ -1,10 +1,8 @@
 import os
-from app import db
 import datetime
 import hashlib
 from flask import Response, request, make_response
-from typing import Optional, Union, Any
-from .auth import jwt_manager
+from typing import Optional
 from bson import json_util
 from app import db
 import json
@@ -44,9 +42,9 @@ class user:
                 "type": user_type,
                 "email": email,
                 "password": hashed_password,
-                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "access_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "created_at": datetime.datetime.now().isoformat(),
+                "access_at": datetime.datetime.now().isoformat(),
+                "updated_at": datetime.datetime.now().isoformat(),
                 "role": {"user": True},
                 "profile": {"icon": None, "bio": "", "name": name},
                 "total_results": {
@@ -56,6 +54,7 @@ class user:
                     "normal_correct_rate": 0.0,
                     "long_correct_rate": 0.0,
                 },
+                "active_days": [],
                 # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
                 "short": [],
                 "normal": [],
@@ -137,7 +136,7 @@ class user:
                             "name": user_info["profile"]["name"],
                             "bio": user_info["profile"]["bio"],
                             "created_at": user_info["created_at"],
-                            "total_time": user_info["total_time"],
+                            "total_result": user_info["total_results"],
                             "play_history": {
                                 "short": user_info["short"],
                                 "normal": user_info["normal"],
@@ -169,13 +168,13 @@ class user:
 
         except Exception as e:
             print(e)
-            erroe_value: dict = {
+            error_value: dict = {
                 "success": False,
                 "user_info": None,
                 "status": 500,
             }
             print("エラーだお")
-            return erroe_value
+            return error_value
 
 
 class play:
@@ -203,9 +202,6 @@ class play:
                     [{"$sample": {"size": self.piece}}]
                 )
             ]
-            print(self.piece)
-
-            print(json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False))
 
             return Response(
                 json.dumps([short_doc, normal_doc, long_doc], ensure_ascii=False),
@@ -213,13 +209,13 @@ class play:
             )
 
         except Exception as e:
-            print(self.piece)
             print(e)
             return make_response({"message": "サーバーでエラーが発生しました"}, 500)
 
     # play_info = クライアント側から送信されたプレイデーター
     # user_info = DBから取得したユーザーのプレイデーター
-    def save_result(self, access_token: str, play_info: dict) -> bool | None:
+    @staticmethod
+    def save_result(access_token: str, play_info: dict) -> bool | None:
         try:
             token_result = jwt_manager().verify_token(access_token)
             user_id = token_result["user_id"]
@@ -230,12 +226,11 @@ class play:
 
             if is_exist_session and user_info:
                 level = play_info["level"]
-                play_info["played_at"] = datetime.datetime.now().isoformat()
+                play_info["played_at"] = datetime.datetime.now().strftime("%Y-%m-%d")
 
                 play_history: list = user_info[level]
                 play_history.append(play_info)
                 total_results: dict = user_info["total_results"]
-                print(total_results["play_count"])
                 total_results["play_count"] += 1
                 total_results["total_time"] += play_info["time"]
 
@@ -249,39 +244,28 @@ class play:
 
                 total_results[f"{level}_correct_rate"] = level_ave
 
+                # その日のプレイ回数を記録する
+                active_days: list = user_info["active_days"]
+                today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+                if not any(today in d.keys() for d in active_days):
+                    print("今日初プレイ")
+                    active_days.append({today: 1})
+                else:
+                    print("今日2回目以降")
+                    for day in active_days:
+                        if today in day.keys():
+                            day[today] += 1
+
                 new_play_history_value: dict = {
                     "$set": {
                         level: play_history,
                         "total_results": total_results,
+                        "active_days": active_days,
                     }
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
 
-                # total_results[f"{level}_correct_rate"] =
-
-                # for i in range(short_len):
-                #     short_sum += user_info["short"][i]["correct_rate"]
-                # short_ave: float = short_sum / short_len
-
-                # for i in range(normal_len):
-                #     normal_sum += user_info["normal"][i]["correct_rate"]
-                # normal_ave: float = normal_sum / normal_len
-
-                # for i in range(long_len):
-                #     long_sum += user_info["long"][i]["correct_rate"]
-                # long_ave: float = long_sum / long_len
-
-                # total_ave:float = (short_sum+normal_sum+long_sum) /
-
-                # shortは　shortに加えるよう再計算するアルゴリズムを設計
-
-                # new_play_history_value: dict = {
-                #     "$set": {
-                #         level: play_history,
-                #         "total_results": total_results,
-                #     }
-                # }
-                # db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
                 return True
             else:
                 return None

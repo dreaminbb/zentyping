@@ -145,9 +145,9 @@ def native_login():
 
 @github_bp.route("/")
 def github_signin():
-    csrf_toen = csrf_maneger().generate()
+    csrf_token = csrf_maneger().generate()
     response = make_response(redirect(config.GITHUB_REDIRECT_URL))
-    response.set_cookie("token", csrf_toen)
+    response.set_cookie("token", csrf_token)
     return response
 
 

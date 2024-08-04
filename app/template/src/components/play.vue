@@ -198,7 +198,7 @@ onMounted(async () => {
     type.value = get_problem_data_from_api.value[1][0].type
     char.value = get_problem_data_from_api.value[1][0].char
   }
-  if (activepun.value === false) {
+  if (!activepun.value) {
     pun_count.value = 0
   }
 
@@ -625,7 +625,7 @@ function result() {
     </button>
   </main>
 </template>
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 main {
@@ -728,7 +728,6 @@ main {
   display: grid;
   grid-template-columns: repeat(20, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  column-gap: 0px;
   grid-row-gap: -20px;
 }
 
@@ -738,7 +737,6 @@ main {
   display: grid;
   grid-template-columns: repeat(35, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  column-gap: 0px;
   grid-row-gap: -20px;
 }
 
