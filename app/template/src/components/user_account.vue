@@ -2,24 +2,22 @@
 import {is_login} from '@/assets/auth'
 import {onMounted, onUnmounted, ref} from 'vue'
 
-onMounted(() => {
-  document.body.style.overflowX = 'hidden'
-  document.body.style.overflowY = 'scroll'
-  document.body.style.height = '200vh'
-})
-
+const calender_body = ref<HTMLElement | null>(null)
 const joined_day = ref<string>('')
 const user_name = ref<string>('')
 const formated_time = ref<string>('00:00')
 const bio = ref<string>('')
 const keyboard_name = ref<string>('')
 const play_count = ref<number>(0.0)
+const active_level = ref<Array<string>>(["rgb(106,106,108)", "rgb(207,175,207)", "rgb(211,38,227)", "rgb(173,0,239)", "rgb(194,9,255)"])
 const short_correct_rate = ref<number>(0.0)
 const normal_correct_rate = ref<number>(0.0)
 const long_correct_rate = ref<number>(0.0)
-
 //登録日のフォーマット方法->2024/08/03
 
+
+// 2024の1/1は月曜日
+//202412/31は火曜日
 
 
 //時間のフォーマット方法-> 1:30:00
@@ -28,7 +26,6 @@ function format_time(total_time: number): void {
   const hours: number = Math.floor(total_time / 3600);
   const minutes: number = Math.floor((total_time % 3600) / 60);
   const seconds: number = Math.floor(total_time % 60);
-
   const formatted_minutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
   const formatted_seconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
 
@@ -39,8 +36,107 @@ function format_time(total_time: number): void {
   }
 }
 
-const total_time:number = 1000
+const total_time: number = 1000
 format_time((total_time))
+
+function format_calender_day(activity_calender_value: Array<{
+  week_number: number,
+  day_of_week: string,
+  play_count_in_day: number
+}>): Array<Array<object>> {
+  const sunday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Sun").sort((a, b) => a.week_number - b.week_number) : [{}]
+  const monday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Mon").sort((a, b) => a.week_number - b.week_number) : [{}]
+  const tuesday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Tue").sort((a, b) => a.week_number - b.week_number) : [{}]
+  const wednesday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Wed").sort((a, b) => a.week_number - b.week_number) : [{}]
+  const thursday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Thu").sort((a, b) => a.week_number - b.week_number) : [{}]
+  const friday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Fri").sort((a, b) => a.week_number - b.week_number) : [{}]
+  const saturday: Array<object> = activity_calender_value ? activity_calender_value.filter((value) => value["day_of_week"] === "Sat").sort((a, b) => a.week_number - b.week_number) : [{}]
+  return [sunday, monday, tuesday, wednesday, thursday, friday, saturday]
+}
+
+
+// 0 = 日曜日, 1 = 月曜日, 2 = 火曜日, 3 = 水曜日, 4 = 木曜日, 5 = 金曜日, 6 = 土曜日
+//activity_of  =   曜日=array<array<obj,obj,obj,obj>, 曜日=array<obj,obj,obj,obj>, 曜日=array<obj,obj,obj,obj>>
+//曜日、その曜日の回数は配列に保管されている
+//ある１日の活動履歴は配列の中の一部であり同じ曜日で1/1からの日数が短い順にまとまっている
+
+
+function generate_user_activity_calender(activity_calender_value: Array<{
+  week_number: number,
+  day_of_week: string,
+  play_count_in_day: number
+}>, year: number): void {
+
+  if (year < 2024) {
+    console.log("no date")
+    return;
+  }
+
+  if (calender_body.value) {
+    const empty_days = calender_body.value.querySelectorAll("td") as NodeListOf<HTMLTableCellElement>;
+    if (empty_days) {
+
+
+      const empty_same_day_of_week = calender_body.value.querySelectorAll("tr")
+      const activity_of = format_calender_day(activity_calender_value) as Array<Array<{
+        week_number: number,
+        day_of_week: string,
+        play_count_in_day: number
+      }>>;
+
+      const all_sun_elm: object | undefined = empty_same_day_of_week[0].querySelectorAll("td")
+      const all_mon_elm: object | undefined = empty_same_day_of_week[1].querySelectorAll("td")
+      const all_tue_elm: object | undefined = empty_same_day_of_week[2].querySelectorAll("td")
+      const all_wed_elm: object | undefined = empty_same_day_of_week[3].querySelectorAll("td")
+      const all_thu_elm: object | undefined = empty_same_day_of_week[4].querySelectorAll("td")
+      const all_fri_elm: object | undefined = empty_same_day_of_week[5].querySelectorAll("td")
+      const all_sat_elm: object | undefined = empty_same_day_of_week[6].querySelectorAll("td")
+      const all_day_elm: Array<object> = [all_sun_elm, all_mon_elm, all_tue_elm, all_wed_elm, all_thu_elm, all_fri_elm, all_sat_elm]
+
+      const active_levels: Array<string> = active_level.value
+
+      if (year === 2024) {
+        empty_days[0].style.visibility = "hidden"
+        empty_days[59 + 60 + 60 + 60].style.visibility = "hidden"
+        empty_days[59 + 60 + 60 + 60 + 60].style.visibility = "hidden"
+        empty_days[59 + 60 + 60 + 60 + 60 + 60].style.visibility = "hidden"
+        empty_days[59 + 60 + 60 + 60 + 60 + 60 + 60].style.visibility = "hidden"
+
+
+        for (let i = 0; i < 7; i++) {
+          const the_day_of_calender_elm = all_day_elm[i] as NodeListOf<HTMLTableCellElement>;
+          for (let j = 0; j < activity_of[i].length; j++) {
+            const the_day_of_play_count: number = activity_of[i][j]["play_count_in_day"]
+            const value_of_week_number: number = activity_of[i][j]["week_number"]
+            //week_numberは第何周目かを表している
+            let adjustment_week_day_index: number = value_of_week_number - 1
+
+
+            if (1 <= the_day_of_play_count && the_day_of_play_count <= 5) {
+              the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[0]
+            } else if (5 < the_day_of_play_count && the_day_of_play_count <= 10) {
+              the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[1]
+            } else if (10 < the_day_of_play_count && the_day_of_play_count <= 20) {
+              the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[2]
+            } else if (20 < the_day_of_play_count && the_day_of_play_count <= 30) {
+              the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[3]
+            } else if (30 < the_day_of_play_count) {
+              the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[4]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+onMounted(() => {
+  document.body.style.overflowX = 'hidden'
+  document.body.style.overflowY = 'scroll'
+  document.body.style.height = '200vh'
+  fetch_user_info()
+})
+
 
 async function fetch_user_info(): Promise<void> {
   if (document.cookie && is_login.value) {
@@ -58,7 +154,21 @@ async function fetch_user_info(): Promise<void> {
           bio.value = data['bio'] as string
           joined_day.value = data['created_at'].split('T')[0].replace(/-/g, ':') as string
           play_count.value = data["total_result"]['play_count'] as number
+
+
           const total_time: number = data['total_result']["total_time"] as number
+          const activity_calender_value: Array<{
+            week_number: number,
+            day_of_week: string,
+            play_count_in_day: number
+          }> | undefined = data['activity_calender'] || undefined;
+
+
+          if (activity_calender_value) {
+            generate_user_activity_calender(activity_calender_value, 2024)
+          } else {
+            console.log('no activity_calender')
+          }
           format_time((total_time))
           short_correct_rate.value = data["total_result"]["short_correct_rate"] as number
           normal_correct_rate.value = data["total_result"]['normal_correct_rate'] as number
@@ -85,8 +195,6 @@ async function fetch_user_info(): Promise<void> {
     return
   }
 }
-
-fetch_user_info()
 
 onUnmounted(() => {
   document.body.style.overflow = 'hidden' // スクロールを無効にする
@@ -120,7 +228,33 @@ onUnmounted(() => {
     <div class="correct_rate_display" id="long_correct_rate">long: {{ long_correct_rate }}%</div>
   </div>
 
-  <div id="active_day"></div>
+
+  <div id="activity_calender">
+    <div id="day_of_week_display">
+      <div>日</div>
+      <div>火</div>
+      <div>月</div>
+    </div>
+
+
+    <table id="calender_body" ref="calender_body">
+      <tr v-for="day in 7" :key="day" id="same_day_of_week" ref="day_of_week">
+        <td v-for="same_say_of_weeks in 60" :key="same_say_of_weeks" class="active_days">
+        </td>
+      </tr>
+    </table>
+
+    <div id="active_level_sample">
+      <div class="active_sample_char">少ない</div>
+      <div class="active_level_sample_eml" id="active_level_zero" :style="{background:active_level[0]}"></div>
+      <div class="active_level_sample_eml" id="active_level_one" :style="{background:active_level[1]}"></div>
+      <div class="active_level_sample_eml" id="active_level_two" :style="{background:active_level[2]}"></div>
+      <div class="active_level_sample_eml" id="active_level_three" :style="{background:active_level[3]}"></div>
+      <div class="active_level_sample_eml" id="active_level_five" :style="{background:active_level[4]}"></div>
+      <div class="active_sample_char">多い</div>
+    </div>
+
+  </div>
   <div id="play_history"></div>
   </body>
 </template>
@@ -157,7 +291,7 @@ body {
   #user_fm {
     position: absolute;
     top: 20%;
-    left: 15%;
+    left: 10%;
     display: flex;
     height: 50%;
     width: 20%;
@@ -268,7 +402,7 @@ body {
     height: 10%;
     width: 40%;
     top: 20%;
-    right: 15%;
+    right: 10%;
     display: grid;
     grid-template-columns: 1fr 1fr;
     border: 2px solid;
@@ -287,7 +421,7 @@ body {
     position: absolute;
     display: flex;
     top: 35%;
-    right: 15%;
+    right: 10%;
     width: 40%;
     height: 10%;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -303,115 +437,190 @@ body {
     }
   }
 
-  #active_day {
+  #activity_calender {
     position: absolute;
-    top: 50%;
-    right: 15%;
-    width: 40%;
-    height: 20%;
     display: flex;
+    top: 75%;
+    right: 10%;
+    width: 80%;
+    height: 30%;
     border: 2px solid;
     border-image: linear-gradient(to right, var(--border_right-color), var(--border-extra-right-color)) 20;
+    justify-content: center;
+    align-items: center;
+
+    //曜日の表示
+    #day_of_week_display {
+      position: absolute;
+      height: 75%;
+      width: 3%;
+      left: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(3, minmax(3px, 1fr));
+      grid-row-gap: 10px;
+      color: var(--main--font-color);
+    }
+
+    #day_of_week_display div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    //アクティブカレンダーの中身
+    #calender_body {
+      left: 3%;
+      position: absolute;
+      height: 60%;
+      width: 95%;
+      display: grid;
+      grid-column-gap: 5px;
+      grid-row-gap: 5px;
+
+      #same_day_of_week {
+        display: flex;
+        background: transparent;
+        grid-column-gap: 5px;
+      }
+
+      .active_days {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        border: 1px solid;
+        border-radius: 5px;
+        border-color: var(--sub--font-color);
+      }
+
+    }
+
+    #active_level_sample {
+      position: absolute;
+      display: grid;
+      bottom: 10%;
+      right: 10%;
+      height: 5%;
+      grid-template-columns: 2fr repeat(5, 15px) 2fr;
+      grid-template-rows: 15px;
+      grid-column-gap: 15px;
+      grid-row-gap: 10px;
+      align-items: center;
+
+      .active_sample_char {
+        color: var(--main--font-color);
+      }
+
+      .active_level_sample_eml {
+        width: 100%;
+        height: 100%;
+        border: 1px solid;
+        border-radius: 5px;
+        border-color: var(--sub--font-color);
+        padding-left: 10px;
+      }
+    }
+  }
+}
+
+#play_history {
+  position: absolute;
+  right: 10%;
+  top: 110%;
+  display: grid;
+  background: transparent;
+  width: 80%;
+  height: 60%;
+  border: 2px solid;
+  border-image: linear-gradient(to right, var(--red-fellow), var(--pink_red)) 20;
+}
+
+
+@media (max-width: 1280px) {
+  * {
+    font-size: 1rem;
+  }
+
+  .user_profile {
+    width: 70%;
+    padding: 10px;
+  }
+
+  #user_name {
+    top: 50%;
+  }
+  #bio {
+    top: 60%;
+  }
+  #keyboard_name {
+    top: 70%;
+    font-size: 0.5rem;
+  }
+
+  #user_fm {
+    width: 35%;
+    height: 75%;
+  }
+
+  #play_info {
+    height: 30%;
+  }
+
+  #activity_calender {
+    height: 30%;
+    top: 65%
+  }
+
+  #user_icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  #user_name {
+    font-size: 110%;
   }
 
   #play_history {
-    position: absolute;
-    right: 15%;
+    top: 110%;
+  }
+}
+
+
+@media (max-width: 920px) {
+  * {
+    font-size: 0.7rem;
+  }
+
+  #user_fm,
+  #play_info,
+  #activity_calender,
+  #play_history {
+    width: 80%;
+    left: 10%;
+  }
+  #keyboard_name {
+    font-size: 0.6rem;
+  }
+
+  #user_icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  #user_name {
+    font-size: 110%;
+  }
+
+  #play_info {
     top: 75%;
-    display: grid;
-    width: 70%;
-    height: 60%;
-    border: 2px solid;
-    border-image: linear-gradient(to right, var(--red-fellow), var(--pink_red)) 20;
   }
 
+  #activity_calender {
+    top: 100%;
 
-  @media (max-width: 1280px) {
-    * {
-      font-size: 1rem;
-    }
-
-    .user_profile {
-      width: 70%;
-      padding: 10px;
-    }
-
-    #user_name {
-      top: 50%;
-    }
-    #bio {
-      top: 60%;
-    }
-    #keyboard_name {
-      top: 70%;
-      font-size: 0.5rem;
-    }
-
-    #user_fm {
-      width: 35%;
-      height: 75%;
-    }
-
-    #play_info {
-      height: 30%;
-    }
-
-    #active_day {
-      height: 30%;
-      top: 65%
-    }
-
-    #user_icon {
-      width: 50px;
-      height: 50px;
-    }
-
-    #user_name {
-      font-size: 110%;
-    }
-
-    #play_history {
-      top: 110%;
-    }
   }
-
-
-  @media (max-width: 920px) {
-    * {
-      font-size: 0.7rem;
-    }
-
-    #user_fm,
-    #play_info,
-    #active_day,
-    #play_history {
-      width: 80%;
-      left: 10%;
-    }
-    #keyboard_name {
-      font-size: 0.6rem;
-    }
-
-    #user_icon {
-      width: 50px;
-      height: 50px;
-    }
-
-    #user_name {
-      font-size: 110%;
-    }
-
-    #play_info {
-      top: 75%;
-    }
-
-    #active_day {
-      top: 100%;
-
-    }
-    #play_history {
-      top: 125%;
-    }
+  #play_history {
+    top: 125%;
   }
 }
 </style>

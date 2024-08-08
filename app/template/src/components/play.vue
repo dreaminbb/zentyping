@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
-import { pie_chart, line_chart } from './chart'
-import { play_api_key } from '@/assets/main'
-const active_buttons = reactive({ short: false, normal: false, long: false })
+import {ref, nextTick, reactive, onMounted, inject, type Ref, provide} from 'vue'
+import {pie_chart, line_chart} from './chart'
+import {play_api_key} from '@/assets/main'
+
+const active_buttons = reactive({short: false, normal: false, long: false})
 const get_problem_data_from_api: any = ref(null)
 
 const type_input = ref<string>('')
@@ -217,31 +218,31 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
   }
 
   if (
-    short_count === get_problem_data_from_api.value[0].length ||
-    normal_count === get_problem_data_from_api.value[0].length ||
-    long_count === get_problem_data_from_api.value[0].length
+      short_count === get_problem_data_from_api.value[0].length ||
+      normal_count === get_problem_data_from_api.value[0].length ||
+      long_count === get_problem_data_from_api.value[0].length
   ) {
     short_count = normal_count = long_count = 0
     get_problem_data_from_api.value = await get_from_api()
   }
   localStorage.setItem('active_buttons', JSON.stringify(active_buttons))
-  if (active_buttons.short === true) {
+  if (active_buttons.short) {
     active_buttons.short = true
     type.value = get_problem_data_from_api.value[0][short_count].type
     char.value = get_problem_data_from_api.value[0][short_count].char
   }
-  if (active_buttons.normal === true) {
+  if (active_buttons.normal) {
     active_buttons.normal = true
     type.value = get_problem_data_from_api.value[1][normal_count].type
     char.value = get_problem_data_from_api.value[1][normal_count].char
   }
-  if (active_buttons.long === true) {
+  if (active_buttons.long) {
     active_buttons.long = true
     type.value = get_problem_data_from_api.value[2][long_count].type
     char.value = get_problem_data_from_api.value[2][long_count].char
   }
 
-  if (activepun.value === false) {
+  if (!activepun.value) {
     pun_count.value = 0
   }
 }
@@ -272,11 +273,11 @@ function typing() {
 
     const type_input_length: number = type_input.value.length
     const span_from_char_display: HTMLElement[] = Array.from(
-      char_display.value.querySelectorAll('span')
+        char_display.value.querySelectorAll('span')
     )
 
     const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
-      (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
+        (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
     )
     export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
     if (type_input_length > 0 && type_input_length < char.value.length) {
@@ -295,19 +296,19 @@ function typing() {
         const char_before: string | null = span_from_char_display[type_input_length - 2].textContent
 
         if (
-          type_before === 's' &&
-          char_before === 's' &&
-          type_first === 'h' &&
-          char_first === 'i'
+            type_before === 's' &&
+            char_before === 's' &&
+            type_first === 'h' &&
+            char_first === 'i'
         ) {
           add_middle_method(type_input_length, type_first)
           return
         }
         if (
-          type_before === 's' &&
-          char_before === 's' &&
-          type_first === 'y' &&
-          char_first === 'h'
+            type_before === 's' &&
+            char_before === 's' &&
+            type_first === 'y' &&
+            char_first === 'h'
         ) {
           change_middle_method(type_input_length, type_first)
           return
@@ -334,8 +335,8 @@ function typing() {
       }
     })
     correct_count.value = span_from_char_display
-      .slice(0, type_input_length)
-      .filter((span) => span.classList.contains('correct')).length
+        .slice(0, type_input_length)
+        .filter((span) => span.classList.contains('correct')).length
   }
 
   //グラフのための変数に数を代入
@@ -343,9 +344,9 @@ function typing() {
 
   // ゲームが終わった時
   if (
-    correct_count.value === char.value.length ||
-    (type_input.value[type_input.value.length - 1] === '\n' &&
-      type_input.value.length >= char.value.length)
+      correct_count.value === char.value.length ||
+      (type_input.value[type_input.value.length - 1] === '\n' &&
+          type_input.value.length >= char.value.length)
   ) {
     textarea.value?.blur()
     setTimeout(() => result(), 100)
@@ -355,9 +356,9 @@ function typing() {
 function add_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
-      char.value.slice(0, type_input_length - 1) +
-      type_first +
-      char.value.slice(type_input_length - 1, char.value.length)
+        char.value.slice(0, type_input_length - 1) +
+        type_first +
+        char.value.slice(type_input_length - 1, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -365,9 +366,9 @@ function add_middle_method(type_input_length: number, type_first: string) {
 function change_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
-      char.value.slice(0, type_input_length - 1) +
-      type_first +
-      char.value.slice(type_input_length, char.value.length)
+        char.value.slice(0, type_input_length - 1) +
+        type_first +
+        char.value.slice(type_input_length, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -375,10 +376,10 @@ function change_middle_method(type_input_length: number, type_first: string) {
 function ti_to_chi(type_input_length: number) {
   if (char_display.value) {
     char.value =
-      char.value.slice(0, type_input_length - 1) +
-      'c' +
-      'h' +
-      char.value.slice(type_input_length, char.value.length)
+        char.value.slice(0, type_input_length - 1) +
+        'c' +
+        'h' +
+        char.value.slice(type_input_length, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -397,11 +398,7 @@ function typing_keydown(event: KeyboardEvent) {
   if (isComposing.value) {
     japaneseInput.value = true
   }
-  if (event.getModifierState('CapsLock')) {
-    capslockchecker.value = true
-  } else {
-    capslockchecker.value = false
-  }
+  capslockchecker.value = event.getModifierState('CapsLock');
 }
 
 function compositionStart() {
@@ -464,18 +461,18 @@ function result() {
 </script>
 <template>
   <body>
-    <main id="play" ref="play" v-if="play_page">
-      <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
-        <button
+  <main id="play" ref="play" v-if="play_page">
+    <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
+      <button
           @click="
             identify_level('short'), play_init(), short_count++, (level_num = 0), (level = 'short')
           "
           :class="{ active: active_buttons.short }"
           class="level"
-        >
-          short
-        </button>
-        <button
+      >
+        short
+      </button>
+      <button
           @click="
             identify_level('normal'),
               play_init(),
@@ -485,101 +482,101 @@ function result() {
           "
           :class="{ active: active_buttons.normal }"
           class="level"
-        >
-          normal
-        </button>
-        <button
+      >
+        normal
+      </button>
+      <button
           @click="
             identify_level('long'), play_init(), long_count++, (level_num = 2), (level = 'long')
           "
           :class="{ active: active_buttons.long }"
           class="level"
-        >
-          long
-        </button>
-        <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
+      >
+        long
+      </button>
+      <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
+    </div>
+    <div id="counters" v-if="play_ditail">
+      <div id="correct" class="playdetail">{{ correct_count }}</div>
+      <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
+      <div id="rest_character" class="playdetail">
+        {{ type_input.length }} / {{ char.length }}
       </div>
-      <div id="counters" v-if="play_ditail">
-        <div id="correct" class="playdetail">{{ correct_count }}</div>
-        <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
-        <div id="rest_character" class="playdetail">
-          {{ type_input.length }} / {{ char.length }}
-        </div>
-        <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
-      </div>
-      <div id="container" class="container" @click="click_to_focus">
-        <div id="type_display" class="type_display" ref="type_display">
+      <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
+    </div>
+    <div id="container" class="container" @click="click_to_focus">
+      <div id="type_display" class="type_display" ref="type_display">
           <span
-            :class="{ type: true, lost_focus: lost_focus }"
-            v-for="(type, index) in type"
-            :key="index"
+              :class="{ type: true, lost_focus: lost_focus }"
+              v-for="(type, index) in type"
+              :key="index"
           >
             {{ type }}</span
           >
-        </div>
-        <div id="char_display" class="char_display" ref="char_display">
+      </div>
+      <div id="char_display" class="char_display" ref="char_display">
           <span
-            :class="{ char: true, lost_focus: lost_focus }"
-            ref="char_span"
-            v-for="(character, index) in char"
-            :key="index"
+              :class="{ char: true, lost_focus: lost_focus }"
+              ref="char_span"
+              v-for="(character, index) in char"
+              :key="index"
           >
             {{ character }}
           </span>
-        </div>
-        <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
-          <p class="click_here">クリックしてフォーカス。。。</p>
-          <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-            <path
-              d="m320-410 79-110h170L320-716v306ZM551-80 406-392 240-160v-720l560 440H516l144 309-109 51ZM399-520Z"
-            />
-          </svg>
-        </div>
       </div>
-      <button @click="play_init" id="play_init" ref="play_init_button">
-        <svg
+      <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
+        <p class="click_here">クリックしてフォーカス。。。</p>
+        <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path
+              d="m320-410 79-110h170L320-716v306ZM551-80 406-392 240-160v-720l560 440H516l144 309-109 51ZM399-520Z"
+          />
+        </svg>
+      </div>
+    </div>
+    <button @click="play_init" id="play_init" ref="play_init_button">
+      <svg
           id="play_init_svg"
           xmlns="http://www.w3.org/2000/svg"
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-        >
-          <path
+      >
+        <path
             d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
-          />
-        </svg>
-      </button>
-      <div class="japaneseInputAleat" v-if="japaneseInput">
-        <svg
-          class="aleatIcon"
+        />
+      </svg>
+    </button>
+    <div class="japaneseInputAlert" v-if="japaneseInput">
+      <svg
+          class="alertIcon"
           xmlns="http://www.w3.org/2000/svg"
           height="24"
           viewBox="0 -960 960 960"
           width="24"
-        >
-          <path
+      >
+        <path
             d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
-          />
-        </svg>
-        <div class="aleatSentence">日本語入力がオンになっています</div>
-      </div>
-      <div class="capslockInputAleat" v-if="capslockchecker">
-        <svg
-          class="aleatIcon"
+        />
+      </svg>
+      <div class="alertSentence">日本語入力がオンになっています</div>
+    </div>
+    <div class="capslockInputAlert" v-if="capslockchecker">
+      <svg
+          class="alertIcon"
           xmlns="http://www.w3.org/2000/svg"
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
           fill="#e8eaed"
-        >
-          <path
+      >
+        <path
             d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
-          />
-        </svg>
-        <div class="aleatSentence">capslockがオンになっています</div>
-      </div>
+        />
+      </svg>
+      <div class="alertSentence">capslockがオンになっています</div>
+    </div>
 
-      <textarea
+    <textarea
         id="type_input"
         class="type_input"
         autocomplete="off"
@@ -595,13 +592,13 @@ function result() {
         @blur="type_input_lost_focus"
         @compositionstart="compositionStart"
         @compositionend="compositionEnd"
-      ></textarea>
-    </main>
+    ></textarea>
+  </main>
   </body>
   <main id="result" v-if="result_page">
-    <div id="grapsh_freme">
-      <pie_chart id="pie_chart" />
-      <line_chart id="line_chart" />
+    <div id="graph_frame">
+      <pie_chart id="pie_chart"/>
+      <line_chart id="line_chart"/>
     </div>
     <div id="result_container">
       <div id="char_detail">
@@ -612,14 +609,14 @@ function result() {
     </div>
     <button @click="back_game" id="back_game" ref="back_game_button">
       <svg
-        id="play_init_svg"
-        xmlns="http://www.w3.org/2000/svg"
-        height="24px"
-        viewBox="0 -960 960 960"
-        width="24px"
+          id="play_init_svg"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
       >
         <path
-          d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
+            d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
         />
       </svg>
     </button>
@@ -710,6 +707,7 @@ main {
   display: flex;
   flex-direction: column;
 }
+
 .type_display,
 .char_display {
   position: absolute;
@@ -725,7 +723,6 @@ main {
   letter-spacing: 3px;
   top: 0;
   font-size: 3rem;
-  display: grid;
   grid-template-columns: repeat(20, 1fr);
   grid-template-rows: repeat(3, 1fr);
   grid-row-gap: -20px;
@@ -782,6 +779,7 @@ main {
 #play_init:focus::after {
   display: block;
 }
+
 #play_init:focus,
 #play_init:hover {
   outline: none;
@@ -882,16 +880,19 @@ main {
   width: 0;
   height: 0;
 }
-.japaneseInputAleat {
+
+.japanese_input_alert {
   top: 15%;
   background-color: rgba(97, 255, 142, 0.2);
 }
-.capslockInputAleat {
+
+.capslock_input_alert {
   top: 27%;
   background-color: rgba(97, 255, 142, 0.2);
 }
-.japaneseInputAleat,
-.capslockInputAleat {
+
+.japanese_input_alert,
+.capslock_input_alert {
   position: absolute;
   display: flex;
   left: 0;
@@ -902,14 +903,16 @@ main {
   letter-spacing: 2px;
   animation: appear 0.5s;
 }
-.aleatIcon {
+
+.alertIcon {
   align-items: center;
   position: absolute;
   top: 10%;
   font-size: 4rem;
   fill: #b7b7b7;
 }
-.aleatSentence {
+
+.alertSentence {
   color: #909090;
   position: absolute;
   bottom: 14%;
@@ -936,17 +939,20 @@ main {
     left: 0;
   }
 }
+
 .active {
   color: #ffffff;
 }
+
 .correct {
   color: #ffffff;
 }
+
 .incorrect {
   color: #f25353;
 }
 
-#grapsh_freme {
+#graph_frame {
   position: absolute;
   display: flex;
   background-color: transparent;
@@ -954,11 +960,12 @@ main {
   height: 35%;
   right: 20%;
 }
+
 #pie_chart {
   position: absolute;
   width: 30%;
   height: 100%;
-  left: 0%;
+  left: 0;
   background: rgba(255, 255, 255, 0.58);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -976,7 +983,7 @@ main {
 
 #line_chart {
   position: absolute;
-  left: 0%;
+  left: 0;
   height: 100%;
   width: 70%;
   background: rgba(255, 255, 255, 0.58);
@@ -1015,6 +1022,7 @@ main {
   left: 14%;
   animation: result_container_animetion ease 1s;
 }
+
 @keyframes result_container_animetion {
   0% {
     left: -30%;
@@ -1031,7 +1039,7 @@ main {
 
 #char_detail {
   top: 0;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   font-size: 1.8rem;
 }
 
@@ -1067,6 +1075,7 @@ main {
 #time_display::after {
   content: '時間';
 }
+
 #pun_count::after {
   content: '句読点';
 }

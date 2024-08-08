@@ -1,3 +1,4 @@
+import math
 import os
 import datetime
 import hashlib
@@ -54,7 +55,7 @@ class user:
                     "normal_correct_rate": 0.0,
                     "long_correct_rate": 0.0,
                 },
-                "active_days": [],
+                "activity_calender": [],
                 # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
                 "short": [],
                 "normal": [],
@@ -137,6 +138,7 @@ class user:
                             "bio": user_info["profile"]["bio"],
                             "created_at": user_info["created_at"],
                             "total_result": user_info["total_results"],
+                            "activity_calender": user_info['activity_calender'],
                             "play_history": {
                                 "short": user_info["short"],
                                 "normal": user_info["normal"],
@@ -212,6 +214,8 @@ class play:
             print(e)
             return make_response({"message": "サーバーでエラーが発生しました"}, 500)
 
+    """ユーザーのアクティブ日のデーターをどのようにして保管するかフロントエンドのカレンダーの書き方に依存してくる"""
+
     # play_info = クライアント側から送信されたプレイデーター
     # user_info = DBから取得したユーザーのプレイデーター
     @staticmethod
@@ -240,28 +244,30 @@ class play:
                 # レベル別の全てのcorrect　rateを集めた配列を作成してsumで全てを足している
                 level_sum = sum([entry["correct_rate"] for entry in user_info[level]])
 
-                level_ave = level_sum / level_len
+                level_ave = math.floor((level_sum / level_len) * 10) / 10
 
                 total_results[f"{level}_correct_rate"] = level_ave
 
                 # その日のプレイ回数を記録する
-                active_days: list = user_info["active_days"]
+                activity_calender: list = user_info["activity_calender"]
                 today = datetime.datetime.now().strftime("%Y-%m-%d")
+                week_number = datetime.datetime.now().isocalendar()[1]
+                day_of_week = datetime.datetime.now().strftime("%a")
 
-                if not any(today in d.keys() for d in active_days):
-                    print("今日初プレイ")
-                    active_days.append({today: 1})
+                tmp = {"day": today, "week_number": week_number, "day_of_week": day_of_week, "play_count_in_day": 1}
+
+                if not any(d["day"] == today for d in activity_calender):
+                    activity_calender.append(tmp)
                 else:
-                    print("今日2回目以降")
-                    for day in active_days:
-                        if today in day.keys():
-                            day[today] += 1
+                    for day in activity_calender:
+                        if day["day"] == today:
+                            day["play_count_in_day"] += 1
 
                 new_play_history_value: dict = {
                     "$set": {
                         level: play_history,
                         "total_results": total_results,
-                        "active_days": active_days,
+                        "activity_calender": activity_calender,
                     }
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)
