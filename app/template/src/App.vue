@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {provide, type Ref, ref} from 'vue'
+import {inject, provide, type Ref, ref} from 'vue'
 import {RouterView} from 'vue-router'
-import {is_login, token_manager} from './assets/auth'
+import {token_manager} from './assets/auth'
 
+const is_login = inject('is_login') as Ref<boolean>
 const tools = ref(true)
 const login_button = ref(true)
 const user_profile: Ref<boolean> = ref(false)
 const header_normal_class = ref(true)
 const header_focus_class = ref(false)
 
-provide('is_login', is_login)
 provide('tools', tools)
 provide('header_normal_class', header_normal_class)
 provide('header_focus_class', header_focus_class)
@@ -17,6 +17,7 @@ provide('header_focus_class', header_focus_class)
 const logout = () => {
   new token_manager().logout()
 }
+
 </script>
 
 <template>
