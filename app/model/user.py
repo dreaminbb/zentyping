@@ -123,7 +123,8 @@ class user:
             print(e)
             return None
 
-    def get_user_info(self, access_token: Optional[str]) -> Optional[dict]:
+    @staticmethod
+    def get_user_info( access_token: Optional[str]) -> Optional[dict]:
         try:
             if access_token:
 
@@ -177,6 +178,8 @@ class user:
             }
             print("エラーだお")
             return error_value
+
+
 
 
 class play:

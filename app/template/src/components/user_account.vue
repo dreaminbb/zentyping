@@ -260,9 +260,10 @@ onUnmounted(() => {
 </template>
 
 <!-- todo -->
-<!-- ノートパソコンで見たときに下までスクロールしたら白い部分が見えてしまうので、それ以上スクロールできないようにする -->
-<style lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+
+<style lang="scss" >
+
 
 :root {
   --main-icon-color: #dabfbf;
@@ -279,246 +280,237 @@ onUnmounted(() => {
   --sub--font-color: #808080;
 }
 
-body {
-  margin: 0;
-  padding: 0;
+#user_fm {
+  position: absolute;
+  top: 20%;
+  left: 10%;
   display: flex;
-  align-items: center;
-  height: 900vh;
+  height: 50%;
+  width: 20%;
+  right: 30%;
+  background: transparent;
   justify-content: center;
-  justify-self: center;
+  border: 2px solid var(--border_right-color);
+  border-image: linear-gradient(to right, var(--border_right-color), var(--border_left-color)) 20;
 
-  #user_fm {
-    position: absolute;
-    top: 20%;
-    left: 10%;
-    display: flex;
-    height: 50%;
-    width: 20%;
-    right: 30%;
-    background: transparent;
-    justify-content: center;
-    border: 2px solid var(--border_right-color);
-    border-image: linear-gradient(to right, var(--border_right-color), var(--border_left-color)) 20;
-
-    #joined_day {
-      position: absolute;
-      display: flex;
-      width: 80%;
-      height: 5%;
-      right: 10%;
-      top: 2%;
-      color: var(--main--font-color);
-      letter-spacing: 0.1rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #user_icon {
-      position: absolute;
-      top: 15%;
-      display: flex;
-      width: 100px;
-      height: 100px;
-      background-color: #ccc;
-      border-radius: 50%;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #user_name {
-      position: absolute;
-      display: flex;
-      width: 90%;
-      height: 10%;
-      left: 5%;
-      bottom: 50%;
-      font-size: 150%;
-      color: var(--main--font-color);
-      letter-spacing: 0.1rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #bio {
-      position: absolute;
-      display: flex;
-      width: 90%;
-      height: 40%;
-      left: 5%;
-      bottom: 5%;
-      color: var(--main--font-color);
-      letter-spacing: 0.1rem;
-      justify-content: center;
-    }
-
-    #keyboard_name {
-      position: absolute;
-      display: flex;
-      width: 90%;
-      height: 5%;
-      left: 5%;
-      bottom: 8%;
-      color: var(--sub--font-color);
-      letter-spacing: 0.1rem;
-    }
-
-    #keyboard_name_char {
-      position: absolute;
-      display: flex;
-      width: 90%;
-      height: 5%;
-      left: 5%;
-      bottom: 2%;
-      color: var(--main--font-color);
-      letter-spacing: 0.1rem;
-    }
-  }
-
-  #line-height {
-    background: rgba(166, 166, 166, 0.5);
-  }
-
-  #line-height {
+  #joined_day {
     position: absolute;
     display: flex;
-    top: 20%;
-    left: 40%;
-    width: 2px;
-    height: 50%;
-  }
-
-  #line-withed {
-    position: absolute;
-    display: flex;
-    top: 45%;
-    left: 41%;
-    width: 44%;
-    height: 2px;
-  }
-
-  #play_info {
-    position: absolute;
-    height: 10%;
-    width: 40%;
-    top: 20%;
-    right: 10%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border: 2px solid;
-    border-image: linear-gradient(to right, var(--border-sub-right-color), var(--border_sub-left-color)) 20;
-
-    .total_result_elms {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--main--font-color);
-      font-size: 1.5rem;
-    }
-  }
-
-  #correct_rate_container {
-    position: absolute;
-    display: flex;
-    top: 35%;
-    right: 10%;
-    width: 40%;
-    height: 10%;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    border: 2px solid;
-    border-image: linear-gradient(to right, var(--border_right-color), var(--border-extra-right-color)) 20;
-    align-items: center;
-    padding: 40px;
-    justify-content: space-between;
-
-    .correct_rate_display {
-      color: var(--main--font-color);
-      font-size: 1.25rem;
-    }
-  }
-
-  #activity_calender {
-    position: absolute;
-    display: flex;
-    top: 75%;
-    right: 10%;
     width: 80%;
-    height: 30%;
-    border: 2px solid;
-    border-image: linear-gradient(to right, var(--border_right-color), var(--border-extra-right-color)) 20;
+    height: 5%;
+    right: 10%;
+    top: 2%;
+    color: var(--main--font-color);
+    letter-spacing: 0.1rem;
+    align-items: center;
     justify-content: center;
+  }
+
+  #user_icon {
+    position: absolute;
+    top: 15%;
+    display: flex;
+    width: 100px;
+    height: 100px;
+    background-color: #ccc;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #user_name {
+    position: absolute;
+    display: flex;
+    width: 90%;
+    height: 10%;
+    left: 5%;
+    bottom: 50%;
+    font-size: 150%;
+    color: var(--main--font-color);
+    letter-spacing: 0.1rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #bio {
+    position: absolute;
+    display: flex;
+    width: 90%;
+    height: 40%;
+    left: 5%;
+    bottom: 5%;
+    color: var(--main--font-color);
+    letter-spacing: 0.1rem;
+    justify-content: center;
+  }
+
+  #keyboard_name {
+    position: absolute;
+    display: flex;
+    width: 90%;
+    height: 5%;
+    left: 5%;
+    bottom: 8%;
+    color: var(--sub--font-color);
+    letter-spacing: 0.1rem;
+  }
+
+  #keyboard_name_char {
+    position: absolute;
+    display: flex;
+    width: 90%;
+    height: 5%;
+    left: 5%;
+    bottom: 2%;
+    color: var(--main--font-color);
+    letter-spacing: 0.1rem;
+  }
+}
+
+#line-height {
+  background: rgba(166, 166, 166, 0.5);
+}
+
+#line-height {
+  position: absolute;
+  display: flex;
+  top: 20%;
+  left: 40%;
+  width: 2px;
+  height: 50%;
+}
+
+#line-withed {
+  position: absolute;
+  display: flex;
+  top: 45%;
+  left: 41%;
+  width: 44%;
+  height: 2px;
+}
+
+#play_info {
+  position: absolute;
+  height: 10%;
+  width: 40%;
+  top: 20%;
+  right: 10%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid;
+  border-image: linear-gradient(to right, var(--border-sub-right-color), var(--border_sub-left-color)) 20;
+
+  .total_result_elms {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--main--font-color);
+    font-size: 1.5rem;
+  }
+}
+
+#correct_rate_container {
+  position: absolute;
+  display: flex;
+  top: 35%;
+  right: 10%;
+  width: 40%;
+  height: 10%;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  border: 2px solid;
+  border-image: linear-gradient(to right, var(--border_right-color), var(--border-extra-right-color)) 20;
+  align-items: center;
+  padding: 40px;
+  justify-content: space-between;
+
+  .correct_rate_display {
+    color: var(--main--font-color);
+    font-size: 1.25rem;
+  }
+}
+
+#activity_calender {
+  position: absolute;
+  display: flex;
+  top: 75%;
+  right: 10%;
+  width: 80%;
+  height: 30%;
+  border: 2px solid;
+  border-image: linear-gradient(to right, var(--border_right-color), var(--border-extra-right-color)) 20;
+  justify-content: center;
+  align-items: center;
+
+  //曜日の表示
+  #day_of_week_display {
+    position: absolute;
+    height: 75%;
+    width: 3%;
+    left: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+
+    grid-template-rows: repeat(3, minmax(3px, 1fr));
+    grid-row-gap: 10px;
+    color: var(--main--font-color);
+  }
+
+  #day_of_week_display div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  //アクティブカレンダーの中身
+  #calender_body {
+    left: 3%;
+    position: absolute;
+    height: 60%;
+    width: 95%;
+    display: grid;
+    grid-column-gap: 5px;
+    grid-row-gap: 5px;
+
+    #same_day_of_week {
+      display: flex;
+      background: transparent;
+      grid-column-gap: 5px;
+    }
+
+    .active_days {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      border: 1px solid;
+      border-radius: 5px;
+      border-color: var(--sub--font-color);
+    }
+
+  }
+
+  #active_level_sample {
+    position: absolute;
+    display: grid;
+    bottom: 10%;
+    right: 10%;
+    height: 5%;
+    grid-template-columns: 2fr repeat(5, 15px) 2fr;
+    grid-template-rows: 15px;
+    grid-column-gap: 15px;
+    grid-row-gap: 10px;
     align-items: center;
 
-    //曜日の表示
-    #day_of_week_display {
-      position: absolute;
-      height: 75%;
-      width: 3%;
-      left: 0;
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-rows: repeat(3, minmax(3px, 1fr));
-      grid-row-gap: 10px;
+    .active_sample_char {
       color: var(--main--font-color);
     }
 
-    #day_of_week_display div {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    //アクティブカレンダーの中身
-    #calender_body {
-      left: 3%;
-      position: absolute;
-      height: 60%;
-      width: 95%;
-      display: grid;
-      grid-column-gap: 5px;
-      grid-row-gap: 5px;
-
-      #same_day_of_week {
-        display: flex;
-        background: transparent;
-        grid-column-gap: 5px;
-      }
-
-      .active_days {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        border: 1px solid;
-        border-radius: 5px;
-        border-color: var(--sub--font-color);
-      }
-
-    }
-
-    #active_level_sample {
-      position: absolute;
-      display: grid;
-      bottom: 10%;
-      right: 10%;
-      height: 5%;
-      grid-template-columns: 2fr repeat(5, 15px) 2fr;
-      grid-template-rows: 15px;
-      grid-column-gap: 15px;
-      grid-row-gap: 10px;
-      align-items: center;
-
-      .active_sample_char {
-        color: var(--main--font-color);
-      }
-
-      .active_level_sample_eml {
-        width: 100%;
-        height: 100%;
-        border: 1px solid;
-        border-radius: 5px;
-        border-color: var(--sub--font-color);
-        padding-left: 10px;
-      }
+    .active_level_sample_eml {
+      width: 100%;
+      height: 100%;
+      border: 1px solid;
+      border-radius: 5px;
+      border-color: var(--sub--font-color);
+      padding-left: 10px;
     }
   }
 }
@@ -534,7 +526,6 @@ body {
   border: 2px solid;
   border-image: linear-gradient(to right, var(--red-fellow), var(--pink_red)) 20;
 }
-
 
 @media (max-width: 1280px) {
   * {
@@ -622,5 +613,20 @@ body {
   #play_history {
     top: 125%;
   }
+}
+</style>
+
+<style scoped lang="scss">
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  height: 900vh;
+  justify-content: center;
+  justify-self: center;
+
 }
 </style>

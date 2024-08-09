@@ -128,7 +128,7 @@ const logout = () => {
   </body>
 </template>
 
-<style lang="scss">
+<style lang="scss" >
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 :root {
