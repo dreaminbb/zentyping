@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { inject, type Ref, provide } from 'vue'
 
+
 const tools = inject('tools') as Ref<boolean>
 const header_focus_class = inject('header_focus_class') as Ref<boolean>
 const header_normal_class = inject('header_normal_class') as Ref<boolean>
@@ -12,7 +13,7 @@ provide('header_normal_class', header_normal_class)
   <body>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link
+        <link
       href="https://fonts.googleapis.com/css2?family=Yuji+Hentaigana+Akari&display=swap"
       rel="stylesheet"
     />
@@ -69,11 +70,6 @@ provide('header_normal_class', header_normal_class)
 </template>
 
 
-<style lang="scss" scoped>
-
-
-
-</style>
 
 <style lang="scss">
 #usr_info_frame {

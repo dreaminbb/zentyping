@@ -4,8 +4,8 @@
     "env.d.ts",
     "src/**/*",
     "src/**/*.vue ",
-    "src/assets/main.ts",
-    "src/components/user_login.vue"
+    "src/main.ts",
+    "src/views/user_login.vue"
   ],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {

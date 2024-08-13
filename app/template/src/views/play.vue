@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref, nextTick, reactive, onMounted, inject, type Ref, provide} from 'vue'
-import {pie_chart, line_chart} from './chart'
-import {play_api_key} from '@/assets/main'
+import {pie_chart, line_chart} from '../components/chart'
+import {play_api_key} from '@/main'
 
 const active_buttons = reactive({short: false, normal: false, long: false})
 const get_problem_data_from_api: any = ref(null)
@@ -42,7 +42,7 @@ const play_page = ref(true)
 const result_page = ref(false)
 const tools = inject('tools') as Ref<boolean>
 const header_focus_class = inject('header_focus_class') as Ref<boolean>
-const play_ditail = ref(false)
+const play_detail = ref(false)
 const level_buttons = ref(true)
 const activepun = ref(false)
 const lost_focus = ref(false)
@@ -91,7 +91,7 @@ async function play_init() {
     })
     char_display.value?.querySelector('span')?.classList.add('cursor_before')
   }
-  play_ditail.value = false
+  play_detail.value = false
   type_input.value = ''
   correct_count.value = 0
   clearInterval(timer)
@@ -258,7 +258,7 @@ function typing() {
 
     if (type_count > 0) {
       level_buttons.value = false
-      play_ditail.value = true
+      play_detail.value = true
       tools.value = false
       header_focus_class.value = true
     }
@@ -496,7 +496,7 @@ function result() {
       </button>
       <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
     </div>
-    <div id="counters" v-if="play_ditail">
+    <div id="counters" v-if="play_detail">
       <div id="correct" class="playdetail">{{ correct_count }}</div>
       <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
       <div id="rest_character" class="playdetail">
@@ -719,6 +719,10 @@ main {
   text-align: center;
 }
 
+.type {
+  font-size: 1.5rem;
+}
+
 .container .type_display {
   letter-spacing: 3px;
   top: 0;
@@ -881,18 +885,18 @@ main {
   height: 0;
 }
 
-.japanese_input_alert {
+.japaneseInputAlert {
   top: 15%;
   background-color: rgba(97, 255, 142, 0.2);
 }
 
-.capslock_input_alert {
+.capslockInputAlert {
   top: 27%;
   background-color: rgba(97, 255, 142, 0.2);
 }
 
-.japanese_input_alert,
-.capslock_input_alert {
+.japaneseInputAlert,
+.capslockInputAlert {
   position: absolute;
   display: flex;
   left: 0;
@@ -989,8 +993,8 @@ main {
   background: rgba(255, 255, 255, 0.58);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(7.1px);
-  -webkit-backdrop-filter: blur(7.1px);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   animation: ease wave_graph_animetion 0.5s;
 }

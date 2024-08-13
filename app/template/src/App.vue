@@ -1,21 +1,22 @@
 <script lang="ts" setup>
-import {inject, provide, type Ref, ref} from 'vue'
+import {provide, type Ref, ref} from 'vue'
 import {RouterView} from 'vue-router'
-import {token_manager} from './assets/auth'
+import {user_status} from "@/services/watcher";
 
-const is_login = inject('is_login') as Ref<boolean>
 const tools = ref(true)
 const login_button = ref(true)
 const user_profile: Ref<boolean> = ref(false)
 const header_normal_class = ref(true)
 const header_focus_class = ref(false)
 
+
+
 provide('tools', tools)
 provide('header_normal_class', header_normal_class)
 provide('header_focus_class', header_focus_class)
 
 const logout = () => {
-  new token_manager().logout()
+  user_status().logout()
 }
 
 </script>
@@ -40,7 +41,7 @@ const logout = () => {
         to="/account"
         ref="user_profile"
         id="profile_link"
-        v-if="is_login && $route.name === 'home'"
+        v-if="user_status().is_login && $route.name === 'home'"
         class="items"
     >
       <svg
@@ -59,7 +60,7 @@ const logout = () => {
         id="logout_button"
         class="items"
         @click="logout"
-        v-if="is_login && $route.name === 'home'"
+        v-if="user_status().is_login && $route.name === 'home'"
     >
       <svg
           class="item_svg"
@@ -77,7 +78,7 @@ const logout = () => {
         id="login_link"
         to="/login"
         class="items"
-        v-if="!is_login && $route.name === 'home'"
+        v-if="!user_status().is_login && $route.name === 'home'"
         ref="login_button"
     >
       <svg
@@ -93,7 +94,7 @@ const logout = () => {
     </router-link>
   </div>
 
-  <div id="tools" ref="tools" v-if=is_login>
+  <div id="tools" ref="tools" v-if=user_status().is_login>
     <svg
         class="tool_svg"
         id="terminal"
@@ -129,7 +130,7 @@ const logout = () => {
   </body>
 </template>
 
-<style lang="scss" >
+<style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 :root {

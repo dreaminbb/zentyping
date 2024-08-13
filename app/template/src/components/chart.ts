@@ -2,8 +2,6 @@ import { defineComponent, ref, inject, type Ref } from 'vue';
 import { Chart as ChartJS, registerables, LineController, Title } from 'chart.js';
 import { LineChart, PieChart } from 'vue-chart-3';
 
-
-
 ChartJS.register(...registerables);
 
 const customTooltipPlugin = {

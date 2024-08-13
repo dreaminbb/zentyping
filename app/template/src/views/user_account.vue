@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {is_login} from '@/assets/auth'
 import {onMounted, onUnmounted, ref} from 'vue'
 
 const calender_body = ref<HTMLElement | null>(null)
@@ -7,7 +6,7 @@ const joined_day = ref<string>('')
 const user_name = ref<string>('')
 const formated_time = ref<string>('00:00')
 const bio = ref<string>('')
-const keyboard_name = ref<string>('')
+const keyboard_name_value = ref<string>("good keyboard")
 const play_count = ref<number>(0.0)
 const active_level = ref<Array<string>>(["rgb(106,106,108)", "rgb(207,175,207)", "rgb(211,38,227)", "rgb(173,0,239)", "rgb(194,9,255)"])
 const short_correct_rate = ref<number>(0.0)
@@ -59,7 +58,6 @@ function format_calender_day(activity_calender_value: Array<{
 //activity_of  =   曜日=array<array<obj,obj,obj,obj>, 曜日=array<obj,obj,obj,obj>, 曜日=array<obj,obj,obj,obj>>
 //曜日、その曜日の回数は配列に保管されている
 //ある１日の活動履歴は配列の中の一部であり同じ曜日で1/1からの日数が短い順にまとまっている
-
 
 function generate_user_activity_calender(activity_calender_value: Array<{
   week_number: number,
@@ -139,7 +137,7 @@ onMounted(() => {
 
 
 async function fetch_user_info(): Promise<void> {
-  if (document.cookie && is_login.value) {
+  if (document.cookie) {
     try {
       const response: Response = await fetch('http://localhost:8000/user/info', {
         method: 'GET',
@@ -191,7 +189,6 @@ async function fetch_user_info(): Promise<void> {
     }
   } else {
     console.log('no cookie???')
-    is_login.value = false
     return
   }
 }
@@ -211,11 +208,11 @@ onUnmounted(() => {
     <div id="user_icon" class="user_profile"></div>
     <div id="user_name" class="user_profile">{{ user_name }}</div>
     <div id="bio" class="user_profile">{{ bio }}</div>
-    <div id="keyboard_name" class="user_profile">キーボード:</div>
-    <div id="keyboard_name_char">{{ keyboard_name }}</div>
+    <div id="keyboard_name_char" class="user_profile">キーボード:
+      <div id="keyboard_name_value">{{ keyboard_name_value }}</div>
+    </div>
   </div>
 
-  <p id="line-height"></p>
 
   <div id="play_info">
     <div class="total_result_elms" id="total_time_display">{{ formated_time }}</div>
@@ -259,10 +256,7 @@ onUnmounted(() => {
   </body>
 </template>
 
-<!-- todo -->
-
-
-<style lang="scss" >
+<style lang="scss">
 
 
 :root {
@@ -344,7 +338,7 @@ onUnmounted(() => {
     justify-content: center;
   }
 
-  #keyboard_name {
+  #keyboard_name_char {
     position: absolute;
     display: flex;
     width: 90%;
@@ -353,17 +347,11 @@ onUnmounted(() => {
     bottom: 8%;
     color: var(--sub--font-color);
     letter-spacing: 0.1rem;
+    align-items: center;
   }
 
-  #keyboard_name_char {
-    position: absolute;
-    display: flex;
-    width: 90%;
-    height: 5%;
-    left: 5%;
-    bottom: 2%;
-    color: var(--main--font-color);
-    letter-spacing: 0.1rem;
+  #keyboard_name_value {
+    color: white;
   }
 }
 
@@ -391,7 +379,7 @@ onUnmounted(() => {
 
 #play_info {
   position: absolute;
-  height: 10%;
+  height: 20%;
   width: 40%;
   top: 20%;
   right: 10%;
@@ -412,7 +400,7 @@ onUnmounted(() => {
 #correct_rate_container {
   position: absolute;
   display: flex;
-  top: 35%;
+  top: 80%;
   right: 10%;
   width: 40%;
   height: 10%;
@@ -432,7 +420,7 @@ onUnmounted(() => {
 #activity_calender {
   position: absolute;
   display: flex;
-  top: 75%;
+  top: 120%;
   right: 10%;
   width: 80%;
   height: 30%;
@@ -445,11 +433,10 @@ onUnmounted(() => {
   #day_of_week_display {
     position: absolute;
     height: 75%;
-    width: 3%;
-    left: 0;
+    width: 2%;
+    left: 1%;
     display: grid;
     grid-template-columns: 1fr;
-
     grid-template-rows: repeat(3, minmax(3px, 1fr));
     grid-row-gap: 10px;
     color: var(--main--font-color);
@@ -463,7 +450,7 @@ onUnmounted(() => {
 
   //アクティブカレンダーの中身
   #calender_body {
-    left: 3%;
+    left: 4%;
     position: absolute;
     height: 60%;
     width: 95%;
@@ -518,7 +505,7 @@ onUnmounted(() => {
 #play_history {
   position: absolute;
   right: 10%;
-  top: 110%;
+  top: 150%;
   display: grid;
   background: transparent;
   width: 80%;
@@ -533,7 +520,7 @@ onUnmounted(() => {
   }
 
   .user_profile {
-    width: 70%;
+    width: 50%;
     padding: 10px;
   }
 
@@ -543,36 +530,47 @@ onUnmounted(() => {
   #bio {
     top: 60%;
   }
+
   #keyboard_name {
     top: 70%;
     font-size: 0.5rem;
   }
 
+
   #user_fm {
     width: 35%;
     height: 75%;
   }
-
-  #play_info {
-    height: 30%;
-  }
-
-  #activity_calender {
-    height: 30%;
-    top: 65%
-  }
-
   #user_icon {
     width: 50px;
     height: 50px;
   }
 
-  #user_name {
-    font-size: 110%;
+  #keyboard_name_char {
+    font-size: 1rem;
   }
 
+  #play_info {
+    height: 20%;
+  }
+  #correct_rate_container {
+    top: 60%;
+  }
+
+  #activity_calender {
+    height: 30%;
+    top: 100%
+  }
+
+  #calender_body {
+    position: absolute;
+
+    left: -10%;
+  }
+
+
   #play_history {
-    top: 110%;
+    top: 135%;
   }
 }
 
@@ -585,10 +583,12 @@ onUnmounted(() => {
   #user_fm,
   #play_info,
   #activity_calender,
-  #play_history {
+  #play_history,
+  #correct_rate_container {
     width: 80%;
     left: 10%;
   }
+
   #keyboard_name {
     font-size: 0.6rem;
   }
@@ -598,21 +598,75 @@ onUnmounted(() => {
     height: 50px;
   }
 
+  #correct_rate_container {
+    top: 125%;
+  }
+
   #user_name {
     font-size: 110%;
   }
 
   #play_info {
-    top: 75%;
+    top: 100%;
   }
 
   #activity_calender {
-    top: 100%;
+    top: 145%;
 
   }
   #play_history {
+    top: 180%;
+  }
+}
+
+
+@media (width < 500px) {
+  * {
+    font-size: 0.5rem;
+  }
+
+  body {
+    width: 100%;
+  }
+
+  #user_fm,
+  #play_info,
+  #activity_calender,
+  #play_history,
+  #correct_rate_container {
+    width: 90%;
+    left: 15%;
+  }
+
+  #keyboard_name {
+    font-size: 0.4rem;
+  }
+
+  #user_icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  #correct_rate_container {
     top: 125%;
   }
+
+  #user_name {
+    font-size: 110%;
+  }
+
+  #play_info {
+    top: 100%;
+  }
+
+  #activity_calender {
+    visibility: hidden;
+  }
+  #play_history {
+    top: 140%;
+  }
+
+
 }
 </style>
 
