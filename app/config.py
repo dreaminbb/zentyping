@@ -8,11 +8,11 @@ class config:
     load_dotenv(dotenv_path)
 
     URL = os.getenv("URL")
-    PORT = int(os.getenv("PORT", 8000))
-    MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/")
+    PORT = 8000
+    MONGO_URL = "mongodb://localhost:27017/"
     API_KEY = os.getenv("SERVER_API_KEY", None)
     SEND_PLAY_INFO_API_KEY = os.getenv("SEND_PLAY_INFO_API_KEY", None)
-    MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "mode-typing")
+    MONGO_DB_NAME = "mode-typing"
     JWT_SECRET = os.getenv("JWT_SECRET", None)
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", None)
     JWT_EXPIRES_IN = int(os.getenv("JWT_EXPIRES_IN", 30))
@@ -26,17 +26,15 @@ class config:
     COOKIE_AGE = 0.5  # 時間単位
     PIECE = 5
 
-    GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+    GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", None)
     GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", None)
     GITHUB_ACCESS_TOKEN_RTL = "https://github.com/login/oauth/access_token"
     GITHUB_AUTHORIZATION_RL = "https://github.com/login/oauth/authorize"
     GITHUB_API_BASE_URL = "https://api.github.com/"
     GITHUB_REDIRECT_URL = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&scope=user:email"
+    print(GITHUB_REDIRECT_URL)
 
-    FAILED_TO_AUTH_MESSAGE = "認証に失敗しました"
-    SESSION_DOSENT_EXIST_MESSAGE = (
-        "セッションが見つかりません。ログインし直してください。。。"
-    )
+    SESSION_DOSENT_EXIST_MESSAGE = "セッションが見つかりません。ログインし直してください。。。"
     ERROE_MESSAGE = "エラーが発生しました、、、"
     USER_NOT_FOUND_MESSAGE = "ユーザーが見つかりません"
     USER_ALREADY_EXISTS_MESSAGE = "ユーザーが既に存在しています"
@@ -49,7 +47,7 @@ class config:
     TOKEN_TIMEOUT_MESSAGE = "ログインし直してください....ごめんぴょ"
     FAILED_TO_AUTH_MESSAGE = "認証に失敗しました🙁"
     SESSION_TIMEOUT_MESSAGE = "セッションが途切れました"
-    TOO_MUCH_REQEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
+    TOO_MUCH_REQUEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
 
 
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]

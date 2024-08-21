@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import {provide, type Ref, ref} from 'vue'
 import {RouterView} from 'vue-router'
-import {user_status} from "@/services/watcher";
+import { user_status } from '@/store/store'
+import { session_manager } from '@/services/auth'
 
 const tools = ref(true)
 const login_button = ref(true)
@@ -16,7 +17,7 @@ provide('header_normal_class', header_normal_class)
 provide('header_focus_class', header_focus_class)
 
 const logout = () => {
-  user_status().logout()
+  new session_manager().logout()
 }
 
 </script>

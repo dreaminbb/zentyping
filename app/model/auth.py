@@ -1,18 +1,20 @@
 import base64
-import hmac
-import jwt
-import time
-from flask import jsonify, make_response, Response, redirect, request
-import requests
+import traceback
 import datetime
-import uuid
 import hashlib
+import hmac
+import time
+import uuid
+
+import jwt
+import requests
+from flask import jsonify, make_response, Response, redirect, request
+
 from app import config, db
 
 
 # todo
 # 1. cookieを検証して新しく作った場合は古いvalid cookieを無効にする
-
 
 
 def require_api_key(f):
@@ -41,6 +43,7 @@ class jwt_manager:
         pass
 
     def generate(self, user_id: str) -> dict:
+        import jwt
 
         access_token: str = jwt.encode(
             {
@@ -316,8 +319,10 @@ class csrf_maneger:
             hmac.new(self.hmac_secret, timestamp, hashlib.sha256).digest()
             + b":"
             + timestamp
-        )
-        return token.decode()
+        ).decode()
+        print(token)
+
+        return token
 
     def velidate(self, token: str) -> bool:
         try:
@@ -348,6 +353,9 @@ class github:
 
     # ユーザー情報を取得
     def sign_in_login(self, code):
+        print(
+            self.client_id, self.client_secret, self.access_token_url, self.api_base_url
+        )
         try:
             try:
                 token_response = requests.post(
@@ -390,6 +398,8 @@ class github:
                 user_data = user_response.json()
 
                 if user_response.status_code != 200:
+                    print(user_response.json())
+                    print("bad req")
                     return jsonify({"message": config.FAILED_TO_AUTH_MESSAGE}), 400
                 # ユーザーのemailを取得
                 email_response = requests.get(
@@ -442,10 +452,15 @@ class github:
                         return response
 
                 else:
+                    print("no user info")
                     return jsonify({"message": "エラーが発生しました"}), 500
 
             except Exception as e:
                 print(e)
+                print("An error occurred:")
+                print(f"Type: {type(e).__name__}")  # エラーのタイプを表示
+                print(f"Message: {e}")  # エラーメッセージを表示
+                traceback.print_exc()  # スタックトレース（エラーの行番号など）を表示
                 # エラーページへとリダイレクト
                 return jsonify({"message": "エラーが発生しました"}), 500
 
@@ -462,4 +477,8 @@ class github:
 
         except Exception as e:
             print(e)
+            print("An error occurred:")
+            print(f"Type: {type(e).__name__}")  # エラーのタイプを表示
+            print(f"Message: {e}")  # エラーメッセージを表示
+            traceback.print_exc()  # スタックトレース（エラーの行番号など）を表示
             return jsonify({"error": "error"}), 500

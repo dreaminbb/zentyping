@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, nextTick, reactive, onMounted, inject, type Ref, provide} from 'vue'
-import {pie_chart, line_chart} from '../components/chart'
+import {pie_chart, line_chart} from '@/components/play_info_charts'
 import {play_api_key} from '@/main'
 
 const active_buttons = reactive({short: false, normal: false, long: false})

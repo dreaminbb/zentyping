@@ -4,28 +4,6 @@ import { LineChart, PieChart } from 'vue-chart-3';
 
 ChartJS.register(...registerables);
 
-const customTooltipPlugin = {
-  id: 'customTooltipPlugin',
-  beforeEvent(chart: any, args: any) {
-    const event = args.event;
-    const tooltip = chart.tooltip;
-
-    if (event.type === 'mousemove') {
-      const elements = chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, false);
-      if (elements.length) {
-        const element = elements[0];
-        if (element.elementType !== 'point') {
-          tooltip.opacity = 0;
-        } else {
-          tooltip.opacity = 1;
-        }
-      }
-    }
-  }
-};
-
-ChartJS.register(customTooltipPlugin);
-
 export const pie_chart = defineComponent({
   components: {
     PieChart: PieChart,
@@ -47,7 +25,6 @@ export const pie_chart = defineComponent({
         }
       }
     });
-
 
     const options = ref({
       responsive: true,

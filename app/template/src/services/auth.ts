@@ -1,6 +1,6 @@
-import {user_status} from "@/services/watcher";
+import {user_status} from "@/store/store";
 
-export class token_manager {
+export class session_manager {
 
     public async  verify_session(): Promise<boolean> {
         if (document.cookie) {
@@ -44,7 +44,7 @@ export class token_manager {
             })
         setInterval(() => {
             window.location.reload()
-        }, 8000)
+        }, 800)
     }
 }
 

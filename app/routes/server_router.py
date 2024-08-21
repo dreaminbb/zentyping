@@ -24,6 +24,7 @@ from ..model.user import user, play
 from ..model.auth import github, csrf_maneger, session_manager
 
 github_bp = Blueprint("github", __name__)
+auth_bp = Blueprint("auth", __name__)
 
 
 @app.route("/session", methods=["POST"])
@@ -131,19 +132,19 @@ def native_login():
                 )
                 return response, 200
 
-        if verify_password == False:
+        if verify_password is False:
             return "444", 444  # パスワードかユーザー名が違う
 
-        if verify_password == None:
+        if verify_password is None:
             return "446", 446  # DBにユーザーがいない
 
     if not email or password:
-        return jsonify({"message": "wahts a data 👀"}), 400
+        return jsonify({"message": "whats a data 👀"}), 400
 
     return make_response({"success": False, "message": "エラーが発生しました。"})
 
 
-@github_bp.route("/")
+@auth_bp.route("/github")
 def github_signin():
     csrf_token = csrf_maneger().generate()
     response = make_response(redirect(config.GITHUB_REDIRECT_URL))
@@ -151,16 +152,16 @@ def github_signin():
     return response
 
 
-@github_bp.route("/callback")
+@auth_bp.route("/callback")
 def github_callback():
     code: Optional[str] = request.args.get("code")
     csrf_token: Optional[str] = request.cookies.get("token")
     if csrf_token:
-        velidate: bool = csrf_maneger().velidate(token=csrf_token)
-        if velidate == True and code:
+        scrf_validity: bool = csrf_maneger().velidate(token=csrf_token)
+        if scrf_validity and code:
             response: Response = github().sign_in_login(code)
             response.delete_cookie("token")
             return response
-        if not velidate:
-            return make_response({"message": "エラーが発生しました"})
-    return make_response({"message": "エラーが発生しました"})
+        if not scrf_validity:
+            return make_response({"無効なリクエスト"}), 400
+    return make_response({"message": "無効なリクエスト"}), 400
