@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { type Ref, ref } from 'vue'
 import { user_info } from '@/store/store'
 import { LineChart, PieChart } from 'vue-chart-3'
 import type { ChartData } from 'chart.js'
@@ -22,10 +22,17 @@ const data_arr_play_info: Array<Array<Array<number>>> = [[[33, 55, 11, 55, 33, 6
 const display_cps_line_chart = ref<boolean>(true)
 const display_play_info_chart = ref<boolean>(false)
 
+const time_scale_class_0 = ref<boolean>(true)
+const time_scale_class_1 = ref<boolean>(false)
+const time_scale_class_2 = ref<boolean>(false)
+const time_scale_obj = ref<Array<Ref<boolean>>>([time_scale_class_0,time_scale_class_1, time_scale_class_2])
+
 function regenerate_chart(data_index: number) {
+  console.log(data_index)
   if (display_cps_line_chart.value) {
     display_cps_line_chart.value = false
     cps_line_data.value['datasets'][0]['data'] = data_cps_data_arr[data_index]
+
     setTimeout(() => {
       display_cps_line_chart.value = true
     }, 100)
@@ -37,9 +44,12 @@ function regenerate_chart(data_index: number) {
     setTimeout(() => {
       display_play_info_chart.value = true
     }, 100)
-
-
   }
+
+  for (let i = 0; i < 3; i++) {
+    time_scale_obj.value[i].value = false
+  }
+  time_scale_obj.value[data_index].value = true
 }
 
 
@@ -478,9 +488,21 @@ const formated_time = ref<string>(format_time(total_time))
 
 
       <div id="chart_button_frame">
-        <button class="chart_scale_switch_btn" @click="regenerate_chart(0)">{{ time_scale_char[0] }}</button>
-        <button class="chart_scale_switch_btn" @click="regenerate_chart(1)">{{ time_scale_char[1] }}</button>
-        <button class="chart_scale_switch_btn" @click="regenerate_chart(2)">{{ time_scale_char[2] }}</button>
+        <button :class="{chart_scale_switch_btn:true ,active_time_scale:time_scale_class_0}"
+                @click="regenerate_chart(0)"
+                ref="time_scale_one">{{ time_scale_char[0]
+          }}
+        </button>
+        <button :class="{chart_scale_switch_btn:true ,active_time_scale:time_scale_class_1}"
+                @click="regenerate_chart(1)"
+                ref="time_scale_two">{{ time_scale_char[1]
+          }}
+        </button>
+        <button :class="{chart_scale_switch_btn:true ,active_time_scale:time_scale_class_2}"
+                @click="regenerate_chart(2)"
+                ref="time_scale_three">{{ time_scale_char[2]
+          }}
+        </button>
       </div>
 
     </div>
@@ -811,8 +833,12 @@ const formated_time = ref<string>(format_time(total_time))
 
         &:hover {
           color: var(--sub--font-color);
-          background: rgba(0, 9, 33, 0.73);;
+          background: rgba(0, 9, 33, 0.73);
         }
+      }
+
+      .active_time_scale {
+        background: rgba(0, 9, 33, 0.73);
       }
     }
   }
@@ -832,6 +858,7 @@ const formated_time = ref<string>(format_time(total_time))
       width: 100%;
       height: 100%;
     }
+
   }
 
 }
