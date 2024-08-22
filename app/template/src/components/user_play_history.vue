@@ -2,19 +2,67 @@
 import { ref } from 'vue'
 import { user_info } from '@/store/store'
 import { LineChart, PieChart } from 'vue-chart-3'
+import type { ChartData } from 'chart.js'
 
 
-const is_switcher_active = ref<boolean>(true)
+//todo
+//１.ユーザーがグラフ選択中に別のところをクリックしたらグラフ変更を閉じる
+
+
+const is_switcher_active = ref<boolean>(false)
+const other_area_clicked = ref<boolean>(false)
+
+const time_scale_char = ref(['2024', '今月', '今週'])
+const cps_data_year = ref<Array<number>>([0, 4, 3, 5, 1, 2, 4, 5, 6, 4, 2, 5])
+const cps_data_month = ref<Array<number>>([1, 5, 3, 5, 3, 2, 5, 5, 5, 5, 5, 5])
+const cps_data_day = ref<Array<number>>([2, 7, 6, 7, 8, 8, 7, 6, 7, 8, 6])
+const data_cps_data_arr = [cps_data_year.value, cps_data_month.value, cps_data_day.value]
+
+const data_arr_play_info: Array<Array<Array<number>>> = [[[33, 55, 11, 55, 33, 66, 77, 44, 33, 55], [44, 11, 44, 22, 11, 55, 11, 55, 22, 11]], [[222, 111, 234, 123, 413, 533, 443, 523, 431, 211, 344, 244, 233], [22, 123, 345, 12, 33, 413, 66, 33, 22, 55, 33, 11, 66]]]
+const display_cps_line_chart = ref<boolean>(true)
+const display_play_info_chart = ref<boolean>(false)
+
+function regenerate_chart(data_index: number) {
+  if (display_cps_line_chart.value) {
+    display_cps_line_chart.value = false
+    cps_line_data.value['datasets'][0]['data'] = data_cps_data_arr[data_index]
+    setTimeout(() => {
+      display_cps_line_chart.value = true
+    }, 100)
+  }
+  if (display_play_info_chart.value) {
+    display_play_info_chart.value = false
+    play_info_data.value['datasets'][0]['data'] = data_arr_play_info[0][data_index]
+    play_info_data.value['datasets'][1]['data'] = data_arr_play_info[1][data_index]
+    setTimeout(() => {
+      display_play_info_chart.value = true
+    }, 100)
+
+
+  }
+}
+
 
 const changing_chart = () => {
   is_switcher_active.value = !is_switcher_active.value
-  console.log(is_switcher_active.value)
 }
+//
+// function click_other_area_close_chart_op(event: MouseEvent) {
+//   if (other_area_clicked.value) {
+//     is_switcher_active.value = false
+//   }
+// }
+
+// onMounted(() => {
+//   window.addEventListener('click', click_other_area_close_chart_op)
+// })
+// onBeforeUnmount(() => {
+//   window.removeEventListener('click', click_other_area_close_chart_op)
+// })
 
 const chart_type_index = ref<number>(0)
 const chart_type = ref<Array<string>>(['正入力', 'プレイグラフ'])
 
-const display_cps_line_chart = ref<boolean>(false)
 
 const short_data = ref<object>({
   datasets: [
@@ -187,11 +235,11 @@ const long_options = ref<object>({
   }
 })
 
-const cps_line_data = ref<object>({
+const cps_line_data = ref<ChartData<'line'>>({
   labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
   datasets: [
     {
-      data: [8, 0, 5, 7, 6, 7, 6],
+      data: [0, 4, 3, 5, 1, 2, 4, 5, 6, 4, 2, 5],
       borderColor: 'rgb(160,109,236)',
       tension: 0.35,
       fill: true, //下を塗りつぶす
@@ -253,16 +301,13 @@ const cps_options = ref<object>({
       }
     }
   }
-
 })
-
-const play_info_data = ref<object>({
+const play_info_data = ref<ChartData<'line' | 'bar'>>({
   labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
   datasets: [
     {
       type: 'line',
-      data:
-        [30, 10, 90, 71, 69, 172, 163, 123, 123, 123, 12],
+      data: [100, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
       borderColor: 'rgb(16,105,168)',
       tension: 0.35,
       fill: true, //下を塗りつぶす//下を塗りつぶすための設定
@@ -286,7 +331,6 @@ const play_info_data = ref<object>({
     {
       type: 'bar',
       data: [160, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
-      BorderColor: 'rgb(16,105,168)',
       fill: true,
       backgroundColor:
         (context: any) => {
@@ -305,7 +349,6 @@ const play_info_data = ref<object>({
     }
   ]
 })
-
 const play_info_options = ref<object>({
   responsive: true,
   maintainAspectRatio: false,
@@ -386,7 +429,7 @@ const formated_time = ref<string>(format_time(total_time))
     </div>
   </div>
 
-  <div id="correct_rate_charts_container">
+  <div id="correct_rate_charts_container" @click="other_area_clicked = true">
     <div class="charts_fm">
       <PieChart :chart-data="short_data as any" :options="short_options"
                 :plugins="[ratio_text_short]"
@@ -423,19 +466,21 @@ const formated_time = ref<string>(format_time(total_time))
       </div>
 
       <div id="chart_op_dis" v-if="is_switcher_active" :class="{open_chart_op: is_switcher_active}">
-        <div class="chart_ops_elm" @click="is_switcher_active=false; display_cps_line_chart=true; chart_type_index = 0">
+        <div class="chart_ops_elm"
+             @click="is_switcher_active=false; display_cps_line_chart=true;display_play_info_chart =false; chart_type_index = 0">
           {{ chart_type[0] }}
         </div>
         <div class="chart_ops_elm"
-             @click="is_switcher_active=false; display_cps_line_chart=false ; chart_type_index = 1">{{ chart_type[1] }}
+             @click="is_switcher_active=false; display_cps_line_chart=false; display_play_info_chart=true ; chart_type_index = 1">
+          {{ chart_type[1] }}
         </div>
       </div>
 
 
       <div id="chart_button_frame">
-        <button class="chart_scale_switch_btn"></button>
-        <button class="chart_scale_switch_btn"></button>
-        <button class="chart_scale_switch_btn"></button>
+        <button class="chart_scale_switch_btn" @click="regenerate_chart(0)">{{ time_scale_char[0] }}</button>
+        <button class="chart_scale_switch_btn" @click="regenerate_chart(1)">{{ time_scale_char[1] }}</button>
+        <button class="chart_scale_switch_btn" @click="regenerate_chart(2)">{{ time_scale_char[2] }}</button>
       </div>
 
     </div>
@@ -444,7 +489,7 @@ const formated_time = ref<string>(format_time(total_time))
       <line-chart :chart-data="cps_line_data as any" :options="cps_options as any" class="charts"
                   v-if="display_cps_line_chart" />
       <line-chart :chart-data="play_info_data as any" :options="play_info_options as any" class="charts"
-                  v-if="!display_cps_line_chart" />
+                  v-if="display_play_info_chart" />
     </div>
   </div>
 
@@ -527,11 +572,21 @@ const formated_time = ref<string>(format_time(total_time))
   left: 15%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  background: linear-gradient(to top, rgba(171, 128, 255, 0.67), rgba(244, 241, 255, 0.67));
+  background: rgba(79, 69, 117, 0.4);
   border-radius: 16px;
-  box-shadow: 0 10px 20px 5px rgba(184, 144, 241, 0.5);
+  box-shadow: 0 10px 20px 5px rgba(184, 144, 241, 0.1);
   backdrop-filter: blur(17.2px);
   -webkit-backdrop-filter: blur(17.2px);
+
+  &:hover {
+    border-radius: 16px;
+    background: rgba(83, 76, 114, 0.4);
+    box-shadow: 0 10px 20px 5px rgba(123, 74, 196, 0.24);
+    transition: box-shadow 0.4s ease-in-out;
+    backdrop-filter: blur(17.2px);
+    -webkit-backdrop-filter: blur(17.2px);
+    filter: brightness(1.5);
+  }
 
   .total_result_elms {
     display: flex;
@@ -628,6 +683,10 @@ const formated_time = ref<string>(format_time(total_time))
       letter-spacing: 2px;
       padding-left: 5px;
 
+      &:hover {
+        background: #3c3c4c;
+      }
+
 
       #chart_type_display_in_btn {
         position: absolute;
@@ -659,11 +718,11 @@ const formated_time = ref<string>(format_time(total_time))
 
 
         .active_angle {
-          animation: angle_rotate_up ease-in-out 0.3s forwards;
+          animation: angle_rotate_up ease-in-out 0.2s forwards;
         }
 
         .inactive_angle {
-          animation: angle_rotate_down ease-in-out 0.3s forwards;
+          animation: angle_rotate_down ease-in-out 0.2s forwards;
         }
 
         @keyframes angle_rotate_up {
@@ -671,17 +730,16 @@ const formated_time = ref<string>(format_time(total_time))
             transform: rotate(180deg);
           }
           100% {
-            transform: rotate(0deg);
+            transform: rotate(360deg);
           }
         }
         @keyframes angle_rotate_down {
           0% {
-            transform: rotate(0deg);
+            transform: rotate(360deg);
           }
           100% {
             transform: rotate(180deg);
           }
-
         }
 
 
@@ -745,9 +803,16 @@ const formated_time = ref<string>(format_time(total_time))
       .chart_scale_switch_btn {
         width: 100%;
         height: 100%;
+        color: var(--main--font-color);
         border: 1px #986ba4 solid;
         background: transparent;
         border-radius: 10px;
+        font-size: 1rem;
+
+        &:hover {
+          color: var(--sub--font-color);
+          background: rgba(0, 9, 33, 0.73);;
+        }
       }
     }
   }
