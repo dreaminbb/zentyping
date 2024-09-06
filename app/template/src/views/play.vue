@@ -53,6 +53,7 @@ const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
 
+
 async function get_from_api() {
   try {
     const response = await fetch('http://localhost:8000/play/get_pbm', {
@@ -443,7 +444,7 @@ function result() {
     incorrect_count: type_input.value.length - correct_count.value,
     input_every_second: input_every_second.value,
     correct_every_second: correct_every_second.value,
-    lenght: char.value.length,
+    length: char.value.length,
     pun_count: pun_count.value
   }
 

@@ -9,7 +9,10 @@
     }
   ],
   "compilerOptions": {
-    "types": ["node"],
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -20,12 +23,13 @@
     "alwaysStrict": true,
     "target": "es5",
     "module": "es2015",
-    "moduleResolution": "node",
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     }
   }
 }
