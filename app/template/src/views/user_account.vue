@@ -27,20 +27,20 @@ function display_user_play_history(): void {
   is_display_user_play_history.value = true
 }
 
-
-async function fetch_user_info(): Promise<void> {
-  if (document.cookie) {
-    try {
-      const response: Response = await fetch('http://localhost:8000/user/info', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      const data = await response.json()
-      if (response.status === 200) {
-        if (data) {
+//
+// async function fetch_user_info(): Promise<void> {
+//   if (document.cookie) {
+//     try {
+//       const response: Response = await fetch('http://localhost:8000/user/info', {
+//         method: 'GET',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         }
+//       })
+//
+//       const data = await response.json()
+//       if (response.status === 200) {
+//         if (data) {
           // play_history_value.value = data['play_history']
           // user_name.value = data['name'] as string
           // bio.value = data['bio'] as string
@@ -65,27 +65,27 @@ async function fetch_user_info(): Promise<void> {
           // short_correct_rate.value = data['total_result']['short_correct_rate'] as number
           // normal_correct_rate.value = data['total_result']['normal_correct_rate'] as number
           // long_correct_rate.value = data['total_result']['long_correct_rate'] as number
-        } else {
+        // } else {
           // console.log('you are bad boy')
           // user_name.value = '(:'
           // formated_time.value = '00:00'
-        }
-      } else if (response.status === 401) {
-        console.log('ログインし直してください')
-        return
-      } else if (response.status === 500) {
-        console.log('サーバー側でエラーが発生しました')
-        return
-      }
-    } catch (error) {
-      console.error(error)
-      return
-    }
-  } else {
-    console.log('no cookie???')
-    return
-  }
-}
+//         }
+//       } else if (response.status === 401) {
+//         console.log('ログインし直してください')
+//         return
+//       } else if (response.status === 500) {
+//         console.log('サーバー側でエラーが発生しました')
+//         return
+//       }
+//     } catch (error) {
+//       console.error(error)
+//       return
+//     }
+//   } else {
+//     console.log('no cookie???')
+//     return
+//   }
+// }
 </script>
 
 <template>

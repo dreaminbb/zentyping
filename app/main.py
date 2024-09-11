@@ -25,7 +25,7 @@ app.config["RATELIMIT_HEADERS_ENABLED"] = True
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["250 per day", "50 per hour", "10 per minutes"],
+    default_limits=["900 per day", "50 per hour", "1000 per minutes"],
     # storage_uri="memory://",
 )
 
@@ -42,7 +42,7 @@ app.register_blueprint(play_bp, url_prefix="/play")
 
 
 @app.errorhandler(429)
-def ratelimit_handler(e):
+def ratelimit_handler():
     ip_address = request.remote_addr
     return jsonify({"message": "dipshit"}), 429
 

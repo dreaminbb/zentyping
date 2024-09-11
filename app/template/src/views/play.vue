@@ -413,7 +413,6 @@ function compositionEnd() {
 
 // 終わった時の処理
 function result() {
-  console.log('実行')
   clearInterval(timer)
   time.value = time.value / 10
   setTimeout(() => {
@@ -434,6 +433,7 @@ function result() {
     pbm_id.value = get_problem_data_from_api.value[2][long_count - 1]['id']
   }
 
+
   //サーバーにデーターを送信する
   const result_data: object = {
     id: pbm_id.value,
@@ -447,6 +447,7 @@ function result() {
     length: char.value.length,
     pun_count: pun_count.value
   }
+  console.log(result_data)
 
   setTimeout((): void => {
     fetch('http://localhost:8000/play/result', {

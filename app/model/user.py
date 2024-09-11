@@ -2,6 +2,9 @@ import math
 import os
 import datetime
 import hashlib
+import traceback
+from inspect import trace
+
 from flask import Response, request, make_response
 from typing import Optional
 from bson import json_util
@@ -9,6 +12,9 @@ from app import db
 import json
 from .auth import jwt_manager
 
+
+# todo
+# ユーザー情報取得のペイロードを変更
 
 class user:
 
@@ -36,8 +42,6 @@ class user:
                 )
             else:
                 hashed_password = None
-
-            # ユーザーIDの生成
             user_profile = {
                 "id": user_id,
                 "type": user_type,
@@ -46,23 +50,19 @@ class user:
                 "created_at": datetime.datetime.now().isoformat(),
                 "access_at": datetime.datetime.now().isoformat(),
                 "updated_at": datetime.datetime.now().isoformat(),
-                "role": {"user": True},
-                "profile": {"icon": None, "bio": "", "name": name},
-                "total_results": {
+                "role": {"admin": True},
+                "profile": {"icon": None, "level": 0, "read_me": "", "name": name, "keyboard": "", "github_link": "",
+                            "twitter_link": ""},
+                "activity_calender": [],
+                "comprehensive_results": {
                     "play_count": 0,
+                    "completed_play_count": 0,
                     "total_time": 0.0,
                     "short_correct_rate": 0.0,
                     "normal_correct_rate": 0.0,
                     "long_correct_rate": 0.0,
                 },
-                "activity_calender": [],
-                # ======辞書にして一つにまとめようとしたけど操作がややこしくなるので中止=========
-                "short": [],
-                "normal": [],
-                "long": [],
-                "short_pun": [],
-                "normal_pun": [],
-                "long_pun": [],
+                "play_history": [],
             }
 
             db["user"].insert_one(user_profile)
@@ -124,27 +124,25 @@ class user:
             return None
 
     @staticmethod
-    def get_user_info( access_token: Optional[str]) -> Optional[dict]:
+    def get_user_info(access_token: Optional[str]) -> Optional[dict]:
         try:
             if access_token:
-
-                valited_token: dict = jwt_manager().verify_token(jwt_token=access_token)
-                print(valited_token)
-                if valited_token["user_id"] is not None:
-                    user_info = db["user"].find_one({"id": valited_token["user_id"]})
+                validated_token: dict = jwt_manager().verify_token(jwt_token=access_token)
+                print(validated_token, "検証されたトークン")
+                if validated_token["user_id"] is not None:
+                    user_info = db["user"].find_one({"id": validated_token["user_id"]})
                     if user_info is not None:
+                        print(user_info, "ユーザー情報")
+                        """ユーザー情報のペイロード"""
                         return_value: dict = {
                             "success": True,
-                            "name": user_info["profile"]["name"],
-                            "bio": user_info["profile"]["bio"],
-                            "created_at": user_info["created_at"],
-                            "total_result": user_info["total_results"],
+                            "user_name":user_info["profile"]["name"],
+                            "bio": user_info["profile"]["read_me"],
+                            "keyboard": user_info["profile"]["keyboard"],
+                            "joined_day": user_info["created_at"],
+                            # "comprehensive_results": user_info[" hensive_results"],
                             "activity_calender": user_info['activity_calender'],
-                            "play_history": {
-                                "short": user_info["short"],
-                                "normal": user_info["normal"],
-                                "long": user_info["long"],
-                            },
+                            "play_history": user_info["play_history"],
                             "status": 200,
                         }
                         print(return_value, "期待しているレスポンス")
@@ -157,8 +155,7 @@ class user:
                             "play_history": None,
                             "status": 404,
                         }
-
-                if valited_token["user_id"] is None:
+                if validated_token["user_id"] is None:
                     invalid_token: dict = {
                         "success": False,
                         "auth": False,
@@ -171,6 +168,7 @@ class user:
 
         except Exception as e:
             print(e)
+            traceback.print_exc()
             error_value: dict = {
                 "success": False,
                 "user_info": None,
@@ -178,8 +176,6 @@ class user:
             }
             print("エラーだお")
             return error_value
-
-
 
 
 class play:
@@ -221,12 +217,26 @@ class play:
 
     # play_info = クライアント側から送信されたプレイデーター
     # user_info = DBから取得したユーザーのプレイデーター
+
+    """=======================フロントエンドからのペイロード========================"""
+    """" {
+         id: pbm_id.value,
+         level: level.value,
+         time: Number((time.value * 10) / 10),
+         correct_rate: correct_rate.value,
+         correct_count: correct_count.value,
+         incorrect_count: type_input.value.length - correct_count.value,
+         input_every_second: input_every_second.value,
+         correct_every_second: correct_every_second.value,
+         length: char.value.length,
+         pun_count: pun_count.value
+         }"""
+
     @staticmethod
     def save_result(access_token: str, play_info: dict) -> bool | None:
         try:
             token_result = jwt_manager().verify_token(access_token)
             user_id = token_result["user_id"]
-            print(user_id)
 
             is_exist_session = db["session"].find_one({"user_id": user_id})
             user_info = db["user"].find_one({"id": user_id})
@@ -235,21 +245,21 @@ class play:
                 level = play_info["level"]
                 play_info["played_at"] = datetime.datetime.now().strftime("%Y-%m-%d")
 
+                """DBに保管してあるプレイデータの抽出"""
                 play_history: list = user_info[level]
                 play_history.append(play_info)
-                total_results: dict = user_info["total_results"]
-                total_results["play_count"] += 1
-                total_results["total_time"] += play_info["time"]
+                comprehensive_results: dict = user_info["comprehensive_results"]
+                comprehensive_results["play_count"] += 1
+                comprehensive_results["total_time"] += play_info["time"]
 
                 # 平均正入力を計算するアルゴリズム
-                level_len = len(user_info[level])
-
+                history_of_each_level = user_info[f"play_history{level}"]
+                level_len = len(history_of_each_level)
                 # レベル別の全てのcorrect　rateを集めた配列を作成してsumで全てを足している
-                level_sum = sum([entry["correct_rate"] for entry in user_info[level]])
+                level_sum = sum([entry["correct_rate"] for entry in history_of_each_level])
 
                 level_ave = math.floor((level_sum / level_len) * 10) / 10
-
-                total_results[f"{level}_correct_rate"] = level_ave
+                comprehensive_results[f"{level}_correct_rate"] = level_ave
 
                 # その日のプレイ回数を記録する
                 activity_calender: list = user_info["activity_calender"]
@@ -257,19 +267,20 @@ class play:
                 week_number = datetime.datetime.now().isocalendar()[1]
                 day_of_week = datetime.datetime.now().strftime("%a")
 
-                tmp = {"day": today, "week_number": week_number, "day_of_week": day_of_week, "play_count_in_day": 1}
-
+                """もし今日の日付のデータがなかったら新しく配列に挿入"""
                 if not any(d["day"] == today for d in activity_calender):
+                    tmp = {"day": today, "week_number": week_number, "day_of_week": day_of_week, "play_count_in_day": 1}
                     activity_calender.append(tmp)
                 else:
                     for day in activity_calender:
                         if day["day"] == today:
                             day["play_count_in_day"] += 1
 
+                """DBに更新するデーター"""
                 new_play_history_value: dict = {
                     "$set": {
-                        level: play_history,
-                        "total_results": total_results,
+                        level: play_history,  # ペイロードに含まれてくる情報
+                        "comprehensive_results": comprehensive_results,
                         "activity_calender": activity_calender,
                     }
                 }

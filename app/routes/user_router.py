@@ -20,8 +20,8 @@ user_bp = Blueprint("user_bp", __name__)
 @play_bp.route("/get_pbm", methods=["GET"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
 def get_problem():
-    respnse = play().get_problem()
-    return respnse
+    response = play().get_problem()
+    return response
 
 
 @play_bp.route("/result", methods=["POST"])
@@ -44,13 +44,12 @@ def save_result():
 def get_user_info() -> Response:
     access_token: Optional[str] = request.cookies.get("access_token")
     if access_token:
-        tmp:Optional[dict] = user().get_user_info(access_token=access_token)
-        print(tmp)
-        if tmp is not None:
-            return make_response(tmp, tmp["status"])
+        tmp: Optional[dict] = user().get_user_info(access_token=access_token)
+        return make_response(tmp, tmp["status"])
 
     elif not access_token:
         return make_response({"success": False, "message": "no token?"}, 401)
 
-        # return make_response({"success": True, "user_info": user_info})
+    # return make_response({"success": True, "user_info": user_info})
+
     return make_response({"success": False, "message": "問題が発生しました"}, 500)

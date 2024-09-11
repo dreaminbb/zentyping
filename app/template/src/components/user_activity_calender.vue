@@ -9,12 +9,18 @@ const active_level = ref<Array<string>>(['rgb(237,227,239)', 'rgb(207,175,207)',
 
 
 // 2024の1/1は月曜日
-// 202412/31は火曜日　
+// 202412/31は火曜日
 function format_calender_day(activity_calender_value: Array<{
+  day: string,
   week_number: number,
   day_of_week: string,
   play_count_in_day: number
-}>): Array<Array<object>> {
+}>): Array<Array<{
+  day: string,
+  week_number: number,
+  day_of_week: string,
+  play_count_in_day: number
+}>> {
   const sunday = activity_calender_value.filter((value) => value.day_of_week === 'Sun').sort((a, b) => a.week_number - b.week_number)
   const monday = activity_calender_value.filter((value) => value.day_of_week === 'Mon').sort((a, b) => a.week_number - b.week_number)
   const tuesday = activity_calender_value.filter((value) => value.day_of_week === 'Tue').sort((a, b) => a.week_number - b.week_number)
@@ -25,23 +31,44 @@ function format_calender_day(activity_calender_value: Array<{
   return [sunday, monday, tuesday, wednesday, thursday, friday, saturday]
 }
 
+onMounted(() => {
+  setInterval(() => {
+    const activity_calender_value = user_info().activity_calender
+    if (activity_calender_value.length === 0) return
 
-// 0 = 日曜日, 1 = 月曜日, 2 = 火曜日, 3 = 水曜日, 4 = 木曜日, 5 = 金曜日, 6 = 土曜日
+    const formated_activity_calender_value: Array<Array<{
+      day: string,
+      week_number: number,
+      day_of_week: string,
+      play_count_in_day: number
+    }>> = format_calender_day(activity_calender_value) as Array<Array<{
+      day: string,
+      week_number: number,
+      day_of_week: string,
+      play_count_in_day: number
+    }>>
+    generate_user_activity_calender(formated_activity_calender_value, 2024)
+  }, 300)
+})
+
+
+// 0 = 日曜日, 1 = 月曜日, 2 = 火曜日, 3 = a水曜日, 4 = 木曜日, 5 = 金曜日, 6 = 土曜日
 // formated_activity_calender_value  =   曜日=array<array<obj,obj,obj,obj>, 曜日=array<obj,obj,obj,obj>, 曜日=array<obj,obj,obj,obj>>
 // 曜日、その曜日の回数は配列に保管されている
 // ある１日の活動履歴は配列の中の一部であり同じ曜日で1/1からの日数が短い順にまとまっている
 
 
-function generate_user_activity_calender(formated_activity_calender_value: Array<{
+function generate_user_activity_calender(formated_activity_calender_value: Array<Array<{
+  day: string,
   week_number: number,
   day_of_week: string,
   play_count_in_day: number
-}>[], year: number): void {
+}>>, year: number): void {
 
-  if (year < 2024) {
-    console.log('no date')
-    return
-  }
+  // if (year < 2024) {
+  //   console.log('no date')
+  //   return
+  // }
 
   if (calender_body.value) {
     const empty_days = calender_body.value.querySelectorAll('td') as NodeListOf<HTMLTableCellElement>
@@ -92,16 +119,6 @@ function generate_user_activity_calender(formated_activity_calender_value: Array
     }
   }
 }
-
-
-onMounted(() => {
-  setInterval(() => {
-    const formated_activity_calender_value: any = format_calender_day(user_info().activity_calender_value)
-    generate_user_activity_calender(formated_activity_calender_value, 2024)
-  }, 300)
-})
-
-
 </script>
 
 <template>

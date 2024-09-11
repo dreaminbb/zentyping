@@ -15,15 +15,15 @@ class config:
     MONGO_DB_NAME = "mode-typing"
     JWT_SECRET = os.getenv("JWT_SECRET", None)
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", None)
-    JWT_EXPIRES_IN = int(os.getenv("JWT_EXPIRES_IN", 30))
-    JWT_EXPIRES_IN_REFRESH = int(os.getenv("JWT_EXPIRES_IN_REFRESH", 10))
+    JWT_EXPIRES_IN = int(os.getenv("JWT_EXPIRES_IN", 200))
+    JWT_EXPIRES_IN_REFRESH = int(os.getenv("JWT_EXPIRES_IN_REFRESH", 50))
     COOKIE_EXPIRES_IN_DAY = int(os.getenv("COOKIE_EXPIRES_IN", 30))
     SESSION_EXPIRES_IN = int(os.getenv("SESSION_EXPIRES_IN", 30))
     SERVER_API_KEY = os.getenv("SERVER_API_KEY", None)
     HMAC_SECRET_KEY = os.getenv("HMAC_SECRET_KEY", None)
     NEVER_GONNA_GIVE_YOU_UP_URL = os.getenv("NEVER_GANNA_GIVE_YOU_UP_URL")
     ACCOUNT_URL = f"{URL}/account"
-    COOKIE_AGE = 0.5  # 時間単位
+    COOKIE_AGE = 1  # 時間単位
     PIECE = 5
 
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", None)

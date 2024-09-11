@@ -72,6 +72,7 @@ function user_changed_twitter_link(): void {
 //ここにAPIに変更リクエストを送信する処理を
 function save_user_profile_edit(): void {
   if (user_profile_changed_something.value) {
+    console.log("ユーザー情報を保存しました。")
   }
 }
 </script>

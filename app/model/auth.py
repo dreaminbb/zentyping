@@ -13,10 +13,6 @@ from flask import jsonify, make_response, Response, redirect, request
 from app import config, db
 
 
-# todo
-# 1. cookieを検証して新しく作った場合は古いvalid cookieを無効にする
-
-
 def require_api_key(f):
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get("Authorization")
@@ -51,8 +47,8 @@ class jwt_manager:
                 "sub": user_id,
                 "iat": datetime.datetime.now(datetime.timezone.utc),
                 "exp": (
-                    datetime.datetime.now(datetime.timezone.utc)
-                    + datetime.timedelta(minutes=config.JWT_EXPIRES_IN)
+                        datetime.datetime.now(datetime.timezone.utc)
+                        + datetime.timedelta(minutes=config.JWT_EXPIRES_IN)
                 ),
                 "role": "user",
             },
@@ -65,8 +61,8 @@ class jwt_manager:
             "sub": user_id,
             # "aud": os.getenv("URL"),
             "exp": (
-                datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(days=self.expires_in_refresh)
+                    datetime.datetime.now(datetime.timezone.utc)
+                    + datetime.timedelta(days=self.expires_in_refresh)
             ),
             "jti": self.jti,
         }
@@ -95,18 +91,17 @@ class jwt_manager:
                 }
             )
 
-            return {"timeout": True, "success": False}
+            return {"timeout": True, "success": False, "user_id": None}
 
         except jwt.InvalidTokenError:
             db["invalid_tokens"].insert_one(
                 {
-                    "token": jwt_token,
-                    "detected_at": datetime.datetime.now(
-                        datetime.timezone.utc
-                    ).isoformat(),
+                    "token": jwt_token, "detected_at": datetime.datetime.now(
+                    datetime.timezone.utc
+                ).isoformat(),
                 }
             )
-            return {"invalid": True, "success": False}
+            return {"invalid": True, "success": False, "user_id": None}
 
         except Exception:
             return {"error": True, "success": False}
@@ -208,8 +203,8 @@ class cookie_manager:
                 "session_id": session_id,
                 "start_time": datetime.datetime.now().isoformat(),
                 "expires": (
-                    datetime.datetime.now()
-                    + datetime.timedelta(minutes=config.SESSION_EXPIRES_IN)
+                        datetime.datetime.now()
+                        + datetime.timedelta(minutes=config.SESSION_EXPIRES_IN)
                 ).isoformat(),
                 "last_access_time": datetime.datetime.now().isoformat(),
             }
@@ -230,7 +225,7 @@ class cookie_manager:
             return {"error": "error"}
 
     def set_cookie_response(
-        self, user_id: str, ip_address: str, user_agent: str, redirect_url: str
+            self, user_id: str, ip_address: str, user_agent: str, redirect_url: str
     ) -> Response:
 
         if not all([user_id, ip_address, user_agent]):
@@ -370,11 +365,11 @@ class github:
                     },
                 )
             except (
-                requests.exceptions.HTTPError
+                    requests.exceptions.HTTPError
             ) as http_err:  # サーバーがからのレスポンスを返した時
                 return jsonify({"error": f"HTTP error occurred: {http_err}"}), 500
             except (
-                requests.exceptions.RequestException
+                    requests.exceptions.RequestException
             ) as req_err:  # レスポンスが有効なjsonを返していない時
                 return jsonify({"error": f"Request error occurred: {req_err}"}), 500
             except ValueError as json_err:  # 期待したデーターが帰ってこなかった時
@@ -465,11 +460,11 @@ class github:
                 return jsonify({"message": "エラーが発生しました"}), 500
 
         except (
-            requests.exceptions.HTTPError
+                requests.exceptions.HTTPError
         ) as http_err:  # サーバーがからのレスポンスを返した時
             return jsonify({"error": f"HTTP error occurred: {http_err}"}), 500
         except (
-            requests.exceptions.RequestException
+                requests.exceptions.RequestException
         ) as req_err:  # レスポンスが有効なjsonを返していない時
             return jsonify({"error": f"Request error occurred: {req_err}"}), 500
         except ValueError as json_err:  # 期待したデーターが帰ってこなかった時

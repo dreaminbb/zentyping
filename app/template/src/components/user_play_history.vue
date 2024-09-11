@@ -346,7 +346,7 @@ const play_info_data = ref<ChartData<'line' | 'bar'>>({
   labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
   datasets: [
     {
-      type: 'line',
+        type: 'line',
       data: [100, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
       borderColor: 'rgb(16,105,168)',
       tension: 0.35,
@@ -371,7 +371,6 @@ const play_info_data = ref<ChartData<'line' | 'bar'>>({
     {
       type: 'bar',
       data: [160, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
-      fill: true,
       backgroundColor:
         (context: any) => {
           const chart = context.chart
@@ -509,7 +508,7 @@ const formated_time = ref<string>(format_time(total_time))
 
         <div v-if="is_switcher_active" id="chart_op_display" :class="{open_chart_op: is_switcher_active}">
           <div class="chart_ops_elm"
-               @click="is_switcher_active=false;regenerate_activity_calender(); is_display_active_calender=true; display_cps_line_chart=false; display_play_info_chart=false; display_play_history=false; chart_type_index = 0">
+               @click="is_switcher_active=false; is_display_active_calender=true; display_cps_line_chart=false; display_play_info_chart=false; display_play_history=false; chart_type_index = 0">
             {{ chart_type[0] }}
             <!--            アクティブカレンダー -->
           </div>
