@@ -3,8 +3,6 @@ import os
 import datetime
 import hashlib
 import traceback
-from inspect import trace
-
 from flask import Response, request, make_response
 from typing import Optional
 from bson import json_util
@@ -62,7 +60,11 @@ class user:
                     "normal_correct_rate": 0.0,
                     "long_correct_rate": 0.0,
                 },
-                "play_history": [],
+                "play_history": {
+                    "short": [],
+                    "normal": [],
+                    "long": []
+                }
             }
 
             db["user"].insert_one(user_profile)
@@ -136,15 +138,42 @@ class user:
                         """ユーザー情報のペイロード"""
                         return_value: dict = {
                             "success": True,
-                            "user_name":user_info["profile"]["name"],
-                            "bio": user_info["profile"]["read_me"],
-                            "keyboard": user_info["profile"]["keyboard"],
                             "joined_day": user_info["created_at"],
-                            # "comprehensive_results": user_info[" hensive_results"],
+                            "user_read_me": user_info["profile"]['read_me'],
+                            "user_name": user_info["profile"]["name"],
+                            "icon": user_info["profile"]["icon"],
+                            "keyboard": user_info["profile"]["keyboard"],
+                            "github_link": user_info["profile"]["github_link"],
+                            "twitter_link": user_info["profile"]["twitter_link"],
                             "activity_calender": user_info['activity_calender'],
                             "play_history": user_info["play_history"],
+                            "play_count": user_info["comprehensive_results"]["play_count"],
+                            "completed_play_count": user_info["comprehensive_results"]["completed_play_count"],
+                            "total_time": user_info["comprehensive_results"]["total_time"],
+                            "short_correct_rate": user_info["comprehensive_results"]["short_correct_rate"],
+                            "normal_correct_rate": user_info["comprehensive_results"]["normal_correct_rate"],
+                            "long_correct_rate": user_info["comprehensive_results"]["long_correct_rate"],
                             "status": 200,
                         }
+                        """profileの中身"""
+                        # {
+                        # "icon": null,
+                        # "level": newNumberInt( "0"),
+                        # "read_me": "",
+                        # "name": "dreaminbb",
+                        # "keyboard": "",
+                        # "github_link": "",
+                        # "twitter_link": ""
+                        # }
+                        """comprehensive_resultsの中身"""
+                        # {
+                        # "play_count": new NumberInt("0"),
+                        # "completed_play_count": new NumberInt("0"),
+                        # "total_time": 0,
+                        # "short_correct_rate": 0,
+                        # "normal_correct_rate": 0,
+                        # "long_correct_rate": 0
+                        # }
                         print(return_value, "期待しているレスポンス")
                         return return_value
                     else:
@@ -245,16 +274,38 @@ class play:
                 level = play_info["level"]
                 play_info["played_at"] = datetime.datetime.now().strftime("%Y-%m-%d")
 
+                """ユーザーDBのプレイデータ"""
+                # "comprehensive_results": {
+                #     "play_count": 0,
+                #     "completed_play_count": 0,
+                #     "total_time": 0,
+                #     "short_correct_rate": 0,
+                #     "normal_correct_rate": 0,
+                #     "long_correct_rate": 0
+                # },
+
+                # "play_history": [
+                # 'short': [],
+                # 'normal': [],
+                # 'long': []
+                # ]
+
                 """DBに保管してあるプレイデータの抽出"""
-                play_history: list = user_info[level]
-                play_history.append(play_info)
+                play_history: list = user_info['play_history']
+
                 comprehensive_results: dict = user_info["comprehensive_results"]
                 comprehensive_results["play_count"] += 1
+                tmp: dict = {'play_count': comprehensive_results["play_count"]}
+                play_info.update(tmp)
+                user_info['play_history'][level].append(play_info)
+                print(user_info['play_history'][level])
                 comprehensive_results["total_time"] += play_info["time"]
 
                 # 平均正入力を計算するアルゴリズム
-                history_of_each_level = user_info[f"play_history{level}"]
+                # print(user_info['play_history'])
+                history_of_each_level = user_info['play_history'][level]
                 level_len = len(history_of_each_level)
+                # print(level_len, history_of_each_level)
                 # レベル別の全てのcorrect　rateを集めた配列を作成してsumで全てを足している
                 level_sum = sum([entry["correct_rate"] for entry in history_of_each_level])
 
@@ -279,7 +330,7 @@ class play:
                 """DBに更新するデーター"""
                 new_play_history_value: dict = {
                     "$set": {
-                        level: play_history,  # ペイロードに含まれてくる情報
+                        "play_history": play_history,  # ペイロードに含まれてくる情報
                         "comprehensive_results": comprehensive_results,
                         "activity_calender": activity_calender,
                     }
@@ -292,4 +343,5 @@ class play:
 
         except Exception as e:
             print(e)
+            traceback.print_exc()
             return False

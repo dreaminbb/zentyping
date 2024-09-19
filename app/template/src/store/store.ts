@@ -1,591 +1,93 @@
 import { defineStore } from 'pinia'
+import type { activity_calendar, all_play_history, play_history_if } from '@/interface'
 
 export const user_status = defineStore('user_auth', {
 
-  state: (): { is_login: boolean, is_user: boolean, is_admin: boolean } => ({
-    is_login: false,
-    is_user: false,
-    is_admin: false
-  })
+    state: (): { is_login: boolean, is_user: boolean, is_admin: boolean } => ({
+        is_login: false,
+        is_user: false,
+        is_admin: false
+    })
 })
 
-//
-// {
-//   "activity_calender": [
-//     {
-//       "day": "2024-08-09",
-//       "day_of_week": "Fri",
-//       "play_count_in_day": 11,
-//       "week_number": 32
-//     },
-//     {
-//       "day": "2024-08-12",
-//       "day_of_week": "Mon",
-//       "play_count_in_day": 1,
-//       "week_number": 33
-//     }
-//   ],
-//   "created_at": "2024-08-09T06:33:59.646865",
-//   "name": "dreaminbb",
-//   "bio": "",
-//   "play_history": {
-//     "long": [],
-//     "normal": [],
-//     "short": [
-//       {
-//         "correct_count": 47,
-//         "correct_every_second": [
-//           2, 1.5, 1.3, 1.2, 1.4, 1.1, 1.1, 1, 0.8, 0.8, 0.7, 0.6, 0.6, 0.5, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.5,
-//           0.5, 0.5, 0.5, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.5, 0.6,
-//           0.5, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6
-//         ],
-//         "correct_rate": 94,
-//         "id": 6,
-//         "incorrect_count": 1,
-//         "input_every_second": [
-//           2, 1.5, 1.3, 1.2, 1.4, 1.1, 1.1, 1.1, 1, 0.9, 0.8, 0.7, 0.7, 0.7, 0.7,
-//           0.7, 0.7, 0.7, 0.7, 0.7, 0.8, 0.8, 0.7, 0.7, 0.7, 0.6, 0.7, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6
-//         ],
-//         "lenght": 48,
-//         "level": "short",
-//         "played_at": "2024-08-09",
-//         "pun_count": 0,
-//         "time": 7.8
-//       },
-//       {
-//         "correct_count": 41,
-//         "correct_every_second": [
-//           2, 1, 1.3, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.1, 1, 0.9, 0.8, 0.9, 0.9,
-//           0.8, 0.8, 0.8, 0.9, 0.8, 0.9, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7,
-//           0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6
-//         ],
-//         "correct_rate": 100,
-//         "id": 5,
-//         "incorrect_count": 0,
-//         "input_every_second": [
-//           2, 1, 1.3, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.1, 1, 0.9, 0.8, 0.9, 0.9,
-//           0.8, 0.8, 0.8, 0.8, 0.9, 0.9, 0.8, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7,
-//           0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-//           0.6, 0.6, 0.6, 0.6, 0.6
-//         ],
-//         "lenght": 41,
-//         "level": "short",
-//         "played_at": "2024-08-09",
-//         "pun_count": 0,
-//         "time": 6.2
-//       },
-//       {
-//         "correct_count": 22,
-//         "correct_every_second": [
-//           3, 2, 1.3, 1, 0.8, 0.6, 0.5, 0.5, 0.4, 0.4, 0.3, 0.5, 0.5, 0.5, 0.6,
-//           0.5, 0.5, 0.5, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4, 0.4,
-//           0.4, 0.3, 0.4, 0.4, 0.4, 0.4, 0.3, 0.4, 0.3, 0.3, 0.3, 0.3, 0.4, 0.4,
-//           0.4, 0.4, 0.4, 0.4, 0.4
-//         ],
-//         "correct_rate": 84.6,
-//         "id": 1,
-//         "incorrect_count": 0,
-//         "input_every_second": [
-//           3, 2, 2, 1.5, 1.2, 1, 0.8, 0.7, 0.7, 0.8, 0.7, 0.8, 0.8, 0.8, 0.8,
-//           0.8, 0.7, 0.7, 0.6, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.5, 0.5, 0.5,
-//           0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.5, 0.5,
-//           0.5, 0.5, 0.5, 0.5, 0.5
-//         ],
-//         "lenght": 22,
-//         "level": "short",
-//         "played_at": "2024-08-12",
-//         "pun_count": 0,
-//         "time": 4.8
-//       }
-//     ]
-//   },
-//   "status": 200,
-//   "success": true,
-//   "total_result": {
-//     "long_correct_rate": 0.0,
-//     "normal_correct_rate": 0.0,
-//     "play_count": 12,
-//     "short_correct_rate": 87.0,
-//     "total_time": 69.39999999999999
-//   }
-// }
-
-
 export const user_info = defineStore('user_info', {
-  state: function() {
-    return {
-      user_name: 'まんこ',
-      joined_day: '',
-      bio: '',
-      keyboard: '',
-      user_read_me: 'hi, i like machanical keyboard\nhhkb is piece of  shit',
-      user_github_link: '',
-      user_twitter_link: '',
-      user_new_read_me: '',
-      new_user_name: '',
-      new_user_github_link: '',
-      new_user_twitter_link: '',
-      activity_calender:[{}] as  Array<{
-        day: string,
-        week_number: number,
-        day_of_week: string,
-        play_count_in_day: number
-      }>,
-      play_history: [{}] as Array<object>,
-      play_history_value_short: [
-        {
-          'id': 14,
-          'difficulty': 'short',
-          'time': 4.2,
-          'correct_rate': 100,
-          'correct_count': 21,
-          'incorrect_count': 0,
-          'input_per_second': [
-            1,
-            1,
-            0.6,
-            0.5,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.3,
-            0.3,
-            0.4,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.4,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.4,
-            0.4,
-            0.4,
-            0.3,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.5
-          ],
-          'correct_per_second': [
-            1,
-            1,
-            0.6,
-            0.5,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.3,
-            0.3,
-            0.4,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.4,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.3,
-            0.4,
-            0.4,
-            0.4,
-            0.3,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.4,
-            0.5
-          ],
-          'length': 21,
-          'pun_count': 0,
-          'played_at': '2024-08-09'
+    state: () => ({
+        user_name: 'タイピングニキ',
+        joined_day: '',
+        user_read_me: 'hhkb is piece of  shit',
+        keyboard: '',
+        user_github_link: '',
+        user_twitter_link: '',
+        user_new_read_me: '',
+        new_user_name: '',
+        new_user_github_link: '',
+        new_user_twitter_link: '',
+        activity_calender: [{}] as [activity_calendar],
+        play_history: {} as all_play_history,
+        //レベル別から時間別に分ける
+        // ==========================================
+        play_history_by_play_count: [] as play_history_if[],
+        // ==========================================
+        play_count: 0 as number,
+        completed_play_count: 0 as number,
+        total_time: 0 as number,
+        short_correct_rate: 0,
+        normal_correct_rate: 0,
+        long_correct_rate: 0,
+        cps_data_year: [] as Array<number>,
+        cps_data_month: [] as Array<number>,
+        cps_data_day: [] as Array<number>,
+        active_level: 0 as number
+    }),
+    actions: {
+        async fetch_info() {
+            fetch('http://localhost:8000/user/info', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(async response => {
+                if (response.status == 200) {
+                    // user_status().is_login = true
+                    const data: any = await response.json()
+                    this.user_read_me = data['user_read_me'] as string || 'おっぱい大好き'
+                    this.user_name = data['user_name'] as string || '(:'
+                    this.keyboard = data['keyboard'] as string || '油と手垢のつきまくったクソ汚いキーボード'
+                    this.user_github_link = data['user_github_link'] as string || 'github.com'
+                    this.user_twitter_link = data['user_twitter_link'] as string || 'twitter.com'
+                    this.joined_day = data['joined_day'].split('T')[0].replace(/-/g, ':') as string || 'xxxx:x?:x!'
+                    this.total_time = data['total_time'] as number || 0
+                    this.play_count = data['play_count'] as number
+                    this.user_github_link = data['github_link'] as string || ''
+                    this.user_twitter_link = data['twitter_link'] as string || ''
+                    this.play_history = data['play_history'] as all_play_history
+                    this.short_correct_rate = data['short_correct_rate'] as number
+                    this.normal_correct_rate = data['normal_correct_rate'] as number
+                    this.long_correct_rate = data['long_correct_rate'] as number
+                    this.activity_calender = data['activity_calender'] as [activity_calendar]
+                    this.short_correct_rate = data['short_correct_rate'] as number
+                    this.normal_correct_rate = data['normal_correct_rate'] as number
+                    this.long_correct_rate = data['normal_correct_rate'] as number
+                    this.play_history = data['play_history'] || [{}]
+                    // todo 
+                    //プレイ履歴からプレイ回数順に分けplay_hisory_by_play_countに格納
+                    this.play_history ? this.play_history_by_play_count = Object.values(this.play_history).flat().sort((a: any, b: any) => a.play_count - b.play_count) : void 0
+                    this.display_info()
+                }
+            })
         },
-        {
-          'id': 8,
-          'difficulty': 'short',
-          'time': 7.5,
-          'correct_rate': 100,
-          'correct_count': 40,
-          'incorrect_count': 0,
-          'input_per_second': [
-            1,
-            0.5,
-            0.6,
-            0.5,
-            0.6,
-            0.6,
-            0.7,
-            0.7,
-            0.6,
-            0.7,
-            0.7,
-            0.6,
-            0.6,
-            0.7,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.4,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
-          ],
-          'correct_per_second': [
-            1,
-            0.5,
-            0.6,
-            0.5,
-            0.6,
-            0.6,
-            0.7,
-            0.7,
-            0.6,
-            0.7,
-            0.7,
-            0.6,
-            0.6,
-            0.7,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.4,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
-          ],
-          'length': 40,
-          'pun_count': 0,
-          'played_at': '2024-08-09'
-        },
-        {
-          'id': 9,
-          'difficulty': 'short',
-          'time': 6.9,
-          'correct_rate': 90.5,
-          'correct_count': 38,
-          'incorrect_count': 0,
-          'input_per_second': [
-            2,
-            1,
-            1,
-            1,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.8,
-            0.8,
-            0.8,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.8,
-            0.8,
-            0.8,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.5,
-            0.6,
-            0.6
-          ],
-          'correct_per_second': [
-            2,
-            1,
-            1,
-            1,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.8,
-            0.8,
-            0.8,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.8,
-            0.8,
-            0.8,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.7,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.6,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
-          ],
-          'length': 38,
-          'pun_count': 0,
-          'played_at': '2024-08-09'
-        }],
-      //全部のプレイ履歴からレベル別に分ける
-      // =======================================================
-      play_history_value_normal: [],
-      play_history_value_long: [],              /* フロントエンドで抽出するデーター */
-      play_history_value_total: [],
-      // ==========================================
-      short_avg_correct_rate: 78,
-      normal_avg_correct_rate: 18,
-      long_avg_correct_rate: 90,
-      play_count: 0,
-      completed_play_count: 0,
-      total_time: 0,
-      normal_correct_rate: 0,
-      short_correct_rate: 0,
-      active_level: 0,
-      long_correct_rate: 0
-    }
-  }
+        display_info() {
+            console.log(this.$state)
+        }
+    },
 })
 
 
 export const user_settings = defineStore('user_settings', {
 
-  state() {
-    return {}
-  }
+    state() {
+        return {}
+    }
 
 })
 //

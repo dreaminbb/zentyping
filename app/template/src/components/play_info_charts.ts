@@ -58,15 +58,15 @@ export const line_chart = defineComponent({
     const correct_every_second = inject("correct_every_second") as Ref<Array<number>>;
     const input_every_second = inject("input_every_second") as Ref<Array<number>>
     const formated_input_every_second: Array<number> = []
-    const formated_corrrect_every_second: Array<number> = []
+    const formated_correct_every_second: Array<number> = []
 
 
     for (let i = 1; i < correct_every_second.value.length / 10; i++) {
-      formated_corrrect_every_second.push(Math.round(correct_every_second.value[i * 10] * 100) / 100)
+      formated_correct_every_second.push(Math.round(correct_every_second.value[i * 10] * 100) / 100)
       formated_input_every_second.push(Math.round(input_every_second.value[i * 10] * 100) / 100)
     }
 
-    formated_corrrect_every_second.push(Math.round(correct_every_second.value[correct_every_second.value.length - 1] * 100) / 100)
+    formated_correct_every_second.push(Math.round(correct_every_second.value[correct_every_second.value.length - 1] * 100) / 100)
     formated_input_every_second.push(Math.round(input_every_second.value[input_every_second.value.length - 1] * 100) / 100)
     const height_max = Math.max(...formated_input_every_second) + 1
 
@@ -82,7 +82,7 @@ export const line_chart = defineComponent({
       datasets: [
         {
           label: '１秒ごとの正入力',
-          data: formated_corrrect_every_second,
+          data: formated_correct_every_second,
           backgroundColor: ['rgba(134, 95, 255, 0.5)'],
         },
         {

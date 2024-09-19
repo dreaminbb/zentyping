@@ -13,18 +13,18 @@ from ..main import limiter
 from ..model.log import recorder
 from ..model.user import user, play
 
-play_bp = Blueprint("play_bp", __name__)
 user_bp = Blueprint("user_bp", __name__)
 
 
-@play_bp.route("/get_pbm", methods=["GET"])
+@user_bp.route("/get_pbm", methods=["GET"])
 @limiter.limit("10 per minute", key_func=get_remote_address)
 def get_problem():
     response = play().get_problem()
+    print(response)
     return response
 
 
-@play_bp.route("/result", methods=["POST"])
+@user_bp.route("/result", methods=["POST"])
 def save_result():
     access_token: Optional[str] = request.cookies.get("access_token")
     if request.json is not None and access_token:

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { user_info } from '@/store/store'
+import {onMounted, ref} from 'vue'
+import {user_info} from '@/store/store'
 
 const calender_body = ref<HTMLElement | null>(null)
 const active_level = ref<Array<string>>(['rgb(237,227,239)', 'rgb(207,175,207)', 'rgb(248,159,255)', 'rgb(173,0,239)', 'rgb(194,9,255)'])
@@ -34,8 +34,6 @@ function format_calender_day(activity_calender_value: Array<{
 onMounted(() => {
   setInterval(() => {
     const activity_calender_value = user_info().activity_calender
-    if (activity_calender_value.length === 0) return
-
     const formated_activity_calender_value: Array<Array<{
       day: string,
       week_number: number,

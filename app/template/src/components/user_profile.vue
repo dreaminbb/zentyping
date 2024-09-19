@@ -75,6 +75,7 @@ function save_user_profile_edit(): void {
     console.log("ユーザー情報を保存しました。")
   }
 }
+
 </script>
 
 <template>
@@ -83,7 +84,6 @@ function save_user_profile_edit(): void {
       <span id="__user_name__">名前 :</span>
       <textarea id="edit_user_name" maxlength="25" v-model="editing_user_name" @input="user_changed_name"></textarea>
     </div>
-
     <textarea id="edit_user_read_me" maxlength="500" v-model="editing_user_read_me"
               @input="user_changed_read_me"></textarea>
 

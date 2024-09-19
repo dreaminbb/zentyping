@@ -4,11 +4,10 @@ import { user_info } from '@/store/store'
 import user_active_calender from '@/components/user_activity_calender.vue'
 import { LineChart, PieChart } from 'vue-chart-3'
 import type { ChartData } from 'chart.js'
-
+import type { play_history_formated_if } from '@/interface'
 
 //todo
 //１.ユーザーがグラフ選択中に別のところをクリックしたらグラフ変更を閉じる
-
 
 const is_switcher_active = ref<boolean>(false)
 const is_display_all_play_history = ref<boolean>(false)
@@ -18,28 +17,95 @@ const display_play_info_chart = ref<boolean>(false)
 const display_cps_line_chart = ref<boolean>(false)
 const display_play_history = ref<boolean>(false)
 
-
 const chart_type_index = ref<number>(0)
 const chart_type = ref<Array<string>>(['アクティブカレンダー', '正入力', 'プレイグラフ', '履歴'])
 
 const time_scale_char = ref(['2024', '今月', '今週'])
-const cps_data_year = ref<Array<number>>([0, 4, 3, 5, 1, 2, 4, 5, 6, 4, 2, 5])
-const cps_data_month = ref<Array<number>>([1, 5, 3, 5, 3, 2, 5, 5, 5, 5, 5, 5])
-const cps_data_day = ref<Array<number>>([2, 7, 6, 7, 8, 8, 7, 6, 7, 8, 6])
-const data_cps_data_arr = [cps_data_year.value, cps_data_month.value, cps_data_day.value]
 
-const data_arr_play_info: Array<Array<Array<number>>> = [[[33, 55, 11, 55, 33, 66, 77, 44, 33, 55], [44, 11, 44, 22, 11, 55, 11, 55, 22, 11]], [[222, 111, 234, 123, 413, 533, 443, 523, 431, 211, 344, 244, 233], [22, 123, 345, 12, 33, 413, 66, 33, 22, 55, 33, 11, 66]]]
+const data_arr_play_info: Array<Array<Array<number>>> = [
+  [
+    [33, 55, 11, 55, 33, 66, 77, 44, 33, 55],
+    [44, 11, 44, 22, 11, 55, 11, 55, 22, 11]
+  ],
+  [
+    [222, 111, 234, 123, 413, 533, 443, 523, 431, 211, 344, 244, 233],
+    [22, 123, 345, 12, 33, 413, 66, 33, 22, 55, 33, 11, 66]
+  ]
+]
 
 const time_scale_class_0 = ref<boolean>(true)
 const time_scale_class_1 = ref<boolean>(false)
 const time_scale_class_2 = ref<boolean>(false)
-const time_scale_obj = ref<Array<Ref<boolean>>>([time_scale_class_0, time_scale_class_1, time_scale_class_2])
+const time_scale_obj = ref<Array<Ref<boolean>>>([
+  time_scale_class_0,
+  time_scale_class_1,
+  time_scale_class_2
+])
+const play_history_count = ref<number>(Object.keys(user_info().play_history_by_play_count).length)
+const display_more_btn = ref<boolean>(play_history_count.value > 4)
 
+function format_play_history_data_by_year_month_week(): play_history_formated_if {
+  console.log("tinnko")
+  //全てのプレイデータ
+  const play_history = user_info().play_history_by_play_count
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+
+  const year_history = play_history.filter(
+    (history: any) => history['played_at'].slice(0, 4) === `${year}`
+  )
+  const month_history = play_history.filter(
+    (history: any) => history['played_at'].slice(0, 7) === `${year}-${month}`
+  )
+
+  //今の週のプレイ履歴があった場合を[月~]を生成
+  const today = new Date()
+  const start_of_week = new Date(today)
+  start_of_week.setDate(today.getDate() - today.getDay())
+  const days: Array<string> = []
+  for (let d = start_of_week; d <= today; d.setDate(d.getDate() + 1)) {
+    days.push(new Date(d).toLocaleDateString())
+  }
+
+  const week_history = play_history.filter((history: any) => days.includes(history['played_at']))
+
+  const year_avg_correct_rate: number =
+    year_history.reduce((a: any, b: any) => a + b.correct_rate, 0) / year_history.length
+  const month_avg_correct_rate: number =
+    month_history.reduce((a: any, b: any) => a + b.correct_rate, 0) / month_history.length
+  console.log(
+    year_history,
+    month_history,
+    week_history,
+    year_avg_correct_rate,
+    month_avg_correct_rate
+  )
+  return {
+    year_history,
+    month_history,
+    week_history,
+    year_avg_correct_rate,
+    month_avg_correct_rate
+  }
+}
 
 function regenerate_chart(data_index: number) {
   if (display_cps_line_chart.value) {
     display_cps_line_chart.value = false
-    cps_line_data.value['datasets'][0]['data'] = data_cps_data_arr[data_index]
+    const tmp: play_history_formated_if = format_play_history_data_by_year_month_week()
+    console.log(tmp)
+    const year_arr =
+      tmp['year_history'].reduce((a: any, b: any) => a + b.correct_rate, 0) /
+      tmp['year_history'].length
+    const month_arr =
+      tmp['month_history'].reduce((a: any, b: any) => a + b.correct_rate, 0) /
+      tmp['month_history'].length
+    const week_arr =
+      tmp['week_history'].reduce((a: any, b: any) => a + b.correct_rate, 0) /
+      tmp['week_history'].length
+    const chart_value_arr = [year_arr, month_arr, week_arr]
+    cps_line_data.value['datasets'][0]['data'] = chart_value_arr[data_index] as unknown as number[]
 
     setTimeout(() => {
       display_cps_line_chart.value = true
@@ -68,14 +134,24 @@ if (is_display_all_play_history.value) {
 
 const changing_chart = () => {
   is_switcher_active.value = !is_switcher_active.value
-  console.log(is_switcher_active.value, is_display_active_calender.value, display_cps_line_chart.value, display_play_info_chart.value, display_play_history.value, chart_type_index.value)
+  console.log(
+    is_switcher_active.value,
+    is_display_active_calender.value,
+    display_cps_line_chart.value,
+    display_play_info_chart.value,
+    display_play_history.value,
+    chart_type_index.value
+  )
 }
 
 const is_display_all_play_history_func = () => {
-  is_display_all_play_history.value = !is_display_all_play_history.value
+  if (play_history_count.value > 5) {
+    console.log(Object.keys(user_info().play_history_by_play_count).length)
+    is_display_all_play_history.value = !is_display_all_play_history.value
+  } else {
+    return
+  }
 }
-
-
 //
 // function click_other_area_close_chart_op(event: MouseEvent) {
 //   if (other_area_clicked.value) {
@@ -90,16 +166,14 @@ const is_display_all_play_history_func = () => {
 //   window.removeEventListener('click', click_other_area_close_chart_op)
 // })
 
-
-const calender_body = ref<HTMLElement | null>(null)
-const active_level = ref<Array<string>>(['rgb(237,227,239)', 'rgb(207,175,207)', 'rgb(248,159,255)', 'rgb(173,0,239)', 'rgb(194,9,255)'])
-
 // 登録日のフォーマット方法->2024/08/03
 
 const short_data = ref<object>({
   datasets: [
     {
-      data: user_info().short_avg_correct_rate ? [user_info().short_avg_correct_rate, 100 - user_info().short_avg_correct_rate] : 0,
+      data: user_info().short_correct_rate
+        ? [user_info().short_correct_rate, 100 - user_info().short_correct_rate]
+        : 0,
       backgroundColor: ['rgb(177,197,206)', 'rgba(124,124,124,0.4)']
     }
   ],
@@ -112,17 +186,20 @@ const short_data = ref<object>({
 const ratio_text_short = {
   id: 'ratio_text',
   beforeDraw(chart: any) {
-    const { ctx, chartArea: { top, width, height } } = chart
+    const {
+      ctx,
+      chartArea: { top, width, height }
+    } = chart
     ctx.save()
     //チャート描画部分の中央を指定
-    ctx.fillRect(width / 2, top + (height / 2), 0, 0)
+    ctx.fillRect(width / 2, top + height / 2, 0, 0)
     //フォントのスタイル指定
     ctx.font = 'bold 25px Roboto'
     ctx.fillStyle = '#333333'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     //80%という文字列をドーナツチャートの中央部に描画
-    ctx.fillText(user_info().short_avg_correct_rate + '%', width / 2, top + (height / 2))
+    ctx.fillText(user_info().short_correct_rate + '%', width / 2, top + height / 2)
   }
 }
 const short_options = ref<object>({
@@ -156,7 +233,9 @@ const short_options = ref<object>({
 const normal_data = ref<object>({
   datasets: [
     {
-      data: user_info().normal_avg_correct_rate ? [user_info().short_avg_correct_rate, 100 - user_info().short_avg_correct_rate] : 0,
+      data: user_info().normal_correct_rate
+        ? [user_info().short_correct_rate, 100 - user_info().short_correct_rate]
+        : 0,
       backgroundColor: ['rgb(101,62,217)', 'rgba(124,124,124,0.4)']
     }
   ],
@@ -200,24 +279,29 @@ const normal_options = ref<object>({
 const ratio_text_normal = {
   id: 'ratio_text',
   beforeDraw(chart: any) {
-    const { ctx, chartArea: { top, width, height } } = chart
+    const {
+      ctx,
+      chartArea: { top, width, height }
+    } = chart
     ctx.save()
     //チャート描画部分の中央を指定
-    ctx.fillRect(width / 2, top + (height / 2), 0, 0)
+    ctx.fillRect(width / 2, top + height / 2, 0, 0)
     //フォントのスタイル指定
     ctx.font = 'bold 25px Roboto'
     ctx.fillStyle = '#333333'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     //80%という文字列をドーナツチャートの中央部に描画
-    ctx.fillText(user_info().normal_avg_correct_rate + '%', width / 2, top + (height / 2))
+    ctx.fillText(user_info().normal_correct_rate + '%', width / 2, top + height / 2)
   }
 }
 
 const long_data = ref<object>({
   datasets: [
     {
-      data: user_info().long_avg_correct_rate ? [user_info().short_avg_correct_rate, 100 - user_info().short_avg_correct_rate] : 0,
+      data: user_info().long_correct_rate
+        ? [user_info().short_correct_rate, 100 - user_info().short_correct_rate]
+        : 0,
       backgroundColor: ['rgb(192,154,255)', 'rgba(124,124,124,0.4)']
     }
   ],
@@ -230,17 +314,20 @@ const long_data = ref<object>({
 const ratio_text_long = {
   id: 'ratio_text',
   beforeDraw(chart: any) {
-    const { ctx, chartArea: { top, width, height } } = chart
+    const {
+      ctx,
+      chartArea: { top, width, height }
+    } = chart
     ctx.save()
     //チャート描画部分の中央を指定
-    ctx.fillRect(width / 2, top + (height / 2), 0, 0)
+    ctx.fillRect(width / 2, top + height / 2, 0, 0)
     //フォントのスタイル指定
     ctx.font = 'bold 25px Roboto'
     ctx.fillStyle = '#333333'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     //80%という文字列をドーナツチャートの中央部に描画
-    ctx.fillText(user_info().long_avg_correct_rate + '%', width / 2, top + (height / 2))
+    ctx.fillText(user_info().long_correct_rate + '%', width / 2, top + height / 2)
   }
 }
 const long_options = ref<object>({
@@ -346,45 +433,43 @@ const play_info_data = ref<ChartData<'line' | 'bar'>>({
   labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
   datasets: [
     {
-        type: 'line',
+      type: 'line',
       data: [100, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
       borderColor: 'rgb(16,105,168)',
       tension: 0.35,
       fill: true, //下を塗りつぶす//下を塗りつぶすための設定
 
-      backgroundColor:
-        (context: any) => {
-          const chart = context.chart
-          const { ctx, chartArea } = chart
+      backgroundColor: (context: any) => {
+        const chart = context.chart
+        const { ctx, chartArea } = chart
 
-          if (!chartArea) {
-            return null
-          }
-
-          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-          gradient.addColorStop(0, 'rgba(3,40,61,0.94)')
-          gradient.addColorStop(1, 'rgba(161,0,255,0)')
-
-          return gradient
+        if (!chartArea) {
+          return null
         }
+
+        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
+        gradient.addColorStop(0, 'rgba(3,40,61,0.94)')
+        gradient.addColorStop(1, 'rgba(161,0,255,0)')
+
+        return gradient
+      }
     },
     {
       type: 'bar',
       data: [160, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
-      backgroundColor:
-        (context: any) => {
-          const chart = context.chart
-          const { ctx, chartArea } = chart
+      backgroundColor: (context: any) => {
+        const chart = context.chart
+        const { ctx, chartArea } = chart
 
-          if (!chartArea) {
-            return null
-          }
-
-          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-          gradient.addColorStop(0, 'rgba(120,188,232,0.94)')
-          gradient.addColorStop(1, 'rgba(162,29,144,0)')
-          return gradient
+        if (!chartArea) {
+          return null
         }
+
+        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
+        gradient.addColorStop(0, 'rgba(120,188,232,0.94)')
+        gradient.addColorStop(1, 'rgba(162,29,144,0)')
+        return gradient
+      }
     }
   ]
 })
@@ -434,7 +519,6 @@ const play_info_options = ref<object>({
         text: '月の合計'
       },
       position: 'right'
-
     }
   }
 })
@@ -456,194 +540,311 @@ function format_time(total_time: number): string {
 
 const total_time: number = user_info().total_time
 const formated_time = ref<string>(format_time(total_time))
-
 </script>
 
 <template>
   <div id="not_table_elms">
-
     <div id="play_time_count_elm">
-      <div id="total_time_display" class="total_result_elms">総時間: {{ formated_time }}
+      <div id="total_time_display" class="total_result_elms">総時間: {{ formated_time }}</div>
+      <div id="total_play_count" class="total_result_elms">
+        プレイ回数: {{ user_info().play_count }}回
       </div>
-      <div id="total_play_count" class="total_result_elms">プレイ回数: {{ user_info().play_count }}回</div>
-      <div id="completed_play_count" class="total_result_elms">プレイ終了回数: {{ user_info().completed_play_count }}
+      <div id="completed_play_count" class="total_result_elms">
+        プレイ終了回数: {{ user_info().completed_play_count }}
       </div>
     </div>
 
     <div id="correct_rate_charts_container" @click="other_area_clicked = true">
       <div class="charts_fm">
-        <PieChart :chart-data="short_data as any" :options="short_options"
-                  :plugins="[ratio_text_short]"
-                  class="correct_rate_charts" />
+        <PieChart
+          :chart-data="short_data as any"
+          :options="short_options"
+          :plugins="[ratio_text_short]"
+          class="correct_rate_charts"
+        />
       </div>
       <div class="charts_fm">
-        <PieChart :chart-data="normal_data as any" :options="normal_options"
-                  :plugins="[ratio_text_normal]" class="correct_rate_charts" />
+        <PieChart
+          :chart-data="normal_data as any"
+          :options="normal_options"
+          :plugins="[ratio_text_normal]"
+          class="correct_rate_charts"
+        />
       </div>
       <div class="charts_fm">
-        <PieChart :chart-data="long_data as any" :options="long_options"
-                  :plugins="[ratio_text_long]" class="correct_rate_charts" />
+        <PieChart
+          :chart-data="long_data as any"
+          :options="long_options"
+          :plugins="[ratio_text_long]"
+          class="correct_rate_charts"
+        />
       </div>
     </div>
 
-
     <div id="charts_container_view">
       <div id="chart_view_top_bar">
-        <div id="chart_display_switcher"
-             :class="{chart_display_switcher_active : is_switcher_active ,chart_display_switcher_inactive: !is_switcher_active }"
-             @click="changing_chart">
+        <div
+          id="chart_display_switcher"
+          :class="{
+            chart_display_switcher_active: is_switcher_active,
+            chart_display_switcher_inactive: !is_switcher_active
+          }"
+          @click="changing_chart"
+        >
           <div id="chart_type_display_in_btn">
             {{ chart_type[chart_type_index] }}
           </div>
 
-
           <div id="chart_op_open_button">
-            <svg :class="{active_angle:is_switcher_active , inactive_angle:!is_switcher_active}" viewBox="0 0 448 512"
-                 xmlns="http://www.w3.org/2000/svg">
+            <svg
+              :class="{ active_angle: is_switcher_active, inactive_angle: !is_switcher_active }"
+              viewBox="0 0 448 512"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
-                d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z" />
+                d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+              />
             </svg>
           </div>
         </div>
 
-        <div v-if="is_switcher_active" id="chart_op_display" :class="{open_chart_op: is_switcher_active}">
-          <div class="chart_ops_elm"
-               @click="is_switcher_active=false; is_display_active_calender=true; display_cps_line_chart=false; display_play_info_chart=false; display_play_history=false; chart_type_index = 0">
+        <div
+          v-if="is_switcher_active"
+          id="chart_op_display"
+          :class="{ open_chart_op: is_switcher_active }"
+        >
+          <div
+            class="chart_ops_elm"
+            @click="
+              (is_switcher_active = false),
+                (is_display_active_calender = true),
+                (display_cps_line_chart = false),
+                (display_play_info_chart = false),
+                (display_play_history = false),
+                (chart_type_index = 0)
+            "
+          >
             {{ chart_type[0] }}
             <!--            アクティブカレンダー -->
           </div>
-          <div class="chart_ops_elm"
-               @click="is_switcher_active=false; is_display_active_calender=false; display_cps_line_chart=true; display_play_info_chart =false; display_play_history=false; chart_type_index = 1">
+          <div
+            class="chart_ops_elm"
+            @click="
+              (is_switcher_active = false),
+                (is_display_active_calender = false),
+                (display_cps_line_chart = true),
+                (display_play_info_chart = false),
+                (display_play_history = false),
+                (chart_type_index = 1)
+            "
+          >
             {{ chart_type[1] }}
             <!--            正入力-->
           </div>
-          <div class="chart_ops_elm"
-               @click="is_switcher_active=false; is_display_active_calender=false; display_cps_line_chart=false; display_play_info_chart=true; display_play_history=false; chart_type_index=2">
+          <div
+            class="chart_ops_elm"
+            @click="
+              (is_switcher_active = false),
+                (is_display_active_calender = false),
+                (display_cps_line_chart = false),
+                (display_play_info_chart = true),
+                (display_play_history = false),
+                (chart_type_index = 2)
+            "
+          >
             {{ chart_type[2] }}
             <!--            プレイグラフ-->
           </div>
-          <div class="chart_ops_elm"
-               @click="is_switcher_active=false; is_display_active_calender=false; display_cps_line_chart=false; display_play_info_chart=false; display_play_history=true; chart_type_index=3">
+          <div
+            class="chart_ops_elm"
+            @click="
+              (is_switcher_active = false),
+                (is_display_active_calender = false),
+                (display_cps_line_chart = false),
+                (display_play_info_chart = false),
+                (display_play_history = true),
+                (chart_type_index = 3)
+            "
+          >
             {{ chart_type[3] }}
             <!--            履歴-->
           </div>
         </div>
 
-
         <div id="chart_button_frame">
-          <button ref="time_scale_one"
-                  :class="{chart_scale_switch_btn:true ,active_time_scale:time_scale_class_0}"
-                  @click="regenerate_chart(0)">{{ time_scale_char[0]
-            }}
+          <button
+            ref="time_scale_one"
+            :class="{ chart_scale_switch_btn: true, active_time_scale: time_scale_class_0 }"
+            @click="regenerate_chart(0)"
+          >
+            {{ time_scale_char[0] }}
           </button>
-          <button ref="time_scale_two"
-                  :class="{chart_scale_switch_btn:true ,active_time_scale:time_scale_class_1}"
-                  @click="regenerate_chart(1)">{{ time_scale_char[1]
-            }}
+          <button
+            ref="time_scale_two"
+            :class="{ chart_scale_switch_btn: true, active_time_scale: time_scale_class_1 }"
+            @click="regenerate_chart(1)"
+          >
+            {{ time_scale_char[1] }}
           </button>
-          <button ref="time_scale_three"
-                  :class="{chart_scale_switch_btn:true ,active_time_scale:time_scale_class_2}"
-                  @click="regenerate_chart(2)">{{ time_scale_char[2]
-            }}
+          <button
+            ref="time_scale_three"
+            :class="{ chart_scale_switch_btn: true, active_time_scale: time_scale_class_2 }"
+            @click="regenerate_chart(2)"
+          >
+            {{ time_scale_char[2] }}
           </button>
         </div>
-
       </div>
 
       <div id="line_charts_container">
-
         <user_active_calender v-if="is_display_active_calender" id="activity_calender" />
 
-        <line-chart v-if="display_cps_line_chart" :chart-data="cps_line_data as any" :options="cps_options as any"
-                    class="charts" />
-        <line-chart v-if="display_play_info_chart" :chart-data="play_info_data as any"
-                    :options="play_info_options as any"
-                    class="charts" />
+        <line-chart
+          v-if="display_cps_line_chart"
+          :chart-data="cps_line_data as any"
+          :options="cps_options as any"
+          class="charts"
+        />
+        <line-chart
+          v-if="display_play_info_chart"
+          :chart-data="play_info_data as any"
+          :options="play_info_options as any"
+          class="charts"
+        />
         <div v-if="display_play_history" id="play_history_elm">
           <table>
             <thead id="data_labels">
-            <tr>
-              <th class="data_labels_shells">日時</th>
-              <th class="data_labels_shells">難易度</th>
-              <th class="data_labels_shells">時間</th>
-              <th class="data_labels_shells">文字数</th>
-              <th class="data_labels_shells">正入力</th>
-              <th class="data_labels_shells">誤入力</th>
-              <th class="data_labels_shells">正入力率</th>
-            </tr>
+              <tr>
+                <th class="data_labels_shells">日時</th>
+                <th class="data_labels_shells">難易度</th>
+                <th class="data_labels_shells">時間</th>
+                <th class="data_labels_shells">文字数</th>
+                <th class="data_labels_shells">正入力</th>
+                <th class="data_labels_shells">誤入力</th>
+                <th class="data_labels_shells">正入力率</th>
+              </tr>
             </thead>
 
-
-            <thead>
-            <tr v-for="(history, index) in user_info().play_history_value_short.slice(0,8)" :key="index">
-              <td>{{ history['played_at'] }}</td>
-              <td>{{ history['difficulty'] }}</td>
-              <td>{{ history['time'] }}</td>
-              <td>長さ</td>
-              <td>
-                {{ Math.floor(history['input_per_second'].reduce((a, b) => a + b, 0) / history['input_per_second'].length * 10) * 10
-                }}
-              </td>
-              <td>
-                {{ Math.floor(history['correct_per_second'].reduce((a, b) => a + b, 0) / history['correct_per_second'].length * 10) / 10
-                }}
-              </td>
-              <td>{{ history['correct_rate'] }}</td>
-            </tr>
+            <thead id="data_dis">
+              <tr
+                v-for="(history, index) in (user_info().play_history_by_play_count?.slice(0, 6) ??
+                [])
+                  ? user_info().play_history_by_play_count.slice(0, 6)
+                  : []"
+                :key="index"
+                class="play_history_data_dis"
+              >
+                <td>{{ history['played_at'] }}</td>
+                <td>{{ history['level'] }}</td>
+                <td>{{ history['time'] }}</td>
+                <td>長さ</td>
+                <td>
+                  {{
+                    Array.isArray(
+                      history['input_per_second'] && history['input_per_second'].length > 0
+                    )
+                      ? Math.floor(
+                          (history['input_per_second'].reduce((a: number, b: number) => a + b, 0) /
+                            play_history_count) *
+                            10
+                        ) * 10
+                      : 0
+                  }}
+                </td>
+                <td>
+                  {{
+                    Array.isArray(history['correct_per_second']) &&
+                    history['correct_per_second'].length > 0
+                      ? Math.floor(
+                          (history['correct_per_second'].reduce(
+                            (a: number, b: number) => a + b,
+                            0
+                          ) / play_history_count || 1) * 10
+                        ) / 10
+                      : 0
+                  }}
+                </td>
+                <td>{{ history['correct_rate'] }}</td>
+              </tr>
             </thead>
           </table>
         </div>
       </div>
 
-      <button v-if="display_play_history" id="see_more_play_history"
-              :class="{being_active: is_display_all_play_history , normal_state:!is_display_all_play_history}"
-              @click="is_display_all_play_history_func(); is_switcher_active=false">
-
-        <div>もっと見る...</div>
+      <button
+        v-if="display_play_history && display_more_btn"
+        id="see_more_play_history"
+        :class="{
+          being_active: is_display_all_play_history,
+          normal_state: !is_display_all_play_history
+        }"
+        @click="is_display_all_play_history_func, (is_switcher_active = false)"
+      >
+        <div>...</div>
         <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
           <path
-            d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z" />
+            d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z"
+          />
         </svg>
       </button>
     </div>
   </div>
 
-  <div v-if="is_display_all_play_history" id="all_play_history_fm">
-
+  <div
+    v-if="is_display_all_play_history"
+    id="all_play_history_fm"
+    @click="is_display_all_play_history = false"
+  >
     <table>
       <thead id="data_labels">
-      <tr>
-        <th class="data_labels_shells">日時</th>
-        <th class="data_labels_shells">難易度</th>
-        <th class="data_labels_shells">時間</th>
-        <th class="data_labels_shells">文字数</th>
-        <th class="data_labels_shells">正入力</th>
-        <th class="data_labels_shells">誤入力</th>
-        <th class="data_labels_shells">正入力率</th>
-      </tr>
+        <tr>
+          <th class="data_labels_shells">日時</th>
+          <th class="data_labels_shells">難易度</th>
+          <th class="data_labels_shells">時間</th>
+          <th class="data_labels_shells">文字数</th>
+          <th class="data_labels_shells">正入力</th>
+          <th class="data_labels_shells">誤入力</th>
+          <th class="data_labels_shells">正入力率</th>
+        </tr>
       </thead>
 
-
       <thead>
-      <tr
-        v-for="(history, index) in user_info().play_history_value_short.slice(0,user_info().play_history_value_short.length)"
-        :key="index">
-        <td>{{ history['played_at'] }}</td>
-        <td>{{ history['difficulty'] }}</td>
-        <td>{{ history['time'] }}</td>
-        <!--       shell<td class="play_history_values">{{ history['input_per_second'] }}</td>-->
-        <!--       shell<td class="play_history_values">{{ history['correct_per_second'] }}</td>-->
-        <td>長さ</td>
-        <td>
-          {{ Math.floor(history['input_per_second'].reduce((a, b) => a + b, 0) / history['input_per_second'].length * 10) * 10
-          }}
-        </td>
-        <td>
-          {{ Math.floor(history['correct_per_second'].reduce((a, b) => a + b, 0) / history['correct_per_second'].length * 10) / 10
-          }}
-        </td>
-        <td>{{ history['correct_rate'] }}</td>
-      </tr>
+        <tr
+          v-for="(history, index) in user_info().play_history_by_play_count.slice(0, 6)
+            ? user_info().play_history_by_play_count.slice(0, play_history_count)
+            : []"
+          :key="index"
+        >
+          <td>{{ history['played_at'] }}</td>
+          <td>{{ history['level'] }}</td>
+          <td>{{ history['time'] }}</td>
+          <!--       shell<td class="play_history_values">{{ history['input_per_second'] }}</td>-->
+          <!--       shell<td class="play_history_values">{{ history['correct_per_second'] }}</td>-->
+          <td>長さ</td>
+          <td>
+            {{
+              history['input_per_second']
+                ? Math.floor(
+                    (history['input_per_second'].reduce((a: any, b: any) => a + b, 0) /
+                      play_history_count) *
+                      10
+                  ) * 10
+                : 0
+            }}
+          </td>
+          <td>
+            {{
+              history['correct_per_second']
+                ? Math.floor(
+                    (history['correct_per_second'].reduce((a: any, b: any) => a + b, 0) /
+                      play_history_count) *
+                      10
+                  ) / 10
+                : 0
+            }}
+          </td>
+          <td>{{ history['correct_rate'] }}</td>
+        </tr>
       </thead>
     </table>
 
@@ -652,7 +853,6 @@ const formated_time = ref<string>(format_time(total_time))
 </template>
 
 <style lang="scss">
-
 :root {
   --main-icon-color: #dabfbf;
   --main--font-color: #f0f0f0;
@@ -660,7 +860,6 @@ const formated_time = ref<string>(format_time(total_time))
   --active_border_color: rgb(35, 33, 41);
   --diactive--border-color: rgb(40, 39, 48);
 }
-
 
 #not_table_elms {
   width: 100%;
@@ -671,7 +870,6 @@ const formated_time = ref<string>(format_time(total_time))
   filter: blur(10px);
   background: white;
 }
-
 
 #play_time_count_elm {
   position: absolute;
@@ -722,7 +920,6 @@ const formated_time = ref<string>(format_time(total_time))
     height: 100%;
     background: transparent;
 
-
     .cr_percentage {
       position: absolute;
       height: 10%;
@@ -743,7 +940,6 @@ const formated_time = ref<string>(format_time(total_time))
   }
 }
 
-
 #charts_container_view {
   position: absolute;
   background: transparent;
@@ -762,7 +958,6 @@ const formated_time = ref<string>(format_time(total_time))
     top: 0;
     height: 10%;
     width: 100%;
-
 
     //クリックされた時のボタンのクラス
     .chart_display_switcher_active {
@@ -791,8 +986,8 @@ const formated_time = ref<string>(format_time(total_time))
         background: #3c3c4c;
       }
 
-
       #chart_type_display_in_btn {
+        white-space: pre;
         position: absolute;
         left: 5%;
         width: 80%;
@@ -821,7 +1016,6 @@ const formated_time = ref<string>(format_time(total_time))
           transform: rotate(180deg);
           fill: #5f6ca3;
         }
-
 
         .active_angle {
           width: 60%;
@@ -868,7 +1062,6 @@ const formated_time = ref<string>(format_time(total_time))
       background: transparent;
       overflow: hidden;
 
-
       .chart_ops_elm {
         display: flex;
         color: var(--sub--font-color);
@@ -880,6 +1073,7 @@ const formated_time = ref<string>(format_time(total_time))
         background: rgba(148, 148, 148, 0.1);
         backdrop-filter: blur(17.2px);
         -webkit-backdrop-filter: blur(17.2px);
+        white-space: nowrap;
 
         &:hover {
           color: var(--main--font-color);
@@ -931,7 +1125,6 @@ const formated_time = ref<string>(format_time(total_time))
     backdrop-filter: blur(17.2px);
     -webkit-backdrop-filter: blur(17.2px);
 
-
     .charts {
       background: transparent;
       position: absolute;
@@ -939,7 +1132,6 @@ const formated_time = ref<string>(format_time(total_time))
       width: 100%;
       height: 100%;
     }
-
 
     //インポート
     #activity_calender {
@@ -999,7 +1191,6 @@ const formated_time = ref<string>(format_time(total_time))
           border-radius: 5px;
           border-color: var(--sub--font-color);
         }
-
       }
 
       #active_level_sample {
@@ -1036,38 +1227,42 @@ const formated_time = ref<string>(format_time(total_time))
       background: transparent;
       border-radius: 10px;
       border-collapse: collapse; /* セルの境界を重ねる */
-      table-layout: fixed;
 
       table {
+        height: 90%;
         width: 100%;
         border-radius: 30px;
-        height: 90%;
-        border-collapse: collapse;
         color: var(--main--font-color);
         background: transparent;
 
-
-        .data_labels_shells {
-          background: transparent;
+        #data_labels {
+          .data_labels_shells {
+            background: transparent;
+          }
         }
 
-        th, td {
-          width: 14.285%;
-          text-align: center;
-          color: var(--main--font-color);
-          font-size: 1.25rem;
-          border-radius: 10px;
-          padding-right: 8px;
+        #data_dis {
+          height: 80%;
+        }
+
+        tr {
+          width: 100%;
+          height: 6px;
+
+          td {
+            text-align: center;
+            color: var(--main--font-color);
+            font-size: 1rem;
+            border-radius: 10px;
+          }
         }
 
         thead:nth-child(2) tr:nth-child(odd) {
-          overflow: auto;
-          background: rgba(105, 104, 140, 0.22);
+          background: rgba(140, 127, 199, 0.22);
         }
       }
     }
   }
-
 
   .normal_state {
     position: absolute;
@@ -1086,15 +1281,13 @@ const formated_time = ref<string>(format_time(total_time))
     letter-spacing: 3px;
     background: rgba(105, 104, 140, 0.22);
 
-
     div {
       font-size: 1.25rem;
       padding-right: 20px;
     }
 
-
     svg {
-      fill: rgba(135, 177, 255, 0.55);;
+      fill: rgba(135, 177, 255, 0.55);
       height: 25px;
     }
 
@@ -1107,7 +1300,6 @@ const formated_time = ref<string>(format_time(total_time))
       }
     }
   }
-
 
   .being_active {
     position: absolute;
@@ -1131,12 +1323,10 @@ const formated_time = ref<string>(format_time(total_time))
       padding-right: 20px;
     }
 
-
     svg {
       fill: #3c3c4c;
       height: 25px;
       animation: display_history_angle_rotate_down ease-in-out 0.2s forwards;
-
     }
 
     &:hover {
@@ -1176,7 +1366,6 @@ const formated_time = ref<string>(format_time(total_time))
   }
 }
 
-
 @keyframes appear {
   0% {
     opacity: 0;
@@ -1200,26 +1389,26 @@ const formated_time = ref<string>(format_time(total_time))
   background: rgba(255, 255, 255, 0.25);
   overflow: auto;
   border-collapse: collapse; /* セルの境界を重ねる */
-
   animation: appear 0.5s ease-in-out forwards;
-
 
   table {
     width: 100%;
     border-radius: 30px;
-    height: 100%;
+    height: 50%;
+    bottom: 0;
     border-collapse: collapse;
     color: var(--main--font-color);
     background: transparent;
 
-
     .data_labels_shells {
       background: transparent;
+      padding-bottom: 5px;
     }
 
-
-    th, td {
+    th,
+    td {
       width: 14.285%;
+      height: 30px;
       text-align: center;
       color: var(--main--font-color);
       font-size: 1.25rem;
@@ -1232,7 +1421,6 @@ const formated_time = ref<string>(format_time(total_time))
       padding-bottom: 5px;
     }
 
-
     thead:nth-child(1) {
       background: #3c3c4c;
     }
@@ -1243,14 +1431,13 @@ const formated_time = ref<string>(format_time(total_time))
     }
   }
 
-
-  button {
+  #del_table_elm {
     position: absolute;
     display: flex;
     top: -100px;
     right: 0;
-    background: #9ba4f3;
-    width: 100px;
+    background: #ff0000;
+    width: 1004px;
     height: 100px;
   }
 }
@@ -1260,6 +1447,5 @@ const formated_time = ref<string>(format_time(total_time))
     font-size: 1rem;
     background: transparent;
   }
-
 }
 </style>

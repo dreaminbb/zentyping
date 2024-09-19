@@ -447,6 +447,7 @@ function result() {
     length: char.value.length,
     pun_count: pun_count.value
   }
+  console.log(JSON.stringify(result_data))
 
   setTimeout((): void => {
     fetch('http://localhost:8000/user/result', {

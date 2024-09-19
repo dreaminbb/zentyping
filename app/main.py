@@ -30,12 +30,11 @@ limiter = Limiter(
 )
 
 # リクエスト回数の制限
-from app.routes.user_router import play_bp, user_bp
+from app.routes.user_router import user_bp
 from app.routes.server_router import auth_bp
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
-app.register_blueprint(play_bp, url_prefix="/play")
 
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
