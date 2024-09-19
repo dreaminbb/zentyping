@@ -56,7 +56,7 @@ const capslockchecker = ref(false)
 
 async function get_from_api() {
   try {
-    const response = await fetch('http://localhost:8000/play/get_pbm', {
+    const response = await fetch('http://localhost:8000/user/get_pbm', {
       method: 'GET',
       headers: {
         Authorization: play_api_key
@@ -165,7 +165,7 @@ async function back_game() {
   window.removeEventListener('keydown', back_game_focus)
   window.addEventListener('keydown', play_init_focus)
   await nextTick()
-  play_init()
+  await play_init()
 }
 
 onMounted(async () => {
@@ -204,8 +204,8 @@ onMounted(async () => {
     pun_count.value = 0
   }
 
-  nextTick()
-  play_init()
+  await nextTick()
+  await play_init()
   window.addEventListener('keydown', play_init_focus)
 })
 
@@ -447,14 +447,13 @@ function result() {
     length: char.value.length,
     pun_count: pun_count.value
   }
-  console.log(result_data)
 
   setTimeout((): void => {
-    fetch('http://localhost:8000/play/result', {
+    fetch('http://localhost:8000/user/result', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: play_api_key
+        // Authorization: play_api_key
       },
       body: JSON.stringify(result_data)
     })
