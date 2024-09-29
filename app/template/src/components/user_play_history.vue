@@ -1,14 +1,13 @@
 <script lang="ts" setup>
-import { type Ref, ref } from 'vue'
+import { onMounted, type Ref, ref } from 'vue'
 import { user_info } from '@/store/store'
 import user_active_calender from '@/components/user_activity_calender.vue'
 import { LineChart, PieChart } from 'vue-chart-3'
 import type { ChartData } from 'chart.js'
-import type { play_history_formated_if } from '@/interface'
-
+import type { play_history_formated_if, play_history_if } from '@/interface'
 //todo
-//１.ユーザーがグラフ選択中に別のところをクリックしたらグラフ変更を閉じる
 
+//１.ユーザーがグラフ選択中に別のところをクリックしたらグラフ変更を閉じる
 const is_switcher_active = ref<boolean>(false)
 const is_display_all_play_history = ref<boolean>(false)
 const other_area_clicked = ref<boolean>(false)
@@ -22,6 +21,8 @@ const chart_type = ref<Array<string>>(['アクティブカレンダー', '正入
 
 const time_scale_char = ref(['2024', '今月', '今週'])
 
+// 折れ線グラフのデータ -> プレイ時間
+// 棒グラフのデータ -> プレイ回数
 const data_arr_play_info: Array<Array<Array<number>>> = [
   [
     [33, 55, 11, 55, 33, 66, 77, 44, 33, 55],
@@ -42,70 +43,198 @@ const time_scale_obj = ref<Array<Ref<boolean>>>([
   time_scale_class_2
 ])
 const play_history_count = ref<number>(Object.keys(user_info().play_history_by_play_count).length)
-const display_more_btn = ref<boolean>(play_history_count.value > 4)
+const display_more_btn = ref<boolean>(user_info().play_history_by_play_count.length > 6)
 
-function format_play_history_data_by_year_month_week(): play_history_formated_if {
-  console.log("tinnko")
-  //全てのプレイデータ
-  const play_history = user_info().play_history_by_play_count
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
+class play_history_format_cal {
+  year_correct_rate: number[] = []
+  month_correct_rate: number[] = []
+  week_correct_rate: number[] = []
+  year_play_count: number[]
+  month_play_count: number[]
+  week_play_count: number[]
+  year_play_time: number[]
+  month_play_time: number[]
+  week_play_time: number[]
 
-  const year_history = play_history.filter(
-    (history: any) => history['played_at'].slice(0, 4) === `${year}`
-  )
-  const month_history = play_history.filter(
-    (history: any) => history['played_at'].slice(0, 7) === `${year}-${month}`
-  )
+  format_play_history_data_by_year_month_week(
+    play_history: play_history_if[]
+  ): play_history_formated_if {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
 
-  //今の週のプレイ履歴があった場合を[月~]を生成
-  const today = new Date()
-  const start_of_week = new Date(today)
-  start_of_week.setDate(today.getDate() - today.getDay())
-  const days: Array<string> = []
-  for (let d = start_of_week; d <= today; d.setDate(d.getDate() + 1)) {
-    days.push(new Date(d).toLocaleDateString())
+    const year_history = play_history.filter(
+      (history: any) => history['played_at'].slice(0, 4) === `${year}`
+    )
+    const month_history = play_history.filter(
+      (history: any) => history['played_at'].slice(0, 7) === `${year}-${month}`
+    )
+    //todo
+
+    //月、年のプレイ履
+    // 年 [毎月ごとのに分ける-> 計算12個の配列を作成]
+    // 月 [毎日ごとに分ける-> 30~++ の配列を作成]
+
+    //年
+    const f_year_history: Array<Array<play_history_if>> = []
+    for (let i = 1; i <= 12; i++) {
+      const month = i < 10 ? `0${i}` : `${i}`
+      const month_history = year_history.filter(
+        (history: any) => history['played_at'].slice(5, 7) === month
+      )
+      f_year_history.push(month_history)
+    }
+
+    //月
+    const f_month_history: Array<Array<play_history_if>> = []
+    const month_length = new Date(year, parseInt(month), 0).getDate()
+    for (let i = 1; i <= month_length; i++) {
+      const day = i < 10 ? `0${i}` : `${i}`
+      const day_history = month_history.filter(
+        (history: any) => history['played_at'].slice(8, 10) === day
+      )
+      f_month_history.push(day_history)
+    }
+    //今の週のプレイ履歴があった場合を[月~]を生成
+    const today = new Date()
+    const start_of_week = new Date(today)
+    start_of_week.setDate(today.getDate() - today.getDay())
+    const days: Array<string> = []
+    for (let d = start_of_week; d <= today; d.setDate(d.getDate() + 1)) {
+      let day: string = new Date(d).toLocaleDateString()
+      //ここで日が1~9の場合は0をいれる
+      const day_arr: Array<string> = day.split('/')
+      if (10 > parseInt(day_arr[1], 10)) {
+        day_arr[1] = '0' + day_arr[1]
+      }
+      if (10 > parseInt(day_arr[2])) {
+        day_arr[2] = '0' + day_arr[2]
+      }
+      day = day_arr.join('-')
+      days.push(day)
+    }
+
+    //週のプレイ履歴
+    const week_history = play_history.filter((history: any) => days.includes(history['played_at']))
+    const f_week_history: Array<Array<play_history_if>> = []
+    days.reverse().forEach((day: string) => {
+      const play_on_day = week_history.filter((history: any) => history.played_at === day)
+      f_week_history.push(play_on_day.length ? play_on_day : [])
+    })
+
+    console.log(f_year_history, f_month_history, f_week_history, 'value')
+
+    return {
+      year_history: f_year_history,
+      month_history: f_month_history,
+      week_history: f_week_history
+    }
   }
 
-  const week_history = play_history.filter((history: any) => days.includes(history['played_at']))
+  cal_avg_play_history_value(
+    data: Array<Array<play_history_if>>,
+    prop: keyof play_history_if
+  ): Array<number> {
+    return data.map((scale) => {
+      if (scale.length === 0) {
+        return 0
+      }
 
-  const year_avg_correct_rate: number =
-    year_history.reduce((a: any, b: any) => a + b.correct_rate, 0) / year_history.length
-  const month_avg_correct_rate: number =
-    month_history.reduce((a: any, b: any) => a + b.correct_rate, 0) / month_history.length
-  console.log(
-    year_history,
-    month_history,
-    week_history,
-    year_avg_correct_rate,
-    month_avg_correct_rate
+      const correct_rate_sum = scale.reduce((a: any, b: any) => a + b[prop], 0)
+      return correct_rate_sum / scale.length
+    })
+  }
+
+  cal_sum_play_history_value(
+    data: Array<Array<play_history_if>>,
+    prop: keyof play_history_if
+  ): Array<number> {
+    return data.map((scale) => {
+      if (scale.length === 0) {
+        return 0
+      }
+
+      const correct_rate_sum = scale.reduce((a: any, b: any) => a + b[prop], 0)
+      return correct_rate_sum
+    })
+  }
+
+  f_play_history = this.format_play_history_data_by_year_month_week(
+    user_info().play_history_by_play_count
   )
-  return {
-    year_history,
-    month_history,
-    week_history,
-    year_avg_correct_rate,
-    month_avg_correct_rate
+
+  constructor() {
+    this.year_correct_rate = this.cal_avg_play_history_value(
+      this.f_play_history.year_history,
+      'correct_rate'
+    )
+    this.month_correct_rate = this.cal_avg_play_history_value(
+      this.f_play_history.month_history,
+      'correct_rate'
+    )
+    this.week_correct_rate = this.cal_avg_play_history_value(
+      this.f_play_history.week_history,
+      'correct_rate'
+    )
+    this.year_play_count = this.cal_avg_play_history_value(
+      this.f_play_history.year_history,
+      'play_count'
+    )
+    this.month_play_count = this.cal_avg_play_history_value(
+      this.f_play_history.month_history,
+      'play_count'
+    )
+    this.week_play_count = this.cal_avg_play_history_value(
+      this.f_play_history.week_history,
+      'play_count'
+    )
+    this.year_play_time = this.cal_sum_play_history_value(this.f_play_history.year_history, 'time')
+    this.month_play_time = this.cal_sum_play_history_value(
+      this.f_play_history.month_history,
+      'time'
+    )
+    this.week_play_time = this.cal_sum_play_history_value(this.f_play_history.week_history, 'time')
   }
 }
 
+const tmp = new play_history_format_cal() //何回も使うので一度だけインスタンス化
+
+console.log(tmp.year_play_time, tmp.month_play_time, tmp.week_play_time)
+
+//this month length
+const this_month_length = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
+const month_arr: Array<string> = []
+for (let i = 1; i <= this_month_length; i++) {
+  const day = `日${i}`
+  month_arr.push(day)
+}
+const labels_arr = [
+  ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+  month_arr,
+  ['日', '月', '火', '水', '木', '金', '土']
+]
 function regenerate_chart(data_index: number) {
+  //ラベル、スケールの変更
+  console.log(data_index, 'data_index')
   if (display_cps_line_chart.value) {
     display_cps_line_chart.value = false
-    const tmp: play_history_formated_if = format_play_history_data_by_year_month_week()
-    console.log(tmp)
-    const year_arr =
-      tmp['year_history'].reduce((a: any, b: any) => a + b.correct_rate, 0) /
-      tmp['year_history'].length
-    const month_arr =
-      tmp['month_history'].reduce((a: any, b: any) => a + b.correct_rate, 0) /
-      tmp['month_history'].length
-    const week_arr =
-      tmp['week_history'].reduce((a: any, b: any) => a + b.correct_rate, 0) /
-      tmp['week_history'].length
-    const chart_value_arr = [year_arr, month_arr, week_arr]
-    cps_line_data.value['datasets'][0]['data'] = chart_value_arr[data_index] as unknown as number[]
+    time_scale_obj.value[data_index].value = true
+
+    for (let i = 0; i < time_scale_obj.value.length; i++) {
+      if (i === data_index) {
+        time_scale_obj.value[i].value = true
+      }
+      time_scale_obj.value[i].value = false
+    }
+
+    cps_line_data.value['datasets'][0]['data'] = [
+      tmp.year_correct_rate,
+      tmp.month_correct_rate,
+      tmp.week_correct_rate
+    ][data_index]
+    cps_line_data.value['labels'] = labels_arr[data_index]
+
+    console.log(cps_line_data.value['datasets'][0]['data'], 'value')
 
     setTimeout(() => {
       display_cps_line_chart.value = true
@@ -126,12 +255,6 @@ function regenerate_chart(data_index: number) {
   time_scale_obj.value[data_index].value = true
 }
 
-if (is_display_all_play_history.value) {
-  addEventListener('click', () => {
-    is_display_all_play_history.value = false
-  })
-}
-
 const changing_chart = () => {
   is_switcher_active.value = !is_switcher_active.value
   console.log(
@@ -144,29 +267,14 @@ const changing_chart = () => {
   )
 }
 
-const is_display_all_play_history_func = () => {
-  if (play_history_count.value > 5) {
-    console.log(Object.keys(user_info().play_history_by_play_count).length)
-    is_display_all_play_history.value = !is_display_all_play_history.value
-  } else {
-    return
-  }
+function is_display_all_play_history_func(): void {
+  is_display_all_play_history.value = !is_display_all_play_history.value
+  is_switcher_active.value = false
 }
-//
-// function click_other_area_close_chart_op(event: MouseEvent) {
-//   if (other_area_clicked.value) {
-//     is_switcher_active.value = false
-//   }
-// }
 
-// onMounted(() => {
-//   window.addEventListener('click', click_other_area_close_chart_op)
-// })
-// onBeforeUnmount(() => {
-//   window.removeEventListener('click', click_other_area_close_chart_op)
-// })
-
-// 登録日のフォーマット方法->2024/08/03
+onMounted(() => {
+  console.log('mounted')
+})
 
 const short_data = ref<object>({
   datasets: [
@@ -363,10 +471,10 @@ const long_options = ref<object>({
 })
 
 const cps_line_data = ref<ChartData<'line'>>({
-  labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+  labels: [],
   datasets: [
     {
-      data: [0, 4, 3, 5, 1, 2, 4, 5, 6, 4, 2, 5],
+      data: [],
       borderColor: 'rgb(160,109,236)',
       tension: 0.35,
       fill: true, //下を塗りつぶす
@@ -382,7 +490,6 @@ const cps_line_data = ref<ChartData<'line'>>({
         const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
         gradient.addColorStop(0, 'rgba(72,58,201,0.5)')
         gradient.addColorStop(1, 'rgba(161,0,255,0)')
-
         return gradient
       }
     }
@@ -409,6 +516,7 @@ const cps_options = ref<object>({
   scales: {
     x: {
       display: true,
+      max: 33,
       title: {
         display: false,
         text: 'Month'
@@ -633,6 +741,7 @@ const formated_time = ref<string>(format_time(total_time))
               (is_switcher_active = false),
                 (is_display_active_calender = false),
                 (display_cps_line_chart = true),
+                regenerate_chart(0),
                 (display_play_info_chart = false),
                 (display_play_history = false),
                 (chart_type_index = 1)
@@ -739,30 +848,10 @@ const formated_time = ref<string>(format_time(total_time))
                 <td>{{ history['time'] }}</td>
                 <td>長さ</td>
                 <td>
-                  {{
-                    Array.isArray(
-                      history['input_per_second'] && history['input_per_second'].length > 0
-                    )
-                      ? Math.floor(
-                          (history['input_per_second'].reduce((a: number, b: number) => a + b, 0) /
-                            play_history_count) *
-                            10
-                        ) * 10
-                      : 0
-                  }}
+                  {{ history['correct_count'] }}
                 </td>
                 <td>
-                  {{
-                    Array.isArray(history['correct_per_second']) &&
-                    history['correct_per_second'].length > 0
-                      ? Math.floor(
-                          (history['correct_per_second'].reduce(
-                            (a: number, b: number) => a + b,
-                            0
-                          ) / play_history_count || 1) * 10
-                        ) / 10
-                      : 0
-                  }}
+                  {{ history['incorrect_count'] }}
                 </td>
                 <td>{{ history['correct_rate'] }}</td>
               </tr>
@@ -778,7 +867,7 @@ const formated_time = ref<string>(format_time(total_time))
           being_active: is_display_all_play_history,
           normal_state: !is_display_all_play_history
         }"
-        @click="is_display_all_play_history_func, (is_switcher_active = false)"
+        @click="is_display_all_play_history_func"
       >
         <div>...</div>
         <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -790,11 +879,7 @@ const formated_time = ref<string>(format_time(total_time))
     </div>
   </div>
 
-  <div
-    v-if="is_display_all_play_history"
-    id="all_play_history_fm"
-    @click="is_display_all_play_history = false"
-  >
+  <div v-if="is_display_all_play_history" id="all_play_history_fm">
     <table>
       <thead id="data_labels">
         <tr>
@@ -822,33 +907,15 @@ const formated_time = ref<string>(format_time(total_time))
           <!--       shell<td class="play_history_values">{{ history['correct_per_second'] }}</td>-->
           <td>長さ</td>
           <td>
-            {{
-              history['input_per_second']
-                ? Math.floor(
-                    (history['input_per_second'].reduce((a: any, b: any) => a + b, 0) /
-                      play_history_count) *
-                      10
-                  ) * 10
-                : 0
-            }}
+            {{ history['correct_count'] }}
           </td>
           <td>
-            {{
-              history['correct_per_second']
-                ? Math.floor(
-                    (history['correct_per_second'].reduce((a: any, b: any) => a + b, 0) /
-                      play_history_count) *
-                      10
-                  ) / 10
-                : 0
-            }}
+            {{ history['incorrect_count'] }}
           </td>
           <td>{{ history['correct_rate'] }}</td>
         </tr>
       </thead>
     </table>
-
-    <button id="del_table_elm"></button>
   </div>
 </template>
 
@@ -1051,8 +1118,6 @@ const formated_time = ref<string>(format_time(total_time))
       display: grid;
       grid-template-columns: 1fr;
       grid-template-rows: repeat(4, 1fr);
-      //grid-column-gap: 0px;
-      //grid-row-gap: 5px;
       border-radius: 10px 10px 0 0;
       border: #87b1ff 1px solid;
       width: 17%;
@@ -1110,7 +1175,7 @@ const formated_time = ref<string>(format_time(total_time))
       }
 
       .active_time_scale {
-        background: rgba(0, 9, 33, 0.73);
+        background: rgba(40, 26, 83, 0.73);
       }
     }
   }
@@ -1316,7 +1381,7 @@ const formated_time = ref<string>(format_time(total_time))
     border: none;
     color: rgba(255, 255, 255, 0.58);
     letter-spacing: 3px;
-    background: rgba(105, 104, 140, 0.22);
+    background: rgba(105, 104, 140, 0.42);
 
     div {
       font-size: 1.25rem;
@@ -1324,7 +1389,7 @@ const formated_time = ref<string>(format_time(total_time))
     }
 
     svg {
-      fill: #3c3c4c;
+      fill: #87b1ff;
       height: 25px;
       animation: display_history_angle_rotate_down ease-in-out 0.2s forwards;
     }
@@ -1378,16 +1443,16 @@ const formated_time = ref<string>(format_time(total_time))
 #all_play_history_fm {
   position: absolute;
   display: flex;
-  width: 1000px;
-  height: 600px;
-  top: 15%;
+  height: 90%;
+  width: 100%;
+  top: 3%;
   border-radius: 20px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.25);
-  overflow: auto;
+  overflow-y: auto;
   border-collapse: collapse; /* セルの境界を重ねる */
   animation: appear 0.5s ease-in-out forwards;
 
@@ -1411,7 +1476,7 @@ const formated_time = ref<string>(format_time(total_time))
       height: 30px;
       text-align: center;
       color: var(--main--font-color);
-      font-size: 1.25rem;
+      font-size: 1rem;
       border-radius: 10px;
       padding-right: 8px;
     }
@@ -1430,17 +1495,17 @@ const formated_time = ref<string>(format_time(total_time))
       background: rgba(0, 0, 0, 0.22);
     }
   }
-
-  #del_table_elm {
-    position: absolute;
-    display: flex;
-    top: -100px;
-    right: 0;
-    background: #ff0000;
-    width: 1004px;
-    height: 100px;
-  }
 }
+// #del_table_elm {
+//   position: absolute;
+//   display: flex;
+//   left: 0;
+//   top: 0;
+//   background: #727272;
+//   width: 95%;
+//   height: 5%;
+//   border-radius: 16px;
+// }
 
 @media (max-width: 920px) {
   * {

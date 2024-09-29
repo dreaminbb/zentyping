@@ -27,9 +27,10 @@ export interface all_play_history {
 }
 
 export interface play_history_formated_if {
-   year_history: Array<play_history_if>,
-   month_history: Array<play_history_if>,
-   week_history: Array<play_history_if>,
-   year_avg_correct_rate: number,
-   month_avg_correct_rate: number
+    year_history: Array<Array<play_history_if>>,
+    month_history: Array<Array<play_history_if>>,
+    week_history: Array<Array<play_history_if>>,
+    // year_avg_correct_rate: Array<number>,
+    // month_avg_correct_rate: Array<number>,
+    // week_avg_correct_rate: Array<number>,
 }
