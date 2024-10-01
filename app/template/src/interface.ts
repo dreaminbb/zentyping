@@ -34,3 +34,55 @@ export interface play_history_formated_if {
     // month_avg_correct_rate: Array<number>,
     // week_avg_correct_rate: Array<number>,
 }
+
+export interface play_info_chart_option_if {
+    responsive: boolean
+    maintainAspectRatio: boolean
+    plugins: {
+        legend: {
+            display: boolean
+            position: string
+        }
+        tooltip: {
+            enabled: boolean
+            mode: string
+            intersect: boolean
+        }
+    }
+    hover: {
+        mode: string
+        intersect: boolean
+    }
+    scales: {
+        x: {
+            display: boolean
+            title: {
+                display: boolean
+                text: string
+            }
+            grid: {
+                display: boolean
+            }
+        }
+        y: {
+            display: boolean
+            max: number
+            mix: number
+            title: {
+                text: string
+            }
+            grid: {
+                display: boolean
+            }
+        }
+        y1: {
+            display: boolean
+            max: number
+            mix: number
+            title: {
+                text: string
+            }
+            position: string
+        }
+    }
+}

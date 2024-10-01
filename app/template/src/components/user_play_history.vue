@@ -4,17 +4,22 @@ import { user_info } from '@/store/store'
 import user_active_calender from '@/components/user_activity_calender.vue'
 import { LineChart, PieChart } from 'vue-chart-3'
 import type { ChartData } from 'chart.js'
-import type { play_history_formated_if, play_history_if } from '@/interface'
+import type {
+  play_history_formated_if,
+  play_history_if,
+  play_info_chart_option_if
+} from '@/interface'
 //todo
 
 //１.ユーザーがグラフ選択中に別のところをクリックしたらグラフ変更を閉じる
-const is_switcher_active = ref<boolean>(false)
 const is_display_all_play_history = ref<boolean>(false)
 const other_area_clicked = ref<boolean>(false)
 const is_display_active_calender = ref<boolean>(true)
+const is_switcher_active = ref<boolean>(false)
 const display_play_info_chart = ref<boolean>(false)
 const display_cps_line_chart = ref<boolean>(false)
 const display_play_history = ref<boolean>(false)
+const is_display_time_scale_btn = ref<boolean>(false)
 
 const chart_type_index = ref<number>(0)
 const chart_type = ref<Array<string>>(['アクティブカレンダー', '正入力', 'プレイグラフ', '履歴'])
@@ -23,16 +28,6 @@ const time_scale_char = ref(['2024', '今月', '今週'])
 
 // 折れ線グラフのデータ -> プレイ時間
 // 棒グラフのデータ -> プレイ回数
-const data_arr_play_info: Array<Array<Array<number>>> = [
-  [
-    [33, 55, 11, 55, 33, 66, 77, 44, 33, 55],
-    [44, 11, 44, 22, 11, 55, 11, 55, 22, 11]
-  ],
-  [
-    [222, 111, 234, 123, 413, 533, 443, 523, 431, 211, 344, 244, 233],
-    [22, 123, 345, 12, 33, 413, 66, 33, 22, 55, 33, 11, 66]
-  ]
-]
 
 const time_scale_class_0 = ref<boolean>(true)
 const time_scale_class_1 = ref<boolean>(false)
@@ -46,15 +41,19 @@ const play_history_count = ref<number>(Object.keys(user_info().play_history_by_p
 const display_more_btn = ref<boolean>(user_info().play_history_by_play_count.length > 6)
 
 class play_history_format_cal {
-  year_correct_rate: number[] = []
-  month_correct_rate: number[] = []
-  week_correct_rate: number[] = []
+  year_correct_rate: number[]
+  month_correct_rate: number[]
+  week_correct_rate: number[]
   year_play_count: number[]
   month_play_count: number[]
   week_play_count: number[]
   year_play_time: number[]
   month_play_time: number[]
   week_play_time: number[]
+
+  f_play_history = this.format_play_history_data_by_year_month_week(
+    user_info().play_history_by_play_count
+  )
 
   format_play_history_data_by_year_month_week(
     play_history: play_history_if[]
@@ -145,6 +144,13 @@ class play_history_format_cal {
     })
   }
 
+  //配列の長さを返す
+  cal_length_play_history_value(data: Array<Array<play_history_if>>): Array<number> {
+    return data.map((scale) => {
+      return scale.length
+    })
+  }
+
   cal_sum_play_history_value(
     data: Array<Array<play_history_if>>,
     prop: keyof play_history_if
@@ -159,10 +165,6 @@ class play_history_format_cal {
     })
   }
 
-  f_play_history = this.format_play_history_data_by_year_month_week(
-    user_info().play_history_by_play_count
-  )
-
   constructor() {
     this.year_correct_rate = this.cal_avg_play_history_value(
       this.f_play_history.year_history,
@@ -176,18 +178,11 @@ class play_history_format_cal {
       this.f_play_history.week_history,
       'correct_rate'
     )
-    this.year_play_count = this.cal_avg_play_history_value(
-      this.f_play_history.year_history,
-      'play_count'
-    )
-    this.month_play_count = this.cal_avg_play_history_value(
-      this.f_play_history.month_history,
-      'play_count'
-    )
-    this.week_play_count = this.cal_avg_play_history_value(
-      this.f_play_history.week_history,
-      'play_count'
-    )
+    //todo
+    //プレイ回数で配列の長さを足す
+    this.year_play_count = this.cal_length_play_history_value(this.f_play_history.year_history)
+    this.month_play_count = this.cal_length_play_history_value(this.f_play_history.month_history)
+    this.week_play_count = this.cal_length_play_history_value(this.f_play_history.week_history)
     this.year_play_time = this.cal_sum_play_history_value(this.f_play_history.year_history, 'time')
     this.month_play_time = this.cal_sum_play_history_value(
       this.f_play_history.month_history,
@@ -198,10 +193,6 @@ class play_history_format_cal {
 }
 
 const tmp = new play_history_format_cal() //何回も使うので一度だけインスタンス化
-
-console.log(tmp.year_play_time, tmp.month_play_time, tmp.week_play_time)
-
-//this month length
 const this_month_length = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
 const month_arr: Array<string> = []
 for (let i = 1; i <= this_month_length; i++) {
@@ -213,7 +204,7 @@ const labels_arr = [
   month_arr,
   ['日', '月', '火', '水', '木', '金', '土']
 ]
-function regenerate_chart(data_index: number) {
+function regenerate_cps_chart(data_index: number): void {
   //ラベル、スケールの変更
   console.log(data_index, 'data_index')
   if (display_cps_line_chart.value) {
@@ -233,17 +224,63 @@ function regenerate_chart(data_index: number) {
       tmp.week_correct_rate
     ][data_index]
     cps_line_data.value['labels'] = labels_arr[data_index]
-
     console.log(cps_line_data.value['datasets'][0]['data'], 'value')
 
     setTimeout(() => {
       display_cps_line_chart.value = true
     }, 100)
   }
+
+  for (let i = 0; i < 3; i++) {
+    time_scale_obj.value[i].value = false
+  }
+  time_scale_obj.value[data_index].value = true
+}
+
+function regenerate_play_info_chart(data_index: number): void {
+  console.log(display_cps_line_chart.value, 'tohteohh')
   if (display_play_info_chart.value) {
+    time_scale_obj.value[data_index].value = true
     display_play_info_chart.value = false
-    play_info_data.value['datasets'][0]['data'] = data_arr_play_info[0][data_index]
-    play_info_data.value['datasets'][1]['data'] = data_arr_play_info[1][data_index]
+
+    for (let i = 0; i < time_scale_obj.value.length; i++) {
+      if (i === data_index) {
+        time_scale_obj.value[i].value = true
+      }
+      time_scale_obj.value[i].value = false
+    }
+
+    const play_count_arr: Array<Array<number>> = [
+      tmp.year_play_count,
+      tmp.month_play_count,
+      tmp.week_correct_rate
+    ]
+    const play_time_arr: Array<Array<number>> = [
+      tmp.year_play_time,
+      tmp.month_play_time,
+      tmp.week_play_time
+    ]
+
+    play_info_data.value['datasets'][0]['data'] = play_count_arr[data_index]
+    console.log(play_info_data.value['datasets'][0]['data'], 'datasets')
+    play_info_data.value['datasets'][1]['data'] = play_time_arr[data_index] as Array<number>
+    play_info_data.value['labels'] = labels_arr[data_index] as Array<string>
+    ;(play_info_options.value as play_info_chart_option_if)['scales']['y']['max'] =
+      Math.max(...play_time_arr[data_index]) !== 0
+        ? Math.max(...play_time_arr[data_index]) +
+          Math.floor(Math.max(...play_time_arr[data_index]) * 0.5)
+        : 0
+    ;(play_info_options.value as play_info_chart_option_if)['scales']['y1']['max'] =
+      Math.max(...play_count_arr[data_index]) !== 0
+        ? Math.max(...play_count_arr[data_index]) +
+          Math.floor(Math.max(...play_count_arr[data_index]) * 0.5)
+        : 0
+
+    if (Math.max(...play_count_arr[data_index]) === 0) {
+      ;((play_info_options.value as play_info_chart_option_if)['scales']['y']['mix'] = 0),
+        ((play_info_options.value as play_info_chart_option_if)['scales']['y1']['mix'] = 0)
+    }
+
     setTimeout(() => {
       display_play_info_chart.value = true
     }, 100)
@@ -384,6 +421,7 @@ const normal_options = ref<object>({
     easing: 'easeOutBounce' // default easing function
   }
 })
+
 const ratio_text_normal = {
   id: 'ratio_text',
   beforeDraw(chart: any) {
@@ -538,11 +576,12 @@ const cps_options = ref<object>({
   }
 })
 const play_info_data = ref<ChartData<'line' | 'bar'>>({
-  labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+  labels: [],
   datasets: [
     {
       type: 'line',
-      data: [100, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      label: 'プレイ回数',
       borderColor: 'rgb(16,105,168)',
       tension: 0.35,
       fill: true, //下を塗りつぶす//下を塗りつぶすための設定
@@ -564,7 +603,8 @@ const play_info_data = ref<ChartData<'line' | 'bar'>>({
     },
     {
       type: 'bar',
-      data: [160, 90, 112, 121, 122, 133, 151, 122, 122, 122, 122],
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      label: 'プレイ時間',
       backgroundColor: (context: any) => {
         const chart = context.chart
         const { ctx, chartArea } = chart
@@ -581,6 +621,7 @@ const play_info_data = ref<ChartData<'line' | 'bar'>>({
     }
   ]
 })
+
 const play_info_options = ref<object>({
   responsive: true,
   maintainAspectRatio: false,
@@ -612,9 +653,10 @@ const play_info_options = ref<object>({
     },
     y: {
       display: true,
-      max: 200,
+      max: 0,
+      mix: 0,
       title: {
-        text: '月の合計回数'
+        text: '合計回数'
       },
       grid: {
         display: true
@@ -622,9 +664,10 @@ const play_info_options = ref<object>({
     },
     y1: {
       display: true,
-      max: 500,
+      max: 0,
+      mix: 0,
       title: {
-        text: '月の合計'
+        text: '合計時間'
       },
       position: 'right'
     }
@@ -725,6 +768,7 @@ const formated_time = ref<string>(format_time(total_time))
             class="chart_ops_elm"
             @click="
               (is_switcher_active = false),
+              (is_display_time_scale_btn = false),
                 (is_display_active_calender = true),
                 (display_cps_line_chart = false),
                 (display_play_info_chart = false),
@@ -740,8 +784,10 @@ const formated_time = ref<string>(format_time(total_time))
             @click="
               (is_switcher_active = false),
                 (is_display_active_calender = false),
+                (is_display_time_scale_btn = true),
+                (is_switcher_active = false),
                 (display_cps_line_chart = true),
-                regenerate_chart(0),
+                regenerate_cps_chart(0),
                 (display_play_info_chart = false),
                 (display_play_history = false),
                 (chart_type_index = 1)
@@ -754,9 +800,11 @@ const formated_time = ref<string>(format_time(total_time))
             class="chart_ops_elm"
             @click="
               (is_switcher_active = false),
+                (is_display_time_scale_btn = true),
                 (is_display_active_calender = false),
                 (display_cps_line_chart = false),
                 (display_play_info_chart = true),
+                regenerate_play_info_chart(0),
                 (display_play_history = false),
                 (chart_type_index = 2)
             "
@@ -769,6 +817,7 @@ const formated_time = ref<string>(format_time(total_time))
             @click="
               (is_switcher_active = false),
                 (is_display_active_calender = false),
+                (is_display_time_scale_btn = true),
                 (display_cps_line_chart = false),
                 (display_play_info_chart = false),
                 (display_play_history = true),
@@ -780,25 +829,34 @@ const formated_time = ref<string>(format_time(total_time))
           </div>
         </div>
 
-        <div id="chart_button_frame">
+        <div id="chart_button_frame" v-if="is_display_time_scale_btn">
           <button
             ref="time_scale_one"
             :class="{ chart_scale_switch_btn: true, active_time_scale: time_scale_class_0 }"
-            @click="regenerate_chart(0)"
+            @click="
+              display_cps_line_chart ? regenerate_cps_chart(0) : void 0,
+                display_play_info_chart ? regenerate_play_info_chart(0) : void 0
+            "
           >
             {{ time_scale_char[0] }}
           </button>
           <button
             ref="time_scale_two"
             :class="{ chart_scale_switch_btn: true, active_time_scale: time_scale_class_1 }"
-            @click="regenerate_chart(1)"
+            @click="
+              display_cps_line_chart ? regenerate_cps_chart(1) : void 0,
+                display_play_info_chart ? regenerate_play_info_chart(1) : void 0
+            "
           >
             {{ time_scale_char[1] }}
           </button>
           <button
             ref="time_scale_three"
             :class="{ chart_scale_switch_btn: true, active_time_scale: time_scale_class_2 }"
-            @click="regenerate_chart(2)"
+            @click="
+              display_cps_line_chart ? regenerate_cps_chart(2) : void 0,
+                display_play_info_chart ? regenerate_play_info_chart(2) : void 0
+            "
           >
             {{ time_scale_char[2] }}
           </button>
