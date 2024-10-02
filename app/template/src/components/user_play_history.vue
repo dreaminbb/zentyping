@@ -9,7 +9,6 @@ import type {
   play_history_if,
   play_info_chart_option_if
 } from '@/interface'
-//todo
 
 //１.ユーザーがグラフ選択中に別のところをクリックしたらグラフ変更を閉じる
 const is_display_all_play_history = ref<boolean>(false)
@@ -25,6 +24,7 @@ const chart_type_index = ref<number>(0)
 const chart_type = ref<Array<string>>(['アクティブカレンダー', '正入力', 'プレイグラフ', '履歴'])
 
 const time_scale_char = ref(['2024', '今月', '今週'])
+
 
 // 折れ線グラフのデータ -> プレイ時間
 // 棒グラフのデータ -> プレイ回数
@@ -98,6 +98,7 @@ class play_history_format_cal {
     const today = new Date()
     const start_of_week = new Date(today)
     start_of_week.setDate(today.getDate() - today.getDay())
+    
     const days: Array<string> = []
     for (let d = start_of_week; d <= today; d.setDate(d.getDate() + 1)) {
       let day: string = new Date(d).toLocaleDateString()
@@ -311,6 +312,7 @@ function is_display_all_play_history_func(): void {
 
 onMounted(() => {
   console.log('mounted')
+  console.log(user_info().short_correct_rate)
 })
 
 const short_data = ref<object>({
@@ -751,7 +753,7 @@ const formated_time = ref<string>(format_time(total_time))
               :class="{ active_angle: is_switcher_active, inactive_angle: !is_switcher_active }"
               viewBox="0 0 448 512"
               xmlns="http://www.w3.org/2000/svg"
-            >
+            > 
               <path
                 d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
               />
