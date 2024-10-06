@@ -25,7 +25,6 @@ const chart_type = ref<Array<string>>(['アクティブカレンダー', '正入
 
 const time_scale_char = ref(['2024', '今月', '今週'])
 
-
 // 折れ線グラフのデータ -> プレイ時間
 // 棒グラフのデータ -> プレイ回数
 
@@ -98,7 +97,7 @@ class play_history_format_cal {
     const today = new Date()
     const start_of_week = new Date(today)
     start_of_week.setDate(today.getDate() - today.getDay())
-    
+
     const days: Array<string> = []
     for (let d = start_of_week; d <= today; d.setDate(d.getDate() + 1)) {
       let day: string = new Date(d).toLocaleDateString()
@@ -160,7 +159,6 @@ class play_history_format_cal {
       if (scale.length === 0) {
         return 0
       }
-
       const correct_rate_sum = scale.reduce((a: any, b: any) => a + b[prop], 0)
       return correct_rate_sum
     })
@@ -205,6 +203,7 @@ const labels_arr = [
   month_arr,
   ['日', '月', '火', '水', '木', '金', '土']
 ]
+
 function regenerate_cps_chart(data_index: number): void {
   //ラベル、スケールの変更
   console.log(data_index, 'data_index')
@@ -269,12 +268,12 @@ function regenerate_play_info_chart(data_index: number): void {
     ;(play_info_options.value as play_info_chart_option_if)['scales']['y']['max'] =
       Math.max(...play_time_arr[data_index]) !== 0
         ? Math.max(...play_time_arr[data_index]) +
-          Math.floor(Math.max(...play_time_arr[data_index]) * 0.5)
+          Math.floor(Math.max(...play_time_arr[data_index]) * 0.7 * 10)
         : 0
     ;(play_info_options.value as play_info_chart_option_if)['scales']['y1']['max'] =
       Math.max(...play_count_arr[data_index]) !== 0
         ? Math.max(...play_count_arr[data_index]) +
-          Math.floor(Math.max(...play_count_arr[data_index]) * 0.5)
+          Math.floor(Math.max(...play_count_arr[data_index]) * 0.7)
         : 0
 
     if (Math.max(...play_count_arr[data_index]) === 0) {
@@ -753,7 +752,7 @@ const formated_time = ref<string>(format_time(total_time))
               :class="{ active_angle: is_switcher_active, inactive_angle: !is_switcher_active }"
               viewBox="0 0 448 512"
               xmlns="http://www.w3.org/2000/svg"
-            > 
+            >
               <path
                 d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
               />
@@ -770,7 +769,7 @@ const formated_time = ref<string>(format_time(total_time))
             class="chart_ops_elm"
             @click="
               (is_switcher_active = false),
-              (is_display_time_scale_btn = false),
+                (is_display_time_scale_btn = false),
                 (is_display_active_calender = true),
                 (display_cps_line_chart = false),
                 (display_play_info_chart = false),
@@ -963,7 +962,7 @@ const formated_time = ref<string>(format_time(total_time))
           <td>{{ history['played_at'] }}</td>
           <td>{{ history['level'] }}</td>
           <td>{{ history['time'] }}</td>
-          <!--       shell<td class="play_history_values">{{ history['input_per_second'] }}</td>-->
+          <!--       shell<td class="play_history_values">{{ history['input_per_second_arr'] }}</td>-->
           <!--       shell<td class="play_history_values">{{ history['correct_per_second'] }}</td>-->
           <td>長さ</td>
           <td>

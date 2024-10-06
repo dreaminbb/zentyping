@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {ref, nextTick, reactive, onMounted, inject, type Ref, provide} from 'vue'
-import {pie_chart, line_chart} from '@/components/play_info_charts'
-import {play_api_key} from '@/main'
+import { ref, nextTick, reactive, onMounted, inject, type Ref, provide } from 'vue'
+import { pie_chart, line_chart } from '@/components/play_info_charts'
+import { play_api_key } from '@/main'
 
-const active_buttons = reactive({short: false, normal: false, long: false})
+const active_buttons = reactive({ short: false, normal: false, long: false })
 const get_problem_data_from_api: any = ref(null)
 
 const type_input = ref<string>('')
@@ -16,8 +16,8 @@ const correct_count = ref<number>(0)
 const correct_rate = ref<number>(0)
 const level_num = ref<number>(0)
 const pun_count = ref<number>(0)
-const correct_every_second = ref<number[]>([])
-const input_every_second = ref<number[]>([])
+const correct_per_second = ref<number[]>([])
+const input_per_second_arr = ref<number[]>([])
 
 let short_count: number = 1
 let normal_count: number = 1
@@ -29,8 +29,8 @@ let type_count: number = 0
 provide('correct_rate', correct_rate)
 provide('correct_count', correct_count)
 provide('time', time)
-provide('correct_every_second', correct_every_second)
-provide('input_every_second', input_every_second)
+provide('correct_per_second', correct_per_second)
+provide('input_per_second_arr', input_per_second_arr)
 
 const char_display = ref<HTMLElement | null>(null)
 const char_span = ref<HTMLElement | null>(null)
@@ -52,7 +52,6 @@ const focus_svg = ref(false)
 const isComposing = ref(false)
 const japaneseInput = ref(false)
 const capslockchecker = ref(false)
-
 
 async function get_from_api() {
   try {
@@ -97,8 +96,8 @@ async function play_init() {
   correct_count.value = 0
   clearInterval(timer)
   clearInterval(ips_built)
-  correct_every_second.value = []
-  input_every_second.value = []
+  correct_per_second.value = []
+  input_per_second_arr.value = []
   time.value = 0
   type_count = 0
 }
@@ -106,8 +105,8 @@ async function play_init() {
 function start_timer() {
   timer = setInterval(() => {
     time.value++
-    correct_every_second.value.push(Math.floor(correct_count.value / (time.value / 10)) / 10)
-    input_every_second.value.push(Math.floor(type_count / (time.value / 10)) / 10)
+    correct_per_second.value.push(Math.floor(correct_count.value / (time.value / 10)) / 10)
+    input_per_second_arr.value.push(Math.floor(type_count / (time.value / 10)) / 10)
   }, 100)
 }
 
@@ -219,9 +218,9 @@ async function identify_level(level: 'short' | 'normal' | 'long') {
   }
 
   if (
-      short_count === get_problem_data_from_api.value[0].length ||
-      normal_count === get_problem_data_from_api.value[0].length ||
-      long_count === get_problem_data_from_api.value[0].length
+    short_count === get_problem_data_from_api.value[0].length ||
+    normal_count === get_problem_data_from_api.value[0].length ||
+    long_count === get_problem_data_from_api.value[0].length
   ) {
     short_count = normal_count = long_count = 0
     get_problem_data_from_api.value = await get_from_api()
@@ -274,11 +273,11 @@ function typing() {
 
     const type_input_length: number = type_input.value.length
     const span_from_char_display: HTMLElement[] = Array.from(
-        char_display.value.querySelectorAll('span')
+      char_display.value.querySelectorAll('span')
     )
 
     const export_cursor_span = Array.from(char_display.value.querySelectorAll('span')).filter(
-        (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
+      (span: HTMLSpanElement, index: number) => index !== type_input_length - 1
     )
     export_cursor_span.forEach((span) => span.classList.remove('cursor_after'))
     if (type_input_length > 0 && type_input_length < char.value.length) {
@@ -297,19 +296,19 @@ function typing() {
         const char_before: string | null = span_from_char_display[type_input_length - 2].textContent
 
         if (
-            type_before === 's' &&
-            char_before === 's' &&
-            type_first === 'h' &&
-            char_first === 'i'
+          type_before === 's' &&
+          char_before === 's' &&
+          type_first === 'h' &&
+          char_first === 'i'
         ) {
           add_middle_method(type_input_length, type_first)
           return
         }
         if (
-            type_before === 's' &&
-            char_before === 's' &&
-            type_first === 'y' &&
-            char_first === 'h'
+          type_before === 's' &&
+          char_before === 's' &&
+          type_first === 'y' &&
+          char_first === 'h'
         ) {
           change_middle_method(type_input_length, type_first)
           return
@@ -336,8 +335,8 @@ function typing() {
       }
     })
     correct_count.value = span_from_char_display
-        .slice(0, type_input_length)
-        .filter((span) => span.classList.contains('correct')).length
+      .slice(0, type_input_length)
+      .filter((span) => span.classList.contains('correct')).length
   }
 
   //グラフのための変数に数を代入
@@ -345,9 +344,9 @@ function typing() {
 
   // ゲームが終わった時
   if (
-      correct_count.value === char.value.length ||
-      (type_input.value[type_input.value.length - 1] === '\n' &&
-          type_input.value.length >= char.value.length)
+    correct_count.value === char.value.length ||
+    (type_input.value[type_input.value.length - 1] === '\n' &&
+      type_input.value.length >= char.value.length)
   ) {
     textarea.value?.blur()
     setTimeout(() => result(), 100)
@@ -357,9 +356,9 @@ function typing() {
 function add_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
-        char.value.slice(0, type_input_length - 1) +
-        type_first +
-        char.value.slice(type_input_length - 1, char.value.length)
+      char.value.slice(0, type_input_length - 1) +
+      type_first +
+      char.value.slice(type_input_length - 1, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -367,9 +366,9 @@ function add_middle_method(type_input_length: number, type_first: string) {
 function change_middle_method(type_input_length: number, type_first: string) {
   if (char_display.value) {
     char.value =
-        char.value.slice(0, type_input_length - 1) +
-        type_first +
-        char.value.slice(type_input_length, char.value.length)
+      char.value.slice(0, type_input_length - 1) +
+      type_first +
+      char.value.slice(type_input_length, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -377,10 +376,10 @@ function change_middle_method(type_input_length: number, type_first: string) {
 function ti_to_chi(type_input_length: number) {
   if (char_display.value) {
     char.value =
-        char.value.slice(0, type_input_length - 1) +
-        'c' +
-        'h' +
-        char.value.slice(type_input_length, char.value.length)
+      char.value.slice(0, type_input_length - 1) +
+      'c' +
+      'h' +
+      char.value.slice(type_input_length, char.value.length)
     char_display.value.querySelectorAll('span')[type_input_length - 1].classList.add('correct')
   }
 }
@@ -399,7 +398,7 @@ function typing_keydown(event: KeyboardEvent) {
   if (isComposing.value) {
     japaneseInput.value = true
   }
-  capslockchecker.value = event.getModifierState('CapsLock');
+  capslockchecker.value = event.getModifierState('CapsLock')
 }
 
 function compositionStart() {
@@ -433,7 +432,6 @@ function result() {
     pbm_id.value = get_problem_data_from_api.value[2][long_count - 1]['id']
   }
 
-
   //サーバーにデーターを送信する
   const result_data: object = {
     id: pbm_id.value,
@@ -442,8 +440,9 @@ function result() {
     correct_rate: correct_rate.value,
     correct_count: correct_count.value,
     incorrect_count: type_input.value.length - correct_count.value,
-    input_every_second: input_every_second.value,
-    correct_every_second: correct_every_second.value,
+    input_per_second_arr: input_per_second_arr.value,
+    input_per_second_num: Math.floor((char.value.length / time.value) * 10) / 10,
+    correct_per_second: correct_per_second.value,
     length: char.value.length,
     pun_count: pun_count.value
   }
@@ -453,7 +452,7 @@ function result() {
     fetch('http://localhost:8000/user/result', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
         // Authorization: play_api_key
       },
       body: JSON.stringify(result_data)
@@ -463,18 +462,18 @@ function result() {
 </script>
 <template>
   <body>
-  <main id="play" ref="play" v-if="play_page">
-    <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
-      <button
+    <main id="play" ref="play" v-if="play_page">
+      <div id="buttons" class="buttons" ref="level_buttons" v-if="level_buttons">
+        <button
           @click="
             identify_level('short'), play_init(), short_count++, (level_num = 0), (level = 'short')
           "
           :class="{ active: active_buttons.short }"
           class="level"
-      >
-        short
-      </button>
-      <button
+        >
+          short
+        </button>
+        <button
           @click="
             identify_level('normal'),
               play_init(),
@@ -484,101 +483,101 @@ function result() {
           "
           :class="{ active: active_buttons.normal }"
           class="level"
-      >
-        normal
-      </button>
-      <button
+        >
+          normal
+        </button>
+        <button
           @click="
             identify_level('long'), play_init(), long_count++, (level_num = 2), (level = 'long')
           "
           :class="{ active: active_buttons.long }"
           class="level"
-      >
-        long
-      </button>
-      <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
-    </div>
-    <div id="counters" v-if="play_detail">
-      <div id="correct" class="playdetail">{{ correct_count }}</div>
-      <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
-      <div id="rest_character" class="playdetail">
-        {{ type_input.length }} / {{ char.length }}
+        >
+          long
+        </button>
+        <button @click="punactivate" :class="{ active: activepun }" class="level">pun</button>
       </div>
-      <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
-    </div>
-    <div id="container" class="container" @click="click_to_focus">
-      <div id="type_display" class="type_display" ref="type_display">
+      <div id="counters" v-if="play_detail">
+        <div id="correct" class="playdetail">{{ correct_count }}</div>
+        <div id="incorrect" class="playdetail">{{ type_input.length - correct_count }}</div>
+        <div id="rest_character" class="playdetail">
+          {{ type_input.length }} / {{ char.length }}
+        </div>
+        <div id="timer" class="playdetail">{{ Math.floor(time / 10) }}</div>
+      </div>
+      <div id="container" class="container" @click="click_to_focus">
+        <div id="type_display" class="type_display" ref="type_display">
           <span
-              :class="{ type: true, lost_focus: lost_focus }"
-              v-for="(type, index) in type"
-              :key="index"
+            :class="{ type: true, lost_focus: lost_focus }"
+            v-for="(type, index) in type"
+            :key="index"
           >
             {{ type }}</span
           >
-      </div>
-      <div id="char_display" class="char_display" ref="char_display">
+        </div>
+        <div id="char_display" class="char_display" ref="char_display">
           <span
-              :class="{ char: true, lost_focus: lost_focus }"
-              ref="char_span"
-              v-for="(character, index) in char"
-              :key="index"
+            :class="{ char: true, lost_focus: lost_focus }"
+            ref="char_span"
+            v-for="(character, index) in char"
+            :key="index"
           >
             {{ character }}
           </span>
-      </div>
-      <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
-        <p class="click_here">クリックしてフォーカス。。。</p>
-        <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path
+        </div>
+        <div class="focus_alert" ref="focus_alert" v-if="focus_alert">
+          <p class="click_here">クリックしてフォーカス。。。</p>
+          <svg class="focus_alert_svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+            <path
               d="m320-410 79-110h170L320-716v306ZM551-80 406-392 240-160v-720l560 440H516l144 309-109 51ZM399-520Z"
-          />
-        </svg>
+            />
+          </svg>
+        </div>
       </div>
-    </div>
-    <button @click="play_init" id="play_init" ref="play_init_button">
-      <svg
+      <button @click="play_init" id="play_init" ref="play_init_button">
+        <svg
           id="play_init_svg"
           xmlns="http://www.w3.org/2000/svg"
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
-      >
-        <path
+        >
+          <path
             d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
-        />
-      </svg>
-    </button>
-    <div class="japaneseInputAlert" v-if="japaneseInput">
-      <svg
+          />
+        </svg>
+      </button>
+      <div class="japaneseInputAlert" v-if="japaneseInput">
+        <svg
           class="alertIcon"
           xmlns="http://www.w3.org/2000/svg"
           height="24"
           viewBox="0 -960 960 960"
           width="24"
-      >
-        <path
+        >
+          <path
             d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
-        />
-      </svg>
-      <div class="alertSentence">日本語入力がオンになっています</div>
-    </div>
-    <div class="capslockInputAlert" v-if="capslockchecker">
-      <svg
+          />
+        </svg>
+        <div class="alertSentence">日本語入力がオンになっています</div>
+      </div>
+      <div class="capslockInputAlert" v-if="capslockchecker">
+        <svg
           class="alertIcon"
           xmlns="http://www.w3.org/2000/svg"
           height="24px"
           viewBox="0 -960 960 960"
           width="24px"
           fill="#e8eaed"
-      >
-        <path
+        >
+          <path
             d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"
-        />
-      </svg>
-      <div class="alertSentence">capslockがオンになっています</div>
-    </div>
+          />
+        </svg>
+        <div class="alertSentence">capslockがオンになっています</div>
+      </div>
 
-    <textarea
+      <textarea
         id="type_input"
         class="type_input"
         autocomplete="off"
@@ -594,13 +593,13 @@ function result() {
         @blur="type_input_lost_focus"
         @compositionstart="compositionStart"
         @compositionend="compositionEnd"
-    ></textarea>
-  </main>
+      ></textarea>
+    </main>
   </body>
   <main id="result" v-if="result_page">
     <div id="graph_frame">
-      <pie_chart id="pie_chart"/>
-      <line_chart id="line_chart"/>
+      <pie_chart id="pie_chart" />
+      <line_chart id="line_chart" />
     </div>
     <div id="result_container">
       <div id="char_detail">
@@ -611,14 +610,14 @@ function result() {
     </div>
     <button @click="back_game" id="back_game" ref="back_game_button">
       <svg
-          id="play_init_svg"
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
+        id="play_init_svg"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24px"
+        viewBox="0 -960 960 960"
+        width="24px"
       >
         <path
-            d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
+          d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
         />
       </svg>
     </button>

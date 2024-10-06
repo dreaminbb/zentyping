@@ -1,8 +1,9 @@
-import math
 import os
+import math
 import datetime
 import hashlib
 import traceback
+import redis
 from flask import Response, request, make_response
 from typing import Optional
 from bson import json_util
@@ -10,33 +11,32 @@ from app import db
 import json
 from .auth import jwt_manager
 
-
 # todo
-# ユーザー情報取得のペイロードを変更
+# ランキング機能の実装
+
 
 class user:
 
     def __init__(self) -> None:
-
         self.access_token: Optional[str] = request.cookies.get("access_token")
         self.session_id: Optional[str] = request.cookies.get("session_id")
         self.salt = os.urandom(32)
         pass
 
     def create_save(
-            self,
-            user_id: str,
-            email: str | None,
-            password: str | None,
-            name: str | None,
-            user_type: str | None,
+        self,
+        user_id: str,
+        email: str | None,
+        password: str | None,
+        name: str | None,
+        user_type: str | None,
     ) -> bool:
         try:
             # ここでパスワードをハッシュ化して適切なJSONに変換している
             if password is not None:
                 hashed_password = (
-                        hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
-                        + self.salt
+                    hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
+                    + self.salt
                 )
             else:
                 hashed_password = None
@@ -49,8 +49,15 @@ class user:
                 "access_at": datetime.datetime.now().isoformat(),
                 "updated_at": datetime.datetime.now().isoformat(),
                 "role": {"admin": True},
-                "profile": {"icon": None, "level": 0, "read_me": "", "name": name, "keyboard": "", "github_link": "",
-                            "twitter_link": ""},
+                "profile": {
+                    "icon": None,
+                    "level": 0,
+                    "read_me": "",
+                    "name": name,
+                    "keyboard": "",
+                    "github_link": "",
+                    "twitter_link": "",
+                },
                 "activity_calender": [],
                 "comprehensive_results": {
                     "play_count": 0,
@@ -60,11 +67,8 @@ class user:
                     "normal_correct_rate": 0.0,
                     "long_correct_rate": 0.0,
                 },
-                "play_history": {
-                    "short": [],
-                    "normal": [],
-                    "long": []
-                }
+                "play_history": {"short": [], "normal": [], "long": []},
+                "best_score": {"short": None, "normal": None, "long": None},
             }
 
             db["user"].insert_one(user_profile)
@@ -129,7 +133,9 @@ class user:
     def get_user_info(access_token: Optional[str]) -> Optional[dict]:
         try:
             if access_token:
-                validated_token: dict = jwt_manager().verify_token(jwt_token=access_token)
+                validated_token: dict = jwt_manager().verify_token(
+                    jwt_token=access_token
+                )
                 print(validated_token, "検証されたトークン")
                 if validated_token["user_id"] is not None:
                     user_info = db["user"].find_one({"id": validated_token["user_id"]})
@@ -139,20 +145,32 @@ class user:
                         return_value: dict = {
                             "success": True,
                             "joined_day": user_info["created_at"],
-                            "user_read_me": user_info["profile"]['read_me'],
+                            "user_read_me": user_info["profile"]["read_me"],
                             "user_name": user_info["profile"]["name"],
                             "icon": user_info["profile"]["icon"],
                             "keyboard": user_info["profile"]["keyboard"],
                             "github_link": user_info["profile"]["github_link"],
                             "twitter_link": user_info["profile"]["twitter_link"],
-                            "activity_calender": user_info['activity_calender'],
+                            "activity_calender": user_info["activity_calender"],
                             "play_history": user_info["play_history"],
-                            "play_count": user_info["comprehensive_results"]["play_count"],
-                            "completed_play_count": user_info["comprehensive_results"]["completed_play_count"],
-                            "total_time": user_info["comprehensive_results"]["total_time"],
-                            "short_correct_rate": user_info["comprehensive_results"]["short_correct_rate"],
-                            "normal_correct_rate": user_info["comprehensive_results"]["normal_correct_rate"],
-                            "long_correct_rate": user_info["comprehensive_results"]["long_correct_rate"],
+                            "play_count": user_info["comprehensive_results"][
+                                "play_count"
+                            ],
+                            "completed_play_count": user_info["comprehensive_results"][
+                                "completed_play_count"
+                            ],
+                            "total_time": user_info["comprehensive_results"][
+                                "total_time"
+                            ],
+                            "short_correct_rate": user_info["comprehensive_results"][
+                                "short_correct_rate"
+                            ],
+                            "normal_correct_rate": user_info["comprehensive_results"][
+                                "normal_correct_rate"
+                            ],
+                            "long_correct_rate": user_info["comprehensive_results"][
+                                "long_correct_rate"
+                            ],
                             "status": 200,
                         }
                         """profileの中身"""
@@ -255,11 +273,13 @@ class play:
          correct_rate: correct_rate.value,
          correct_count: correct_count.value,
          incorrect_count: type_input.value.length - correct_count.value,
-         input_every_second: input_every_second.value,
-         correct_every_second: correct_every_second.value,
+         input_per_second_arr: input_per_second_arr.value,
+         correct_per_second: correct_per_second.value,
          length: char.value.length,
          pun_count: pun_count.value
          }"""
+
+    # 　ランキングのこDBをこう更新する
 
     @staticmethod
     def save_result(access_token: str, play_info: dict) -> bool | None:
@@ -291,23 +311,48 @@ class play:
                 # ]
 
                 """DBに保管してあるプレイデータの抽出"""
-                play_history: list = user_info['play_history']
+                play_history: list = user_info["play_history"]
 
                 comprehensive_results: dict = user_info["comprehensive_results"]
                 comprehensive_results["play_count"] += 1
-                tmp: dict = {'play_count': comprehensive_results["play_count"]}
+                tmp: dict = {"play_count": comprehensive_results["play_count"]}
                 play_info.update(tmp)
-                user_info['play_history'][level].append(play_info)
-                print(user_info['play_history'][level])
+                user_info["play_history"][level].append(play_info)
+                print(user_info["play_history"][level])
                 comprehensive_results["total_time"] += play_info["time"]
+
+                # 　最高スコアの更新　　　初めてならそのまま使用
+
+                print(user_info["best_score"][level])
+
+                if (
+                    user_info["best_score"][level] == None
+                    or user_info["best_score"][level] == {}
+                ):
+                    print("初めてのプレイ")
+                    user_info["best_score"][level] = play_info
+                elif (
+                    user_info["best_score"][level]["input_per_second_num"]
+                    < play_info["input_per_second_num"]
+                ):
+                    print("最高記録更新")
+                    user_info["best_score"][level] = play_info
+
+                elif (
+                    user_info["best_score"][level]["input_per_second_num"]
+                    > play_info["input_per_second_num"]
+                ):
+                    print("最高記録更新ならず")
 
                 # 平均正入力を計算するアルゴリズム
                 # print(user_info['play_history'])
-                history_of_each_level = user_info['play_history'][level]
+                history_of_each_level = user_info["play_history"][level]
                 level_len = len(history_of_each_level)
                 # print(level_len, history_of_each_level)
                 # レベル別の全てのcorrect　rateを集めた配列を作成してsumで全てを足している
-                level_sum = sum([entry["correct_rate"] for entry in history_of_each_level])
+                level_sum = sum(
+                    [entry["correct_rate"] for entry in history_of_each_level]
+                )
 
                 level_ave = math.floor((level_sum / level_len) * 10) / 10
                 comprehensive_results[f"{level}_correct_rate"] = level_ave
@@ -320,7 +365,12 @@ class play:
 
                 """もし今日の日付のデータがなかったら新しく配列に挿入"""
                 if not any(d["day"] == today for d in activity_calender):
-                    tmp = {"day": today, "week_number": week_number, "day_of_week": day_of_week, "play_count_in_day": 1}
+                    tmp = {
+                        "day": today,
+                        "week_number": week_number,
+                        "day_of_week": day_of_week,
+                        "play_count_in_day": 1,
+                    }
                     activity_calender.append(tmp)
                 else:
                     for day in activity_calender:
@@ -330,9 +380,10 @@ class play:
                 """DBに更新するデーター"""
                 new_play_history_value: dict = {
                     "$set": {
-                        "play_history": play_history,  # ペイロードに含まれてくる情報
+                        "play_history": play_history,  # ペイロードに含まれてくωωる情報
                         "comprehensive_results": comprehensive_results,
                         "activity_calender": activity_calender,
+                        "best_score": user_info["best_score"],
                     }
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)

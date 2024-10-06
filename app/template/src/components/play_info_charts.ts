@@ -55,20 +55,20 @@ export const line_chart = defineComponent({
   setup() {
     const time = inject("time") as Ref<number>
     const time_format: Array<number> = [];
-    const correct_every_second = inject("correct_every_second") as Ref<Array<number>>;
-    const input_every_second = inject("input_every_second") as Ref<Array<number>>
-    const formated_input_every_second: Array<number> = []
-    const formated_correct_every_second: Array<number> = []
+    const correct_per_second = inject("correct_per_second") as Ref<Array<number>>;
+    const input_per_second_arr = inject("input_per_second_arr") as Ref<Array<number>>
+    const formated_input_per_second_arr: Array<number> = []
+    const formated_correct_per_second: Array<number> = []
 
 
-    for (let i = 1; i < correct_every_second.value.length / 10; i++) {
-      formated_correct_every_second.push(Math.round(correct_every_second.value[i * 10] * 100) / 100)
-      formated_input_every_second.push(Math.round(input_every_second.value[i * 10] * 100) / 100)
+    for (let i = 1; i < correct_per_second.value.length / 10; i++) {
+      formated_correct_per_second.push(Math.round(correct_per_second.value[i * 10] * 100) / 100)
+      formated_input_per_second_arr.push(Math.round(input_per_second_arr.value[i * 10] * 100) / 100)
     }
 
-    formated_correct_every_second.push(Math.round(correct_every_second.value[correct_every_second.value.length - 1] * 100) / 100)
-    formated_input_every_second.push(Math.round(input_every_second.value[input_every_second.value.length - 1] * 100) / 100)
-    const height_max = Math.max(...formated_input_every_second) + 1
+    formated_correct_per_second.push(Math.round(correct_per_second.value[correct_per_second.value.length - 1] * 100) / 100)
+    formated_input_per_second_arr.push(Math.round(input_per_second_arr.value[input_per_second_arr.value.length - 1] * 100) / 100)
+    const height_max = Math.max(...formated_input_per_second_arr) + 1
 
 
     for (let i = 1; i < time.value; i++) {
@@ -82,12 +82,12 @@ export const line_chart = defineComponent({
       datasets: [
         {
           label: '１秒ごとの正入力',
-          data: formated_correct_every_second,
+          data: formated_correct_per_second,
           backgroundColor: ['rgba(134, 95, 255, 0.5)'],
         },
         {
           label: "１秒ごとの入力",
-          data: formated_input_every_second,
+          data: formated_input_per_second_arr,
           backgroundColor: ["rgba(255, 255, 255, 0.61)"],
         }
       ],

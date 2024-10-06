@@ -7,5 +7,4 @@ api_maker.py
 app/template/dist
 __pycache__
 /app/template/node_modules
-
- 
+pyproject.toml

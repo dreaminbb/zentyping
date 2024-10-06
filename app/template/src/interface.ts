@@ -12,7 +12,7 @@ export interface play_history_if {
     'correct_rate': number,
     'correct_count': number,
     'incorrect_count': number,
-    'input_per_second': Array<number>
+    'input_per_second_arr': Array<number>
     'correct_per_second': Array<number>,
     'length': number,
     'pun_count': number,
