@@ -19,7 +19,7 @@ from ..model.auth import (
 from ..main import app
 from ..model.log import recorder
 from ..main import limiter
-from app import config, db
+from src import config, db
 from ..model.user import user, play
 from ..model.auth import github, csrf_maneger, session_manager
 

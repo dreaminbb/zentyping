@@ -49,6 +49,4 @@ class config:
     SESSION_TIMEOUT_MESSAGE = "セッションが途切れました"
     TOO_MUCH_REQUEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
     
-
-
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]

@@ -3,16 +3,19 @@ import math
 import datetime
 import hashlib
 import traceback
-import redis
 from flask import Response, request, make_response
 from typing import Optional
 from bson import json_util
-from app import db
+from app.config import db
 import json
 from .auth import jwt_manager
 
 # todo
 # ランキング機能の実装
+# マジでお姉さんのおっぱいに埋もれたい
+#メモ
+
+
 
 
 class user:
@@ -68,11 +71,15 @@ class user:
                     "long_correct_rate": 0.0,
                 },
                 "play_history": {"short": [], "normal": [], "long": []},
-                "best_score": {"short": None, "normal": None, "long": None},
+                "best_score_short": None,
+                "best_score_normal": None,
+                "best_score_long": None,
             }
 
             db["user"].insert_one(user_profile)
             return True
+
+
         except Exception as e:
             print(e)
             return False
@@ -238,7 +245,7 @@ class play:
                     [{"$sample": {"size": self.piece}}]
                 )
             ]
-            normal_doc = [
+            nodrmal_doc = [
                 json.loads(json_util.dumps(document))
                 for document in db["normal"].aggregate(
                     [{"$sample": {"size": self.piece}}]
@@ -323,26 +330,21 @@ class play:
 
                 # 　最高スコアの更新　　　初めてならそのまま使用
 
-                print(user_info["best_score"][level])
-
-                if (
-                    user_info["best_score"][level] == None
-                    or user_info["best_score"][level] == {}
-                ):
+                if user_info[f"best_score_{level}"] == None or {}:
                     print("初めてのプレイ")
-                    user_info["best_score"][level] = play_info
+                    user_info[f"best_score_{level}"] = play_info
                 elif (
-                    user_info["best_score"][level]["input_per_second_num"]
+                    user_info[f"best_score_{level}"]["input_per_second_num"]
                     < play_info["input_per_second_num"]
                 ):
                     print("最高記録更新")
-                    user_info["best_score"][level] = play_info
+                    user_info[f"best_score_{level}"] = play_info
 
                 elif (
-                    user_info["best_score"][level]["input_per_second_num"]
+                    user_info[f"best_score_{level}"]["input_per_second_num"]
                     > play_info["input_per_second_num"]
                 ):
-                    print("最高記録更新ならず")
+                    print("最高記録更新ならずお疲れカス")
 
                 # 平均正入力を計算するアルゴリズム
                 # print(user_info['play_history'])
@@ -383,7 +385,7 @@ class play:
                         "play_history": play_history,  # ペイロードに含まれてくωωる情報
                         "comprehensive_results": comprehensive_results,
                         "activity_calender": activity_calender,
-                        "best_score": user_info["best_score"],
+                        f"best_score_{level}": user_info[f"best_score_{level}"],
                     }
                 }
                 db["user"].find_one_and_update({"id": user_id}, new_play_history_value)

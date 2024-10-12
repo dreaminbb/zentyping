@@ -1,4 +1,5 @@
-from app import config
+from app.config import config
+import asyncio
 from dotenv import load_dotenv
 import os
 from flask import Flask, jsonify, render_template, request
@@ -30,8 +31,8 @@ limiter = Limiter(
 )
 
 # リクエスト回数の制限
-from app.routes.user_router import user_bp
-from app.routes.server_router import auth_bp
+from routes.user_router import user_bp
+from routes.server_router import auth_bp
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
@@ -39,8 +40,7 @@ app.register_blueprint(user_bp, url_prefix="/user")
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 
-
-@app.errorhandler(429)
+# @app.errorhandler(429)
 def ratelimit_handler():
     ip_address = request.remote_addr
     return jsonify({"message": "dipshit"}), 429
@@ -54,10 +54,9 @@ except Exception as e:
 
 
 @app.route("/", methods=["GET"])
-def index():
+async def index():
     # access_token = request.cookies.get("access_token")
     # refresh_token = request.cookies.get("refresh_token")
     # if access_token and refresh_token is None:
     #     return render_template("index.html")
-
     return render_template("index.html")

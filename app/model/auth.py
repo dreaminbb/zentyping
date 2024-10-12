@@ -427,7 +427,7 @@ class github:
                         return response
 
                     else:
-                        from app.model.user import user
+                        from model.user import user
 
                         user_id = user_id
                         password = None
