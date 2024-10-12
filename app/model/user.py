@@ -245,7 +245,7 @@ class play:
                     [{"$sample": {"size": self.piece}}]
                 )
             ]
-            nodrmal_doc = [
+            normal_doc = [
                 json.loads(json_util.dumps(document))
                 for document in db["normal"].aggregate(
                     [{"$sample": {"size": self.piece}}]
