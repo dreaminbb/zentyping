@@ -27,16 +27,15 @@ limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["900 per day", "50 per hour", "1000 per minutes"],
-    # storage_uri="memory://",
+    storage_uri="memory://"
 )
 
 # リクエスト回数の制限
-from routes.user_router import user_bp
-from routes.server_router import auth_bp
+from app.routes.user_router import user_bp
+from app.routes.server_router import auth_bp
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
-
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 
@@ -54,7 +53,7 @@ except Exception as e:
 
 
 @app.route("/", methods=["GET"])
-async def index():
+def index():
     # access_token = request.cookies.get("access_token")
     # refresh_token = request.cookies.get("refresh_token")
     # if access_token and refresh_token is None:

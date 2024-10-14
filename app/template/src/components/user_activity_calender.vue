@@ -100,7 +100,7 @@ function generate_user_activity_calender(formated_activity_calender_value: Array
             //week_numberは第何周目かを表している
             let adjustment_week_day_index: number = value_of_week_number - 1
 
-            if (1 <= the_day_of_play_count && the_day_of_play_count <= 5) {
+            if (the_day_of_play_count <= 5) {
               the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[0]
             } else if (5 < the_day_of_play_count && the_day_of_play_count <= 10) {
               the_day_of_calender_elm[adjustment_week_day_index].style.backgroundColor = active_levels[1]

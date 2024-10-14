@@ -15,9 +15,6 @@ from .auth import jwt_manager
 # マジでお姉さんのおっぱいに埋もれたい
 #メモ
 
-
-
-
 class user:
 
     def __init__(self) -> None:

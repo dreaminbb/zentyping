@@ -10,7 +10,7 @@ import jwt
 import requests
 from flask import jsonify, make_response, Response, redirect, request
 
-from app import config, db
+from app.config import config, db
 
 
 def require_api_key(f):
@@ -427,8 +427,7 @@ class github:
                         return response
 
                     else:
-                        from model.user import user
-
+                        from app.model.user import user
                         user_id = user_id
                         password = None
                         user().create_save(

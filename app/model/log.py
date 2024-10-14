@@ -1,4 +1,4 @@
-from app import db
+from app.config import db
 import datetime
 from typing import Optional
 

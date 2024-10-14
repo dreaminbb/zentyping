@@ -19,7 +19,7 @@ from ..model.auth import (
 from ..main import app
 from ..model.log import recorder
 from ..main import limiter
-from src import config, db
+from app.config import config, db
 from ..model.user import user, play
 from ..model.auth import github, csrf_maneger, session_manager
 
@@ -120,7 +120,6 @@ def native_login():
 
         verify_password = native().verify_password(email, password)
         if verify_password == True:
-
             user_info = user.find_and_get_user_info(email, "native")
             user_id: Optional[str] = user_info["id"] if user_info else None
             if user_id is not None:
@@ -160,7 +159,7 @@ def github_callback():
         scrf_validity: bool = csrf_maneger().velidate(token=csrf_token)
         if scrf_validity and code:
             response: Response = github().sign_in_login(code)
-            response.delete_cookie("token")
+            # response.delete_cookie("token")
             return response
         if not scrf_validity:
             return make_response({"無効なリクエスト"}), 400
