@@ -1,4 +1,5 @@
 from app.config import config
+from app.storege.ranking_manager import fetch_ranking
 import asyncio
 from dotenv import load_dotenv
 import os
@@ -19,6 +20,7 @@ app = Flask(
     template_folder="template/dist",
     static_folder="template/dist/assets",
 )
+
 app.config.from_object(config)
 client = MongoClient(config.MONGO_URL)
 app.config["RATELIMIT_HEADERS_ENABLED"] = True
@@ -36,6 +38,12 @@ from app.routes.server_router import auth_bp
 
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
+try:
+    client.admin.command("ismaster")
+    print("MongoDB connection successful")
+
+except Exception as e:
+    print("MongoDB connection failed", e)
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 
@@ -43,14 +51,6 @@ app.register_blueprint(user_bp, url_prefix="/user")
 def ratelimit_handler():
     ip_address = request.remote_addr
     return jsonify({"message": "dipshit"}), 429
-
-
-try:
-    client.admin.command("ismaster")
-    print("MongoDB connection successful")
-except Exception as e:
-    print("MongoDB connection failed", e)
-
 
 @app.route("/", methods=["GET"])
 def index():

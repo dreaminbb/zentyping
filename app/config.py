@@ -25,6 +25,8 @@ class config:
     ACCOUNT_URL = f"{URL}/account"
     COOKIE_AGE = 1  # 時間単位
     PIECE = 5
+    RANKING_STOREGE_EXPIRES_IN = 60 * 15
+    RANKING_STOREGE_MAX_SIZE = 100000
 
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", None)
     GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", None)
@@ -48,5 +50,5 @@ class config:
     FAILED_TO_AUTH_MESSAGE = "認証に失敗しました🙁"
     SESSION_TIMEOUT_MESSAGE = "セッションが途切れました"
     TOO_MUCH_REQUEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
-    
+
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]
