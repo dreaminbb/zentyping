@@ -60,10 +60,12 @@ def add_ramdom_user(mount: int):
         long_history = []
         for i in range(random.randint(5, 10)):
             long_history.append(generate_play_history(1, "long"))
+            
+        user_type = random.choice(["native", "google", "github"])
 
         user_profile = {
             "id": user_id,
-            "type": "github",
+            "type": user_type,
             "email": email,
             "password": password,
             "created_at": datetime.datetime.now().isoformat(),
@@ -101,4 +103,4 @@ def add_ramdom_user(mount: int):
     print(f"{mount}個のユーザーサンプルデータ作成完了")
 
 
-add_ramdom_user(10000)
+add_ramdom_user(100)
