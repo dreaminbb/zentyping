@@ -41,8 +41,3 @@ class fetch_ranking:
         except Exception as e:
             print("fetch_ranking_data_from_dbのtry文 ", f"Error: {e}")
             return None
-
-    async def cache_init(self):
-          self.ranking_cache.clear()
-          for level in ["short", "normal", "long"]:
-              self.ranking_cache[level] = self.fetch_ranking_from_db_to_list(level)

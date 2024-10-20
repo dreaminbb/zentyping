@@ -1,12 +1,17 @@
 import os
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from flask_limiter.util import get_remote_address
+from flask import Flask, jsonify, render_template, request
+from flask_limiter import Limiter
+import schedule
+import asyncio
+from cachetools import TTLCache
 
 
 class config:
     dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
     load_dotenv(dotenv_path)
-
     URL = os.getenv("URL")
     PORT = 8000
     MONGO_URL = "mongodb://localhost:27017/"
@@ -51,4 +56,23 @@ class config:
     SESSION_TIMEOUT_MESSAGE = "セッションが途切れました"
     TOO_MUCH_REQUEST_MESSAGE = "ちょ、ちょ、っま、、、あ"
 
+app = Flask(
+    __name__,
+    template_folder="template/dist",
+    static_folder="template/dist/assets",
+)
+
+app.config.from_object(config)
+client = MongoClient(config.MONGO_URL)
+app.config["RATELIMIT_HEADERS_ENABLED"] = True
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["900 per day", "50 per hour", "1000 per minutes"],
+    storage_uri="memory://"
+)
+
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]
+
+ranking_cache = TTLCache(maxsize=config.RANKING_STOREGE_MAX_SIZE, ttl=config.RANKING_STOREGE_EXPIRES_IN)

@@ -103,4 +103,4 @@ def add_ramdom_user(mount: int):
     print(f"{mount}個のユーザーサンプルデータ作成完了")
 
 
-add_ramdom_user(100)
+add_ramdom_user(10)

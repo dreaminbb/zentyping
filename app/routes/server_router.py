@@ -16,10 +16,11 @@ from ..model.auth import (
     github,
     cookie_manager,
 )
-from ..main import app
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "..."))
 from ..model.log import recorder
-from ..main import limiter
-from app.config import config, db
+from app.config import app, limiter,  config, db
 from ..model.user import user, play
 from ..model.auth import github, csrf_maneger, session_manager
 

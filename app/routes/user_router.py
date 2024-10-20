@@ -9,7 +9,7 @@ from flask import (
     redirect,
 )
 from flask_limiter.util import get_remote_address
-from ..main import limiter
+from app.config import limiter
 from ..model.log import recorder
 from ..model.user import user, play
 
