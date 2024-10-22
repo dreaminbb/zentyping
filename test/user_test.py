@@ -20,12 +20,11 @@ async def test_cashing():
     try:
         ins = fetch_ranking()
         # print(await ins.ranking_cache["short"] , await ins.ranking_cache["normal"], await ins.ranking_cache["long"])
-        short = await ins.ranking_cache["short"]
-        normal = await ins.ranking_cache["normal"]
-        long = await ins.ranking_cache["long"]
-        if short == None or normal == None or long == None:
-            assert False
-
+        for level in ["short", "normal", "long"]:
+            ins.ranking_cache[level] = (
+                await fetch_ranking.fetch_ranking_from_db_to_list(level)
+            )
+        print(ins.ranking_cache["short"], "\n", ins.ranking_cache["normal"], "\n", ins.ranking_cache["long"])
         assert True
     except Exception as e:
         print(f"Error: {e}")

@@ -4,8 +4,6 @@ from pymongo import MongoClient
 from flask_limiter.util import get_remote_address
 from flask import Flask, jsonify, render_template, request
 from flask_limiter import Limiter
-import schedule
-import asyncio
 from cachetools import TTLCache
 
 
@@ -32,6 +30,7 @@ class config:
     PIECE = 5
     RANKING_STOREGE_EXPIRES_IN = 60 * 15
     RANKING_STOREGE_MAX_SIZE = 100000
+    RANKING_RELOAD_INTERVAL = 60 * 15
 
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", None)
     GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", None)
@@ -39,8 +38,6 @@ class config:
     GITHUB_AUTHORIZATION_RL = "https://github.com/login/oauth/authorize"
     GITHUB_API_BASE_URL = "https://api.github.com/"
     GITHUB_REDIRECT_URL = f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&scope=user:email"
-    print(GITHUB_REDIRECT_URL)
-
     SESSION_DOSENT_EXIST_MESSAGE = "セッションが見つかりません。ログインし直してください。。。"
     ERROE_MESSAGE = "エラーが発生しました、、、"
     USER_NOT_FOUND_MESSAGE = "ユーザーが見つかりません"

@@ -12,6 +12,7 @@ from flask_limiter.util import get_remote_address
 from app.config import limiter
 from ..model.log import recorder
 from ..model.user import user, play
+from ..config import ranking_cache
 
 user_bp = Blueprint("user_bp", __name__)
 
@@ -54,3 +55,19 @@ def get_user_info() -> Response:
     return make_response({"success": True, "user_info": user_info})
 
     return make_response({"success": False, "message": "問題が発生しました"}, 500)
+
+
+@user_bp.route("/ranking", methods=["GET"])
+def return_ranking()->Response:
+    fetch_level =  request.args.get("level", None)
+    fetch_renge_start = request.args.get("range_from", None)
+    fetch_renge_end = request.args.get("range_to", None)
+    tmp = ranking_cache[fetch_level][fetch_renge_start:fetch_renge_end]
+    res = make_response(tmp, 200)
+    if fetch_level or fetch_renge_start or fetch_renge_end is None:
+        ranking_obj = {}
+        for level in ranking_cache:
+            ranking_obj[level] = ranking_cache[level]
+        res = make_response(ranking_obj, 200)
+        return res
+    return make_response(tmp, 200)

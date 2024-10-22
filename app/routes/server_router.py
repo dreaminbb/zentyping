@@ -18,11 +18,13 @@ from ..model.auth import (
 )
 import sys
 import os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "..."))
 from ..model.log import recorder
-from app.config import app, limiter,  config, db
-from ..model.user import user, play
+from app.config import app, limiter, config
+from ..model.user import user
 from ..model.auth import github, csrf_maneger, session_manager
+from app.config import db
 
 github_bp = Blueprint("github", __name__)
 auth_bp = Blueprint("auth", __name__)

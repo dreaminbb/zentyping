@@ -5,24 +5,37 @@ import router from './router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
-    faCircle,
-    faCircleXmark,
-    faCoffee,
-    faGear,
-    faList,
-    faPen,
-    faQuestion,
-    faRankingStar,
-    faTimes,
-    faUser,
-    faXmark
+  faCircle,
+  faCircleXmark,
+  faCoffee,
+  faGear,
+  faList,
+  faPen,
+  faQuestion,
+  faRankingStar,
+  faTimes,
+  faUser,
+  faXmark
 } from '@fortawesome/free-solid-svg-icons'
 import { faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons'
 import { session_manager } from '@/services/auth'
 import { user_info } from '@/store/store'
 
-library.add(faCoffee, faQuestion, faUser, faRankingStar, faGear, faPen, faGithub, faList, faXTwitter, faCircle, faTimes, faXmark, faCircleXmark)
-
+library.add(
+  faCoffee,
+  faQuestion,
+  faUser,
+  faRankingStar,
+  faGear,
+  faPen,
+  faGithub,
+  faList,
+  faXTwitter,
+  faCircle,
+  faTimes,
+  faXmark,
+  faCircleXmark
+)
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -32,14 +45,12 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
-
 export const play_api_key: string = import.meta.env.VITE_APP_PLAY_API_KEY
 export const github_oauth_url: string = 'http://localhost:8000/auth/github'
 
 //サイトにアクセスしたらセッションが有効かを確認
 document.cookie ? new session_manager().verify_session() : void 0
 document.cookie ? user_info().fetch_info() : void 0
-
 
 //todo
 // インターフェースがなんか変
