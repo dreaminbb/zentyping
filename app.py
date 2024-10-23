@@ -67,9 +67,7 @@ def index():
 async def start_ranking_init():
     while True:
         await ranking_init()
-        # await asyncio.sleep(config.RANKING_RELOAD_INTERVAL)
-        await asyncio.sleep(5)
-
+        await asyncio.sleep(config.RANKING_RELOAD_INTERVAL)
 
 def run_asyncio_task():
     asyncio.run(start_ranking_init())
@@ -80,8 +78,8 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    threading.Thread(target=run_asyncio_task).start()
     # use_reloader=Falseにしないと2回起動してしまう(ranking_initも呼び出される時に２回呼び出される)
     app.run(
-        debug=True, host="0.0.0.0", port=config.PORT, use_reloader=False
-    )  # デバッグモード(True)  # 本番環境ではFalse(セキュリティ上の問題)
+        debug=True, host="0.0.0.0", port=config.PORT
+    )  # デバッグモード(True)  # 本番環境ではFalse(セキュリティ上の問題)&
+    threading.Thread(target=run_asyncio_task).start()

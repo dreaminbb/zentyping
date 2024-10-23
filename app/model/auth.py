@@ -239,12 +239,8 @@ class cookie_manager:
         half_hour: int = int(datetime.datetime.now().timestamp()) + 60 * 30
         ten_day: int = int(datetime.datetime.now().timestamp()) + 60 * 60 * 24 * 10
 
-        if redirect_url:
-            response = make_response(
-                redirect(redirect_url), {"success": True, "login": True}
-            )
-        if not redirect_url:
-            response = make_response(redirect("/"), {"success": True, "login": True})
+        tmp = redirect_url if redirect_url else "/"
+        response = make_response(tmp, {"success": True, "login": True})
 
         response.set_cookie(
             "access_token",
@@ -475,4 +471,4 @@ class github:
             print(f"Type: {type(e).__name__}")  # エラーのタイプを表示
             print(f"Message: {e}")  # エラーメッセージを表示
             traceback.print_exc()  # スタックトレース（エラーの行番号など）を表示
-            return jsonify({"error": "error"}), 500
+            return jsonify({"error": "error"}), 500 

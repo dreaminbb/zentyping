@@ -4,6 +4,7 @@ import home from '@/views/user_home.vue'
 import play from '@/views/play_test.vue'
 import login from '@/views/user_login.vue'
 import account from '@/views/user_account.vue'
+import ranking from '@/views/user_ranking.vue'
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -30,6 +31,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/account',
     name: 'account',
     component: account
+  },
+  {
+    path: '/ranking',
+    name: 'ranking',
+    component: ranking
   }
 ]
 

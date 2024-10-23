@@ -13,7 +13,6 @@ from .auth import jwt_manager
 # todo
 # ランキング機能の実装
 # マジでお姉さんのおっぱいに埋もれたい
-#メモ
 
 class user:
 
@@ -75,7 +74,6 @@ class user:
 
             db["user"].insert_one(user_profile)
             return True
-
 
         except Exception as e:
             print(e)
