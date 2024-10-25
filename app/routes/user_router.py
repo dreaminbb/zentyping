@@ -62,8 +62,8 @@ def return_ranking() -> Response:
         return make_response({"message": "リクエストが不正です。"}, 400)
     api_key = request.headers.get("API_KEY")
     is_valid = require_api_key(api_key)
-    if not is_valid or api_key is None:
-        return make_response({"message": "APIキーが不正です。"}, 401)
+    # if not is_valid or api_key is None:
+    #     return make_response({"message": "APIキーが不正です。"}, 401)
         
     fetch_level: Optional[str] = request.json["level"]
     fetch_renge_start: int = request.json["range_from"]

@@ -19,6 +19,7 @@ def generate_play_history(mount: int, level: str):
     input_per_second: list = [random.uniform(0.0, 1.0) // 0.1 / 10 for i in range(20)]
     input_per_second_num = random.uniform(0.0, 4.0) // 0.1 / 10
     correct_per_second: list = [random.uniform(0.0, 1.0) // 0.1 / 10 for i in range(20)]
+    correct_per_second_num: float = random.uniform(0.0, 10) // 0.1 / 10
     pun_count = random.randint(0, 10)
     length = random.randint(20, 100)
     played_at = datetime.datetime.now().isoformat()
@@ -30,6 +31,7 @@ def generate_play_history(mount: int, level: str):
         "correct_count": correct_count,
         "incorrect_count": incorrect_count,
         "correct_rate": correct_rate,
+        "correct_per_second_num": correct_per_second_num,
         "input_per_second": input_per_second,
         "input_per_second_num": input_per_second_num,
         "correct_per_second": correct_per_second,
@@ -60,7 +62,7 @@ def add_ramdom_user(mount: int):
         long_history = []
         for i in range(random.randint(5, 10)):
             long_history.append(generate_play_history(1, "long"))
-            
+
         user_type = random.choice(["native", "google", "github"])
 
         user_profile = {

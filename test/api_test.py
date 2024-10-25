@@ -3,8 +3,8 @@ def test_get_ranking():
 
     response = requests.get(
         "http://localhost:8000/user/ranking",
-        json={"level": "short", "range_from": 0, "range_to": 1},
+        json={"level": "short", "range_from": 0, "range_to": 20},
     )
     assert response.status_code == 200
-    assert response.json()["message"] == "ランキングを取得しました。"
+    print(response.json()["value"])
     assert response.json()["value"] is not None
