@@ -6,8 +6,6 @@ const calender_body = ref<HTMLElement | null>(null)
 const active_level = ref<Array<string>>(['rgb(237,227,239)', 'rgb(207,175,207)', 'rgb(248,159,255)', 'rgb(173,0,239)', 'rgb(194,9,255)'])
 
 // 登録日のフォーマット方法->2024/08/03
-
-
 // 2024の1/1は月曜日
 // 202412/31は火曜日
 function format_calender_day(activity_calender_value: Array<{

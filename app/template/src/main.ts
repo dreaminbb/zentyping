@@ -1,4 +1,4 @@
-import { createApp, onMounted } from 'vue'
+import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
@@ -15,13 +15,15 @@ import {
   faRankingStar,
   faTimes,
   faUser,
-  faXmark
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons'
+import { faCrow } from '@fortawesome/free-solid-svg-icons/faCrow'
 import { faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons'
 import { session_manager } from '@/services/auth'
 import { user_info } from '@/store/store'
 
 library.add(
+  faCrow,
   faCoffee,
   faQuestion,
   faUser,
@@ -34,7 +36,7 @@ library.add(
   faCircle,
   faTimes,
   faXmark,
-  faCircleXmark
+  faCircleXmark,
 )
 
 const app = createApp(App)
@@ -45,13 +47,14 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
-export const play_api_key: string = import.meta.env.VITE_APP_PLAY_API_KEY
+export const play_api_key: string = import.meta.env.VITE_SERVER_API_KEY
+export const seacret_key: string = import.meta.env.VITE_SEND_PLAY_INFO_API_KEY
 export const github_oauth_url: string = 'http://localhost:8000/auth/github'
+console.log(play_api_key, seacret_key)
 
 //サイトにアクセスしたらセッションが有効かを確認
 document.cookie ? new session_manager().verify_session() : void 0
 document.cookie ? user_info().fetch_info() : void 0
-
 //todo
 // インターフェースがなんか変
 // プレイの処理でcompleted_play_countを加える
