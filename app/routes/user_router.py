@@ -57,17 +57,28 @@ def get_user_info() -> Response:
 # todo トークン検証
 @user_bp.route("/ranking", methods=["GET"])
 def return_ranking() -> Response:
-
-    if request.json is None:
-        return make_response({"message": "リクエストが不正です。"}, 400)
-    api_key = request.headers.get("API_KEY")
-    is_valid = require_api_key(api_key)
+    # if request.json is None:
+    # return make_response({"message": "リクエストが不正です。"}, 400)
+    # api_key = request.headers.get("API_KEY")
+    # is_valid = require_api_key(api_key)
     # if not is_valid or api_key is None:
     #     return make_response({"message": "APIキーが不正です。"}, 401)
-        
-    fetch_level: Optional[str] = request.json["level"]
-    fetch_renge_start: int = request.json["range_from"]
-    fetch_renge_end: Optional[int] = request.json["range_to"]
-    tmp = ranking_cache[fetch_level][fetch_renge_start:fetch_renge_end]
-    res = make_response({"message": "ランキングを取得しました。", "value": tmp}, 200)
+    try:
+        print(
+            request.args.get("level"),
+            request.args.get("range_from"),
+            request.args.get("range_to"),
+        )
+        fetch_level: Optional[str] = request.args.get("level")
+        fetch_renge_start: Optional[int] = int(request.args.get("range_from") or 0)
+        fetch_renge_end: Optional[int] = int(request.args.get("range_to") or 10)
+        tmp = ranking_cache[fetch_level][fetch_renge_start:fetch_renge_end]
+        res = make_response({"message": "ランキングを取得しました。", "data": tmp}, 200)
+    except KeyError:
+        res = make_response({"message": "ランキングが見つかりません。"}, 404)
+    except Exception as e:
+        res = make_response({"message": "エラーが発生しました。"}, 500)
+        print(e)
+
+    print(res)
     return res

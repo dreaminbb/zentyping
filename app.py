@@ -4,6 +4,7 @@ import time
 import traceback
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 from flask_limiter.util import get_remote_address
 from flask import Flask, jsonify, render_template, request
 from app.storege.ranking_manager import fetch_ranking
@@ -30,7 +31,7 @@ try:
 except Exception as e:
     print("MongoDB connection failed", e)
 
-# CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
+CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 
 # ランキングのキャッシュの初期化のスケジューリング
 
@@ -68,6 +69,7 @@ async def start_ranking_init():
     while True:
         await ranking_init()
         await asyncio.sleep(config.RANKING_RELOAD_INTERVAL)
+
 
 def run_asyncio_task():
     asyncio.run(start_ranking_init())
