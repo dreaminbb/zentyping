@@ -31,7 +31,7 @@ onBeforeMount(async () => {
 >>>>>>> e5457f7 (ランキンングのデータをAPIから取得して表示するためのコード)
     level: 'short',
     range_from: 0,
-    range_to: 15
+    range_to: 50
   })
 
   if (fetching_deta && fetching_deta['data']) {
@@ -95,6 +95,11 @@ body {
     border-collapse: collapse;
     color: white;
     color: rgb(48, 48, 48);
+
+    tr {
+      height: 50px;
+      border-bottom: 1px solid #ddd;
+    }
 
     tr:nth-child(1) {
       background: rgba(169, 147, 147, 0.7);
