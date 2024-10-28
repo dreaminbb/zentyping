@@ -39,22 +39,18 @@ library.add(
   faXmark,
   faCircleXmark,
 )
-import home from '@/views/user_home.vue'
-import account from '@/views/user_account.vue'
-import ranking from '@/views/user_ranking.vue'
-import login from '@/views/user_login.vue'
-import play from '@/views/play_test.vue'
+
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
-    component: home
+    component: () => import('@/views/user_home.vue'),
   },
   {
     path: '/play',
     name: 'play',
-    component: play
+    component: () => import('@/views/play_test.vue'),
   },
   {
     path: '/login',
@@ -63,17 +59,17 @@ const routes: Array<RouteRecordRaw> = [
     //     // await new token_manager().verify_session()
     //     next()
     // },
-    component: login
+    component: () => import('@/views/user_login.vue'),
   },
   {
     path: '/account',
     name: 'account',
-    component: account
+    component: () => import('@/views/user_account.vue'),
   },
   {
     path: '/ranking',
     name: 'ranking',
-    component: ranking
+    component: () => import('@/views/user_ranking.vue'),
   }
 ]
 
