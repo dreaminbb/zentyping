@@ -26,6 +26,7 @@ app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
 try:
     client.admin.command("ismaster")
+    print("hello world")
     print("MongoDB connection successful")
 
 except Exception as e:
