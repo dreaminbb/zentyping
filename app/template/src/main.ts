@@ -91,13 +91,11 @@ app.mount('#app')
 export const play_api_key: string = import.meta.env.VITE_SERVER_API_KEY
 export const seacret_key: string = import.meta.env.VITE_SEND_PLAY_INFO_API_KEY
 export const github_oauth_url: string = 'http://localhost:8000/auth/github'
-console.log(play_api_key, seacret_key)
 
 //サイトにアクセスしたらセッションが有効かを確認
-document.cookie ? new session_manager().verify_session() : void 0
-document.cookie ? user_info().fetch_info() : void 0
-//todo
-// インターフェースがなんか変
+// document.cookie ? new session_manager().verify_session() : void 0
+// document.cookie ? user_info().fetch_info() : void 0
+
 // プレイの処理でcompleted_play_countを加える
 
 //ユーザーのデーターを取得

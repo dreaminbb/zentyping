@@ -442,7 +442,8 @@ function result() {
     incorrect_count: type_input.value.length - correct_count.value,
     input_per_second_arr: input_per_second_arr.value,
     input_per_second_num: Math.floor((char.value.length / time.value) * 10) / 10,
-    correct_per_second: correct_per_second.value,
+    correct_per_second_arr: correct_per_second.value,
+    correct_per_second_num: Math.floor((correct_count.value / time.value) * 10) / 10,
     length: char.value.length,
     pun_count: pun_count.value
   }

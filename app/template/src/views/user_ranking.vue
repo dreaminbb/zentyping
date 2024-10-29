@@ -1,49 +1,71 @@
 <script lang="ts" setup>
 import type { ranking_data_if } from '@/interface'
-import { onBeforeMount, ref } from 'vue'
-import { fetch_from_api as rf } from '@/services/fetching_deta'
+import { onBeforeMount, onMounted, ref } from 'vue'
+import { ranking_data_manager } from '@/services/fetching_deta'
+import { pie_chart, line_chart } from '@/components/play_info_charts'
 
-const ranking_info_arr = ref<Array<ranking_data_if>>([])
+// クリック => グラフのデータを関数で返す => グラフを表示する
+const is_display_result_chart = ref<boolean>(false)
+const rdm_ins = ref(new ranking_data_manager())
+const line_chart_data = ref<ranking_data_if>({} as ranking_data_if)
+const pie_chart_data = ref<number>(0)
 
-onBeforeMount(async () => {
-  const fetching_deta: any = await new rf().fetch_data({
+onBeforeMount(async () => {})
+onMounted(async () => {
+  console.log('on mounted')
+  console.log(rdm_ins.value.ranking_data_arr, 'rdm_ins.ranking_data_arr')
+  await rdm_ins.value.fetch_data({
     level: 'short',
     range_from: 0,
-    range_to: 50
+    range_to: 10
   })
-
-  if (fetching_deta && fetching_deta['data']) {
-    ranking_info_arr.value = fetching_deta['data']
-  } else if (fetching_deta && fetching_deta['error']) {
-    ranking_info_arr.value = fetching_deta['deta']
-    console.log(fetching_deta['error'])
+  if (!rdm_ins.value.ranking_data_arr) {
+    rdm_ins.value.ranking_data_arr = []
   }
+  console.log('on before mount')
+  console.log(rdm_ins.value.ranking_data_arr, 'rdm_ins.ranking_data_arr')
 })
 
-const ranking_deta_label_arr: Array<string> = [
-  '順位',
-  'ユーザー名',
-  '正入力率',
-  '一秒間の正入力',
-  '一秒間の入力',
-  'タイム',
-  'タイムスタンプ'
-]
+function display_charts(index: number): ranking_data_if {
+  is_display_result_chart.value = true
+  //during execution of component update at <UserRanking onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref<
+  // チャートを表示させたいけどエラーが出る
+  if (rdm_ins.value.ranking_data_arr && rdm_ins.value.ranking_data_arr[index]) {
+    line_chart_data.value = rdm_ins.value.ranking_data_arr[index]
+    pie_chart_data.value = rdm_ins.value.ranking_data_arr[index].correct_rate
+  } else {
+    console.error('Invalid index or ranking data array is undefined')
+  }
+  console.log(rdm_ins.value.ranking_data_arr[index])
+  return rdm_ins.value.ranking_data_arr[index]
+}
 </script>
 
 <template>
-  <body>
+  <div>
     <table id="ranking_table">
       <tr id="ranking_label_fm">
         <th v-for="key in 7" :key="key">
-          {{ ranking_deta_label_arr[key - 1] }}
+          {{
+            [
+              '順位',
+              'ユーザー名',
+              '正入力率',
+              '一秒間の正入力',
+              '一秒間の入力',
+              'タイム',
+              'タイムスタンプ'
+            ][key - 1]
+          }}
         </th>
       </tr>
-      <tr v-for="(user, index) in ranking_info_arr" :key="user.id" class="ranking_list">
-        <td v-if="index != 0">
-          {{ index + 1 }}
-        </td>
-        <div v-if="index == 0" class="fas fa-crown" id="crown"></div>
+      <tr
+        v-for="(user, index) in rdm_ins.ranking_data_arr"
+        :key="user.id"
+        class="ranking_list"
+        @click="() => display_charts(index)"
+      >
+        <td>{{ index + 1 }}</td>
         <td>{{ user.name }}</td>
         <td>{{ user.correct_rate.toFixed(2) }}%</td>
         <td>{{ user.correct_per_second_num.toFixed(2) }}</td>
@@ -52,7 +74,12 @@ const ranking_deta_label_arr: Array<string> = [
         <td>{{ new Date(user.played_at).toLocaleString() }}</td>
       </tr>
     </table>
-  </body>
+
+    <div id="chart_area" v-if="is_display_result_chart">
+      <line_chart :chart_data="line_chart_data" />
+      <pie_chart :chart_data="pie_chart_data" />
+    </div>
+  </div>
 </template>
 
 <style lang="scss">
@@ -67,7 +94,8 @@ body {
     position: absolute;
     text-align: center;
     top: 20%;
-    width: 90%;
+    width: 80%;
+    right: 10%;
     height: 100%; // ここを変えるとスクロールの長さが変わる(短いとできない)
     border-radius: 10%;
     border-collapse: collapse;
@@ -92,6 +120,14 @@ body {
       position: relative;
       top: 30%;
     }
+  }
+
+  #chart_area {
+    position: relative;
+    background: rgba(169, 147, 147, 0.7);
+    top: 20%;
+    width: 100%;
+    height: 70%;
   }
 }
 </style>

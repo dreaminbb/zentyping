@@ -1,5 +1,6 @@
-import { defineComponent, ref, inject, type Ref } from 'vue';
-import { Chart as ChartJS, registerables, LineController, Title } from 'chart.js';
+import { defineComponent, ref, type PropType, type Ref } from 'vue';
+import { Chart as ChartJS, registerables, LineController, Title, type ChartData, type ChartOptions } from 'chart.js';
+import type { ranking_data_if } from '@/interface'
 import { LineChart, PieChart } from 'vue-chart-3';
 
 ChartJS.register(...registerables);
@@ -8,8 +9,20 @@ export const pie_chart = defineComponent({
   components: {
     PieChart: PieChart,
   },
-  setup() {
-    const correct_rate = inject('correct_rate') as Ref<number>;
+  props: {
+    chart_data: {
+      type: Number,
+      required: true
+    },
+  },
+  setup(props: { chart_data: number }) {
+
+    if (props.chart_data === undefined) {
+      throw new Error('correct_rate is undefined');
+    }
+    console.log('nothing undefind in pie chart')
+
+    const correct_rate = ref<number>(props.chart_data);
     const data = ref({
       labels: ['correct', 'nobisiro'],
       datasets: [
@@ -39,7 +52,7 @@ export const pie_chart = defineComponent({
 
     return {
       data,
-      options,
+      options
     };
   },
   template: `
@@ -52,37 +65,51 @@ export const line_chart = defineComponent({
   components: {
     LineChart: LineChart,
   },
-  setup() {
-    const time = inject("time") as Ref<number>
-    const time_format: Array<number> = [];
-    const correct_per_second = inject("correct_per_second") as Ref<Array<number>>;
-    const input_per_second_arr = inject("input_per_second_arr") as Ref<Array<number>>
+  props: {
+    chart_data: {
+      type: Object as PropType<ranking_data_if>,
+      required: true
+    }
+  },
+  setup(props: { chart_data: ranking_data_if }) {
+
+    if (Object.values(props.chart_data).includes(undefined)) {
+      const undefinedKeys = Object.keys(props.chart_data).filter(key => (props.chart_data as any)[key] === undefined);
+      console.error('Undefined keys in chart_data:', undefinedKeys);
+      throw new Error('chart_data contains undefined values');
+    }
+    console.log('nothing undefind in line chart')
+
+    const time: number = props.chart_data.time;
+    const correct_per_second_arr: Array<number> = props.chart_data.correct_per_second_arr
+    const input_per_second_arr: Array<number> = props.chart_data.input_per_second_arr
+    const time_format: Array<number> = []
     const formated_input_per_second_arr: Array<number> = []
-    const formated_correct_per_second: Array<number> = []
-
-
-    for (let i = 1; i < correct_per_second.value.length / 10; i++) {
-      formated_correct_per_second.push(Math.round(correct_per_second.value[i * 10] * 100) / 100)
-      formated_input_per_second_arr.push(Math.round(input_per_second_arr.value[i * 10] * 100) / 100)
+    const formated_correct_per_second_arr: Array<number> = []
+    // 値にアクススできていない
+    console.log(time, correct_per_second_arr, input_per_second_arr)
+    for (let i = 1; i < correct_per_second_arr.length / 10; i++) {
+      formated_correct_per_second_arr.push(Math.round(correct_per_second_arr[i * 10] * 100) / 100)
+      formated_input_per_second_arr.push(Math.round(input_per_second_arr[i * 10] * 100) / 100)
     }
 
-    formated_correct_per_second.push(Math.round(correct_per_second.value[correct_per_second.value.length - 1] * 100) / 100)
-    formated_input_per_second_arr.push(Math.round(input_per_second_arr.value[input_per_second_arr.value.length - 1] * 100) / 100)
+    formated_correct_per_second_arr.push(Math.round(correct_per_second_arr[correct_per_second_arr.length - 1] * 100) / 100)
+    formated_input_per_second_arr.push(Math.round(input_per_second_arr[input_per_second_arr.length - 1] * 100) / 100)
     const height_max = Math.max(...formated_input_per_second_arr) + 1
 
 
-    for (let i = 1; i < time.value; i++) {
+    for (let i = 1; i < time; i++) {
       time_format.push(i)
     }
 
-    time_format.push(time.value)
+    time_format.push(time)
 
     const data = ref({
       labels: time_format,
       datasets: [
         {
           label: '１秒ごとの正入力',
-          data: formated_correct_per_second,
+          data: formated_correct_per_second_arr,
           backgroundColor: ['rgba(134, 95, 255, 0.5)'],
         },
         {

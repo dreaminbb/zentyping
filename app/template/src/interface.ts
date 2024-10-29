@@ -32,12 +32,12 @@ export interface fetching_ranking_deta_param_if {
 
 export interface ranking_data_if {
     "correct_count": number,
-    "correct_per_second": Array<number>,
+    "correct_per_second_arr": Array<number>,
     "correct_per_second_num": number,
     "correct_rate": number
     "id": number,
     "incorrect_count": number,
-    "input_per_second": Array<number>,
+    "input_per_second_arr": Array<number>,
     "input_per_second_num": number,
     "length": number
     "level": string,
