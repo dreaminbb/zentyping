@@ -86,8 +86,8 @@ export const line_chart = defineComponent({
     const time_format: Array<number> = []
     const formated_input_per_second_arr: Array<number> = []
     const formated_correct_per_second_arr: Array<number> = []
-    // 値にアクススできていない
-    console.log(time, correct_per_second_arr, input_per_second_arr)
+
+
     for (let i = 1; i < correct_per_second_arr.length / 10; i++) {
       formated_correct_per_second_arr.push(Math.round(correct_per_second_arr[i * 10] * 100) / 100)
       formated_input_per_second_arr.push(Math.round(input_per_second_arr[i * 10] * 100) / 100)

@@ -1,23 +1,22 @@
 <script lang="ts" setup>
 import type { ranking_data_if } from '@/interface'
-import { onBeforeMount, onMounted, ref } from 'vue'
+import { onBeforeMount, onMounted, ref, type Ref } from 'vue'
 import { ranking_data_manager } from '@/services/fetching_deta'
-import { pie_chart, line_chart } from '@/components/play_info_charts'
+import play_result from '@/components/play_result.vue'
 
 // クリック => グラフのデータを関数で返す => グラフを表示する
-const is_display_result_chart = ref<boolean>(false)
+const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
 const rdm_ins = ref(new ranking_data_manager())
-const line_chart_data = ref<ranking_data_if>({} as ranking_data_if)
-const pie_chart_data = ref<number>(0)
+const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_data_if)
 
-onBeforeMount(async () => {})
+// onBeforeMount(async () => {})
 onMounted(async () => {
   console.log('on mounted')
   console.log(rdm_ins.value.ranking_data_arr, 'rdm_ins.ranking_data_arr')
   await rdm_ins.value.fetch_data({
     level: 'short',
     range_from: 0,
-    range_to: 10
+    range_to: 30
   })
   if (!rdm_ins.value.ranking_data_arr) {
     rdm_ins.value.ranking_data_arr = []
@@ -28,11 +27,9 @@ onMounted(async () => {
 
 function display_charts(index: number): ranking_data_if {
   is_display_result_chart.value = true
-  //during execution of component update at <UserRanking onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref<
-  // チャートを表示させたいけどエラーが出る
+
   if (rdm_ins.value.ranking_data_arr && rdm_ins.value.ranking_data_arr[index]) {
-    line_chart_data.value = rdm_ins.value.ranking_data_arr[index]
-    pie_chart_data.value = rdm_ins.value.ranking_data_arr[index].correct_rate
+    result_data.value = rdm_ins.value.ranking_data_arr[index]
   } else {
     console.error('Invalid index or ranking data array is undefined')
   }
@@ -75,9 +72,8 @@ function display_charts(index: number): ranking_data_if {
       </tr>
     </table>
 
-    <div id="chart_area" v-if="is_display_result_chart">
-      <line_chart :chart_data="line_chart_data" />
-      <pie_chart :chart_data="pie_chart_data" />
+    <div id="rusult_area" v-if="is_display_result_chart">
+      <play_result :data="result_data" />
     </div>
   </div>
 </template>
@@ -122,12 +118,25 @@ body {
     }
   }
 
-  #chart_area {
-    position: relative;
+  #rusult_area {
+    position: absolute;
     background: rgba(169, 147, 147, 0.7);
     top: 20%;
-    width: 100%;
-    height: 70%;
+    right: 10%;
+    width: 80%;
+    height: 300px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 0.3fr 1fr;
+    grid-template-rows: 1fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+
+    #line_chart {
+      .div1 {
+        grid-area: 1 / 1 / 2 / 2;
+      }
+    }
   }
 }
 </style>

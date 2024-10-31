@@ -45,6 +45,7 @@ export interface ranking_data_if {
     "play_count": number,
     "played_at": string,
     "time": number,
+    "pun_count": number
 }
 
 export interface all_play_history {
