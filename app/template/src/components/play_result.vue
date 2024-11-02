@@ -28,11 +28,16 @@ export default defineComponent({
 <template>
   <div>
     <div id="play_result_main">
-      <div>詳細おっぱい</div>
+      <div id="play_detail_container">
+        <div class="play_detail_container_elm">{{ $props.data.correct_per_second_num }}</div>
+        <div class="play_detail_container_elm">{{ $props.data.input_per_second_num }}</div>
+      </div>
       <div class="chart_container">
         <line_chart :chart_data="line_chart_data" id="line_chart" class="chart_elm" />
       </div>
-      <div id="user_name">ユーザーネーム</div>
+      <div id="user_name_container">
+        <div>{{ $props.data.name }}</div>
+      </div>
       <div id="result_container">
         <div id="char_detail">
           {{ $props.data.length }} / {{ $props.data.correct_count }} /
@@ -68,22 +73,45 @@ export default defineComponent({
   grid-column-gap: 10px;
   grid-row-gap: 10px;
 
+  #play_detail_container {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-row-gap: 10px;
+    align-items: center;
+    justify-content: center;
+
+    .play_detail_container_elm {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+
   .chart_container {
     width: 100%;
     height: 100%;
     display: flex;
+    padding: 10px 5px 10px 0px;
 
     .chart_elm {
       width: 100%;
+      height: 100%;
       background: rgba(255, 255, 255, 0.58);
-      border-radius: 16px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(7.1px);
-      -webkit-backdrop-filter: blur(7.1px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      overflow: hidden;
     }
   }
+}
+
+#user_name_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  padding-left: 20px;
 }
 
 #result_container {

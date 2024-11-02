@@ -71,7 +71,9 @@ function display_charts(index: number): ranking_data_if {
       </tr>
     </table>
 
-    <play_result :data="result_data" id="play_result_comp" v-if="is_display_result_chart" />
+    <div id="play_result_container" v-if="is_display_result_chart">
+      <play_result :data="result_data" id="play_result_comp" />
+    </div>
   </div>
 </template>
 
@@ -117,13 +119,21 @@ function display_charts(index: number): ranking_data_if {
     }
   }
 
-  #play_result_comp {
+  #play_result_container {
     position: absolute;
     background: rgba(169, 147, 147, 0.7);
     top: 20%;
     right: 5%;
     width: 90%;
     height: 45%;
+
+    #play_result_comp {
+      position: relative;
+      width: 90%;
+      height: 95%;
+      justify-self: center;
+      align-self: center;
+    }
   }
 }
 </style>
