@@ -1,4 +1,4 @@
-import type { fetching_ranking_deta_param_if, line_data_if } from "@/interface";
+import type { fetching_ranking_data_param_if } from "@/interface";
 import type { ranking_data_if } from "@/interface";
 
 export class ranking_data_manager {
@@ -20,7 +20,8 @@ export class ranking_data_manager {
                                 name: 'someone',
                                 play_count: 0,
                                 played_at: 'the time',
-                                time: 0
+                                time: 0,
+                                pun_count: 0
                 }
 
                 constructor() {
@@ -34,8 +35,8 @@ export class ranking_data_manager {
 
 
                 // APIからデータを取得
-                public async fetch_data(prameter: fetching_ranking_deta_param_if): Promise<any> {
-                                const queryParams = new URLSearchParams(Object.entries(prameter).map(([key, value]) => [key, value.toString()])).toString();
+                public async fetch_data(parameter: fetching_ranking_data_param_if): Promise<any> {
+                                const queryParams = new URLSearchParams(Object.entries(parameter).map(([key, value]) => [key, value.toString()])).toString();
 
                                 const response = await fetch(`${this.base_url}?${queryParams}`, {
                                                 method: 'GET',
@@ -72,9 +73,9 @@ export class ranking_data_manager {
                 }
 
                 // インデックスの値からプレイのデータを取得
-                result_data_follow_index(index: number): { pie_chart_data: number, line_chart_value: line_data_if } {
+                result_data_follow_index(index: number): { pie_chart_data: number, line_chart_value: any } {
                                 const pie_chart_data: number = this.ranking_data_arr[index].correct_rate
-                                const line_chart_value: line_data_if = {
+                                const line_chart_value = {
                                                 time: this.ranking_data_arr[index]['time'],
                                                 correct_per_second_arr: this.ranking_data_arr[index].correct_per_second_arr,
                                                 input_per_second_arr: this.ranking_data_arr[index].input_per_second_arr

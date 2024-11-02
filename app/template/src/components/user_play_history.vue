@@ -5,7 +5,7 @@ import user_active_calender from '@/components/user_activity_calender.vue'
 import { LineChart, PieChart } from 'vue-chart-3'
 import type { ChartData } from 'chart.js'
 import type {
-  play_history_formated_if,
+  play_history_formate_if,
   play_history_if,
   play_info_chart_option_if
 } from '@/interface'
@@ -56,7 +56,7 @@ class play_history_format_cal {
 
   format_play_history_data_by_year_month_week(
     play_history: play_history_if[]
-  ): play_history_formated_if {
+  ): play_history_formate_if {
     const now = new Date()
     const year = now.getFullYear()
     const month = String(now.getMonth() + 1).padStart(2, '0')

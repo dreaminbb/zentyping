@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { ranking_data_if } from '@/interface'
 import { onBeforeMount, onMounted, ref, type Ref } from 'vue'
-import { ranking_data_manager } from '@/services/fetching_deta'
+import { ranking_data_manager } from '../services/fetching_data'
 import play_result from '@/components/play_result.vue'
 
 // クリック => グラフのデータを関数で返す => グラフを表示する
@@ -16,7 +16,7 @@ onMounted(async () => {
   await rdm_ins.value.fetch_data({
     level: 'short',
     range_from: 0,
-    range_to: 30
+    range_to: 40
   })
   if (!rdm_ins.value.ranking_data_arr) {
     rdm_ins.value.ranking_data_arr = []
@@ -26,20 +26,19 @@ onMounted(async () => {
 })
 
 function display_charts(index: number): ranking_data_if {
-  is_display_result_chart.value = true
-
   if (rdm_ins.value.ranking_data_arr && rdm_ins.value.ranking_data_arr[index]) {
     result_data.value = rdm_ins.value.ranking_data_arr[index]
   } else {
     console.error('Invalid index or ranking data array is undefined')
   }
   console.log(rdm_ins.value.ranking_data_arr[index])
+  is_display_result_chart.value = true
   return rdm_ins.value.ranking_data_arr[index]
 }
 </script>
 
 <template>
-  <div>
+  <div id="ranking_main">
     <table id="ranking_table">
       <tr id="ranking_label_fm">
         <th v-for="key in 7" :key="key">
@@ -72,19 +71,19 @@ function display_charts(index: number): ranking_data_if {
       </tr>
     </table>
 
-    <div id="rusult_area" v-if="is_display_result_chart">
-      <play_result :data="result_data" />
-    </div>
+    <play_result :data="result_data" id="play_result_comp" v-if="is_display_result_chart" />
   </div>
 </template>
 
-<style lang="scss">
-body {
+<style lang="scss" scoped>
+#ranking_main {
   height: 700%;
   width: 100%;
-  background: rgba(169, 147, 147, 0.5);
+  background: rgba(169, 147, 147, 0.5) !important;
   overflow-x: hidden;
   overflow-y: scroll;
+
+  // なんか知らんけどグラフがビヨーンって伸びるので copilot これを修正してくれ
 
   #ranking_table {
     position: absolute;
@@ -118,25 +117,13 @@ body {
     }
   }
 
-  #rusult_area {
+  #play_result_comp {
     position: absolute;
     background: rgba(169, 147, 147, 0.7);
     top: 20%;
-    right: 10%;
-    width: 80%;
-    height: 300px;
-    padding: 10px;
-    display: grid;
-    grid-template-columns: 0.3fr 1fr;
-    grid-template-rows: 1fr;
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
-
-    #line_chart {
-      .div1 {
-        grid-area: 1 / 1 / 2 / 2;
-      }
-    }
+    right: 5%;
+    width: 90%;
+    height: 45%;
   }
 }
 </style>

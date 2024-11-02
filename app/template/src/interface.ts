@@ -22,9 +22,9 @@ export interface play_history_if {
 
 export interface fetching_ranking_res_if {
     'message': string,
-    'deta': Array<ranking_data_if>
+    'data': Array<ranking_data_if>
 }
-export interface fetching_ranking_deta_param_if {
+export interface fetching_ranking_data_param_if {
     'level': string,
     'range_from': number,
     'range_to': number
@@ -54,7 +54,7 @@ export interface all_play_history {
     'long': Array<play_history_if>
 }
 
-export interface play_history_formated_if {
+export interface play_history_formate_if {
     year_history: Array<Array<play_history_if>>,
     month_history: Array<Array<play_history_if>>,
     week_history: Array<Array<play_history_if>>,

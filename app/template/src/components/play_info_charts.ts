@@ -20,7 +20,7 @@ export const pie_chart = defineComponent({
     if (props.chart_data === undefined) {
       throw new Error('correct_rate is undefined');
     }
-    console.log('nothing undefind in pie chart')
+    console.log('nothing undefined in pie chart')
 
     const correct_rate = ref<number>(props.chart_data);
     const data = ref({
@@ -78,24 +78,24 @@ export const line_chart = defineComponent({
       console.error('Undefined keys in chart_data:', undefinedKeys);
       throw new Error('chart_data contains undefined values');
     }
-    console.log('nothing undefind in line chart')
+    console.log('nothing undefine in line chart')
 
     const time: number = props.chart_data.time;
     const correct_per_second_arr: Array<number> = props.chart_data.correct_per_second_arr
     const input_per_second_arr: Array<number> = props.chart_data.input_per_second_arr
     const time_format: Array<number> = []
-    const formated_input_per_second_arr: Array<number> = []
-    const formated_correct_per_second_arr: Array<number> = []
+    const formatted_input_per_second_arr: Array<number> = []
+    const formatted_correct_per_second_arr: Array<number> = []
 
 
     for (let i = 1; i < correct_per_second_arr.length / 10; i++) {
-      formated_correct_per_second_arr.push(Math.round(correct_per_second_arr[i * 10] * 100) / 100)
-      formated_input_per_second_arr.push(Math.round(input_per_second_arr[i * 10] * 100) / 100)
+      formatted_correct_per_second_arr.push(Math.round(correct_per_second_arr[i * 10] * 100) / 100)
+      formatted_input_per_second_arr.push(Math.round(input_per_second_arr[i * 10] * 100) / 100)
     }
 
-    formated_correct_per_second_arr.push(Math.round(correct_per_second_arr[correct_per_second_arr.length - 1] * 100) / 100)
-    formated_input_per_second_arr.push(Math.round(input_per_second_arr[input_per_second_arr.length - 1] * 100) / 100)
-    const height_max = Math.max(...formated_input_per_second_arr) + 1
+    formatted_correct_per_second_arr.push(Math.round(correct_per_second_arr[correct_per_second_arr.length - 1] * 100) / 100)
+    formatted_input_per_second_arr.push(Math.round(input_per_second_arr[input_per_second_arr.length - 1] * 100) / 100)
+    const height_max = Math.max(...formatted_input_per_second_arr) + 1
 
 
     for (let i = 1; i < time; i++) {
@@ -109,12 +109,12 @@ export const line_chart = defineComponent({
       datasets: [
         {
           label: '１秒ごとの正入力',
-          data: formated_correct_per_second_arr,
+          data: formatted_correct_per_second_arr,
           backgroundColor: ['rgba(134, 95, 255, 0.5)'],
         },
         {
           label: "１秒ごとの入力",
-          data: formated_input_per_second_arr,
+          data: formatted_input_per_second_arr,
           backgroundColor: ["rgba(255, 255, 255, 0.61)"],
         }
       ],
@@ -125,13 +125,15 @@ export const line_chart = defineComponent({
       maintainAspectRatio: false,
       scales: {
         x: {
-          min: 1,
-          max: time_format[time_format.length]
+          min: 0,
+          beginAtZero: true,
+          max: time_format[time_format.length],
         },
         y: {
           min: 0,
+          beginAtZero: true,
           max: height_max
-        }
+        },
       }
     })
 
@@ -143,5 +145,4 @@ export const line_chart = defineComponent({
   template: `
     <LineChart :chart-data="data" :options="options" />
   `,
-
 });

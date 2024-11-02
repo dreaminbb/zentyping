@@ -12,7 +12,7 @@ def generate_play_history(mount: int, level: str):
     id = random.randint(1, 30)
     level = level
     play_count = mount
-    time = random.uniform(0.0, 100.0)
+    time = round(random.uniform(0.0, 100.0), 1)
     correct_count = random.randint(0, 100)
     incorrect_count = random.randint(0, 100)
     correct_rate = random.uniform(0.0, 100.0)
@@ -41,7 +41,7 @@ def generate_play_history(mount: int, level: str):
     }
 
 
-def add_ramdom_user(mount: int):
+def add_random_user(mount: int):
     print(f"{mount}個のユーザーサンプルデータ作成開始")
     for i in range(mount):
         print(f"{i+1}個目のユーザーサンプルデータ作成中")
@@ -105,4 +105,4 @@ def add_ramdom_user(mount: int):
     print(f"{mount}個のユーザーサンプルデータ作成完了")
 
 
-add_ramdom_user(10)
+add_random_user(100)

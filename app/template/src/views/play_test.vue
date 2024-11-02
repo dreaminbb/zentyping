@@ -958,7 +958,7 @@ main {
   color: #f25353;
 }
 
-#graph_frame {
+/* /* #graph_frame {
   position: absolute;
   display: flex;
   background-color: transparent;
@@ -1123,5 +1123,5 @@ main {
 #back_game:hover {
   outline: none;
   border-color: rgba(255, 255, 255, 0.3);
-}
+} */
 </style>

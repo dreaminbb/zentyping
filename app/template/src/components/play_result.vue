@@ -1,12 +1,11 @@
 <script lang="ts">
 import { defineComponent, ref, type PropType, type Ref } from 'vue'
 import type { ranking_data_if } from '@/interface'
-import { pie_chart, line_chart } from '@/components/play_info_charts'
+import { line_chart } from '@/components/play_info_charts'
 
 export default defineComponent({
   name: 'play_result',
   components: {
-    pie_chart,
     line_chart
   },
   props: {
@@ -18,14 +17,9 @@ export default defineComponent({
   setup(props) {
     const pie_chart_data: Ref<number> = ref(props.data.correct_rate)
     const line_chart_data: Ref<ranking_data_if> = ref(props.data)
-
-    function back_game(): void {
-      console.log('I am backed')
-    }
     return {
       pie_chart_data,
-      line_chart_data,
-      back_game,
+      line_chart_data
     }
   }
 })
@@ -33,31 +27,109 @@ export default defineComponent({
 
 <template>
   <div>
-    <div id="graph_frame">
-      <line_chart :chart_data="line_chart_data" id="line_chart" />
-      <pie_chart :chart_data="pie_chart_data" id="pie_chart" />
-    </div>
-    <div id="result_container">
-      <div id="char_detail">
-        {{ $props.data.length }} / {{ $props.data.correct_count }} /
-        {{ $props.data.length - $props.data.correct_count }}
+    <div id="play_result_main">
+      <div>詳細おっぱい</div>
+      <div class="chart_container">
+        <line_chart :chart_data="line_chart_data" id="line_chart" class="chart_elm" />
       </div>
-      <div id="time_display">{{ $props.data.time }} s</div>
-      <div id="pun_count">{{ $props.data.pun_count }}</div>
+      <div id="user_name">ユーザーネーム</div>
+      <div id="result_container">
+        <div id="char_detail">
+          {{ $props.data.length }} / {{ $props.data.correct_count }} /
+          {{ $props.data.length - $props.data.correct_count }}
+        </div>
+        <div id="time_display">{{ $props.data.time }} s</div>
+        <div id="pun_count">{{ $props.data.pun_count }}</div>
+      </div>
     </div>
-
-    <button @click="back_game" id="back_game" ref="back_game_button">
-      <svg
-        id="play_init_svg"
-        xmlns="http://www.w3.org/2000/svg"
-        height="24px"
-        viewBox="0 -960 960 960"
-        width="24px"
-      >
-        <path
-          d="M760-200v-160q0-50-35-85t-85-35H273l144 144-57 56-240-240 240-240 57 56-144 144h367q83 0 141.5 58.5T840-360v160h-80Z"
-        />
-      </svg>
-    </button>
   </div>
 </template>
+
+<style lang="scss" scoped>
+// I love coding but same time i hate it
+// I feel so miserable  when i can't solve the problem
+//  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+// |       |                             |
+// |   詳  |                             |
+// |   細  |          グラフ              |
+// |       |                             |
+// |_______|_____________________________
+// |       |                             |
+// |  名前  |          詳細               |
+// |_ _ _ _|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _|
+
+#play_result_main {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 10% 1fr;
+  grid-template-rows: 80% 1fr;
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
+
+  .chart_container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+
+    .chart_elm {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.58);
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(7.1px);
+      -webkit-backdrop-filter: blur(7.1px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      overflow: hidden;
+    }
+  }
+}
+
+#result_container {
+  padding-left: 20px;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+
+  div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  #char_detail::after {
+    content: '長さ / 正解 / 間違い';
+  }
+
+  #time_display::after {
+    content: '時間';
+  }
+
+  #pun_count::after {
+    content: '句読点';
+  }
+
+  #char_detail:focus,
+  #char_detail:hover,
+  #time_display:focus,
+  #time_display:hover,
+  #pun_count:focus #pun_count:hover {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  #char_detail:hover::after,
+  #char_detail:focus::after,
+  #time_display:hover::after,
+  #time_display:focus::after,
+  #pun_count:hover::after,
+  #pun_count:focus:after {
+    display: block;
+  }
+}
+</style>
