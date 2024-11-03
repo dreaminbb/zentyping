@@ -1,0 +1,21 @@
+ :root {
+                 --background-color: #181a24;
+                 --sub-background-color: #121212;
+                 --primary-color: #bb9af7;
+                 --secondary-color: #7aa2f7;
+                 --success-color: #28a745;
+                 --danger-color: #dc3545;
+                 --warning-color: #ffc107;
+                 --info-color: #ee0000;
+                 --light-color: #f8f9fa;
+                 --font-color: #ffffff;
+                 --title-color: #1a2040;
+                 --dark-color: #343a40;
+ }
+
+ body {
+                 background: var(--background-color);
+                 font-family: monospace;
+                 margin: 0;
+                 padding: 0;
+ }

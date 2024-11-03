@@ -147,7 +147,6 @@ const logout = () => {
 #app_main {
   height: 100%;
   width: 100%;
-  background-color:red;
   justify-content: center;
   overflow: auto;
 
@@ -163,7 +162,7 @@ const logout = () => {
 
   header {
     position: absolute;
-    top: 0;
+    top: 50px;
     height: 7%;
     width: 100%;
     background-color: transparent;

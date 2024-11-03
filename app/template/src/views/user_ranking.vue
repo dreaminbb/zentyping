@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { ranking_data_if } from '@/interface'
-import { onBeforeMount, onMounted, ref, type Ref } from 'vue'
+import { onMounted, ref, type Ref } from 'vue'
 import { ranking_data_manager } from '../services/fetching_data'
 import play_result from '@/components/play_result.vue'
 
@@ -25,13 +25,30 @@ onMounted(async () => {
   console.log(rdm_ins.value.ranking_data_arr, 'rdm_ins.ranking_data_arr')
 })
 
-function display_charts(index: number): ranking_data_if {
+function show_off_display_result_chart_keydown(event: KeyboardEvent): void {
+  // click event = outside of the result element
+  if (KeyboardEvent && event instanceof KeyboardEvent) {
+    if (event.key === 'Escape') {
+      console.log('Escape key is pressed')
+      is_display_result_chart.value = false
+      removeEventListener('keydown', show_off_display_result_chart_keydown)
+    }
+  }
+}
+
+function show_off_display_result_chart(): void {
+  is_display_result_chart.value = false
+  removeEventListener('keydown', show_off_display_result_chart_keydown)
+}
+function display_charts(index: number): ranking_data_if | void {
   if (rdm_ins.value.ranking_data_arr && rdm_ins.value.ranking_data_arr[index]) {
     result_data.value = rdm_ins.value.ranking_data_arr[index]
   } else {
     console.error('Invalid index or ranking data array is undefined')
   }
   console.log(rdm_ins.value.ranking_data_arr[index])
+  addEventListener('keydown', show_off_display_result_chart_keydown)
+  console.log(is_display_result_chart.value)
   is_display_result_chart.value = true
   return rdm_ins.value.ranking_data_arr[index]
 }
@@ -73,19 +90,21 @@ function display_charts(index: number): ranking_data_if {
 
     <div id="play_result_container" v-if="is_display_result_chart">
       <play_result :data="result_data" id="play_result_comp" />
+      <button @click="show_off_display_result_chart()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+// theme color => tokyo night
+@import '../assets/css/main.css';
 #ranking_main {
   height: 700%;
   width: 100%;
-  background: rgba(169, 147, 147, 0.5) !important;
   overflow-x: hidden;
   overflow-y: scroll;
-
-  // なんか知らんけどグラフがビヨーンって伸びるので copilot これを修正してくれ
 
   #ranking_table {
     position: absolute;
@@ -101,16 +120,18 @@ function display_charts(index: number): ranking_data_if {
 
     tr {
       height: 50px;
-      border-bottom: 1px solid #ddd;
     }
 
     tr:nth-child(1) {
-      background: rgba(169, 147, 147, 0.7);
-      border-radius: 10%;
+      background-color: var(--background-color);
     }
 
     tr:nth-child(even) {
-      background: #ddd;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.502);
+    }
+    tr:nth-child(odd) {
+      background: var(--primary-color);
     }
 
     #crown {
@@ -121,11 +142,14 @@ function display_charts(index: number): ranking_data_if {
 
   #play_result_container {
     position: absolute;
-    background: rgba(169, 147, 147, 0.7);
+    background: var(--sub-background-color);
     top: 20%;
     right: 5%;
     width: 90%;
     height: 45%;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: 95% 5%;
 
     #play_result_comp {
       position: relative;
@@ -133,6 +157,29 @@ function display_charts(index: number): ranking_data_if {
       height: 95%;
       justify-self: center;
       align-self: center;
+    }
+
+    button {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      opacity: 0.8;
+      justify-self: right;
+      background: var(--primary-color);
+      border-radius: 20px;
+      color: var(--font-color);
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer; // マウスが重なった時にカーソルが変わる
+      transition: 0.3s;
+      &:hover {
+        box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+        background: var(--secondary-color);
+        justify-self: right;
+        width: 50px;
+        height: 50px;
+        transition: 0.3s ease;
+      }
     }
   }
 }

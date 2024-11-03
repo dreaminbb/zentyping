@@ -51,6 +51,7 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
+@import '../assets/css/main.css';
 // I love coding but same time i hate it
 // I feel so miserable  when i can't solve the problem
 //  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
@@ -72,6 +73,7 @@ export default defineComponent({
   grid-template-rows: 80% 1fr;
   grid-column-gap: 10px;
   grid-row-gap: 10px;
+  padding: 10px;
 
   #play_detail_container {
     display: grid;
@@ -99,8 +101,9 @@ export default defineComponent({
 
     .chart_elm {
       width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.58);
+      height: 90%;
+      border-radius: 10px;
+      background: var(--primary-color);
     }
   }
 }
