@@ -17,9 +17,15 @@ export default defineComponent({
   setup(props) {
     const pie_chart_data: Ref<number> = ref(props.data.correct_rate)
     const line_chart_data: Ref<ranking_data_if> = ref(props.data)
+
+    function goto_user_profile(): void {
+      console.log('goto user profile')
+    }
+
     return {
       pie_chart_data,
-      line_chart_data
+      line_chart_data,
+      goto_user_profile
     }
   }
 })
@@ -36,7 +42,7 @@ export default defineComponent({
         <line_chart :chart_data="line_chart_data" id="line_chart" class="chart_elm" />
       </div>
       <div id="user_name_container">
-        <div>{{ $props.data.name }}</div>
+        <div id="user_name" @click="goto_user_profile">{{ $props.data.name }}</div>
       </div>
       <div id="result_container">
         <div id="char_detail">
@@ -115,6 +121,10 @@ export default defineComponent({
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   padding-left: 20px;
+
+  #user_name {
+    cursor: pointer;
+  }
 }
 
 #result_container {
