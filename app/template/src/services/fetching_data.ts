@@ -5,7 +5,15 @@ export class ranking_data_manager {
                 base_url: string;
                 pra: { level: string; range_from: number; range_to: number };
                 error_data: Array<ranking_data_if> = [];
-                ranking_data_arr: Array<ranking_data_if> = []
+                ranking_data_obj: {
+                                'short': Array<ranking_data_if>,
+                                'normal': Array<ranking_data_if>,
+                                'long': Array<ranking_data_if>
+                } = {
+                                                'short': [],
+                                                'normal': [],
+                                                'long': []
+                                }
                 sample_ranking_data_obj: ranking_data_if = {
                                 correct_count: 0,
                                 correct_per_second_arr: [0],
@@ -58,9 +66,8 @@ export class ranking_data_manager {
                                 const res = JSON.parse(text);
                                 console.log(res)
                                 if (contentType && contentType.includes('application/json') && status_code === 200) {
-                                                console.log('good res')
-                                                this.ranking_data_arr = res['data']
-                                                return text ? { 'message': res['message'] } : {};
+                                                this.ranking_data_obj[parameter['level'] as 'short' | 'normal' | 'long'] = res['data']
+                                                return text ? { 'message': res['message'], 'data': res['data'] } : {};
                                 } else {
                                                 console.log('bad res')
                                                 const tmp_arr = []
@@ -70,16 +77,5 @@ export class ranking_data_manager {
                                                 return text ? { 'message': res['message'] } : {}
                                 }
 
-                }
-
-                // インデックスの値からプレイのデータを取得
-                result_data_follow_index(index: number): { pie_chart_data: number, line_chart_value: any } {
-                                const pie_chart_data: number = this.ranking_data_arr[index].correct_rate
-                                const line_chart_value = {
-                                                time: this.ranking_data_arr[index]['time'],
-                                                correct_per_second_arr: this.ranking_data_arr[index].correct_per_second_arr,
-                                                input_per_second_arr: this.ranking_data_arr[index].input_per_second_arr
-                                }
-                                return { pie_chart_data, line_chart_value }
                 }
 }

@@ -6,6 +6,7 @@ import play_result from '@/components/play_result.vue'
 
 // クリック => グラフのデータを関数で返す => グラフを表示する
 const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
+const displaying_level: Ref<string> = ref<string>('short')
 const rdm_ins = ref(new ranking_data_manager())
 const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_data_if)
 const type_to_search_user_text: string = 'ユーザー名を入力してください'
@@ -13,43 +14,44 @@ const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 
-// onBeforeMount(async () => {})
+// onBeforeMount(async () => {}})
 
 onMounted(async () => {
-  console.log('on mounted')
-  console.log(rdm_ins.value.ranking_data_arr, 'rdm_ins.ranking_data_arr')
   await rdm_ins.value.fetch_data({
-    level: 'short',
+    level: 'short', 
     range_from: 0,
     range_to: 40
   })
-  if (!rdm_ins.value.ranking_data_arr) {
-    rdm_ins.value.ranking_data_arr = []
-  }
   short_level.value?.classList.add('chosen_level')
-  console.log('on before mount')
-  console.log(rdm_ins.value.ranking_data_arr, 'rdm_ins.ranking_data_arr')
 })
-// const short_level: HTMLElement = document.getElementById('short_level') as HTMLElement
-// const normal_level: HTMLElement = document.getElementById('normal_level') as HTMLElement
-// const long_level: HTMLElement = document.getElementById('long_level') as HTMLElement
 
-function switch_level(level: string): void {
-  if (short_level.value && normal_level.value && long_level.value) {
+// インスタンスしたクラスの中の変数を使うのは良くないのでは？？？？
+
+async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
+  console.log(rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'])
+  displaying_level.value = level
+  console.log(rdm_ins.value.ranking_data_obj , "33")
+  
+  if (rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'].length === 0) {
+    console.log('fetching data')
+    await rdm_ins.value.fetch_data({
+      level: level,
+      range_from: 0,
+      range_to: 40
+    })
+  }
+  if (short_level.value && normal_level.value && long_level.value && ['short', 'normal', 'long'].includes(level)) {
     short_level.value.classList.remove('chosen_level')
     normal_level.value.classList.remove('chosen_level')
     long_level.value.classList.remove('chosen_level')
     switch (level) {
       case 'short':
-        console.log(level)
         short_level.value.classList.add('chosen_level')
         break
-      case 'normal':
-        console.log(level)
+        case 'normal':
         normal_level.value.classList.add('chosen_level')
         break
       case 'long':
-        console.log(level)
         long_level.value.classList.add('chosen_level')
         break
       default:
@@ -76,16 +78,18 @@ function show_off_display_result_chart(): void {
   removeEventListener('keydown', show_off_display_result_chart_keydown)
 }
 function display_charts(index: number): ranking_data_if | void {
-  if (rdm_ins.value.ranking_data_arr && rdm_ins.value.ranking_data_arr[index]) {
-    result_data.value = rdm_ins.value.ranking_data_arr[index]
+  const tmp = rdm_ins.value.ranking_data_obj[displaying_level.value as 'short' | 'normal' | 'long']
+
+  if (rdm_ins.value.ranking_data_obj && tmp[index]) {
+    result_data.value = tmp[index]
   } else {
     console.error('Invalid index or ranking data array is undefined')
   }
-  console.log(rdm_ins.value.ranking_data_arr[index])
+  console.log(tmp[index])
   addEventListener('keydown', show_off_display_result_chart_keydown)
   console.log(is_display_result_chart.value)
   is_display_result_chart.value = true
-  return rdm_ins.value.ranking_data_arr[index]
+  return tmp[index]
 }
 </script>
 
@@ -135,8 +139,10 @@ function display_charts(index: number): ranking_data_if | void {
         </th>
       </tr>
       <tr
-        v-for="(user, index) in rdm_ins.ranking_data_arr"
-        :key="user.id"
+        v-for="(user, index) in rdm_ins.ranking_data_obj[
+          displaying_level as 'short' | 'normal' | 'long'
+        ]"
+        :key="`${user.id}-${index}`"
         class="ranking_list"
         @click="() => display_charts(index)"
       >
