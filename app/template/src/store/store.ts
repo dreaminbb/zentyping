@@ -53,7 +53,7 @@ export const user_info = defineStore('user_info', {
           console.log(data['short_correct_rate'], 'short_correct_rate') //todo undifined
           console.log(data['normal_correct_rate'], 'normal_correct_rate') //todo undifined
           console.log(data['long_correct_rate'], 'long_correct_rate') //todo undifined
-          
+
           this.user_read_me = (data['user_read_me'] as string) || 'おっぱい大好き'
           this.user_name = (data['user_name'] as string) || '(:'
           this.keyboard = (data['keyboard'] as string) || '油と手垢のつきまくったクソ汚いキーボード'
@@ -107,7 +107,3 @@ export const user_settings = defineStore('user_settings', {
 //         }
 //     }),
 // }
-
-
-
-// export const user_ranking_

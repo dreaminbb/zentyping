@@ -20,7 +20,6 @@ user_bp = Blueprint("user_bp", __name__)
 @limiter.limit("10 per minute", key_func=get_remote_address)
 def get_problem():
     response = play().get_problem()
-    print(response)
     return response
 
 
@@ -68,17 +67,43 @@ def return_ranking() -> Response:
             request.args.get("level"),
             request.args.get("range_from"),
             request.args.get("range_to"),
+            request.args.get("target"),
         )
         fetch_level: Optional[str] = request.args.get("level")
         fetch_renge_start: Optional[int] = int(request.args.get("range_from") or 0)
         fetch_renge_end: Optional[int] = int(request.args.get("range_to") or 10)
-        tmp = ranking_cache[fetch_level][fetch_renge_start:fetch_renge_end]
-        res = make_response({"message": "ランキングを取得しました。", "data": tmp}, 200)
-    except KeyError:
-        res = make_response({"message": "ランキングが見つかりません。"}, 404)
-    except Exception as e:
-        res = make_response({"message": "エラーが発生しました。"}, 500)
-        print(e)
+        fetch_target_user_name: Optional[str] = request.args.get("target" or None)
 
-    print(res)
-    return res
+        tmp = ranking_cache[fetch_level][fetch_renge_start:fetch_renge_end]
+        # ?  設計 = ターゲットがいる場合そのユーザーの付近のランキング(10~{user}~10)も送信
+
+        target_aroud = []
+        if fetch_target_user_name:
+            for i, user in enumerate(tmp):
+                if user["name"] == fetch_target_user_name:
+                    print(i)
+                    if i < 50:
+                       target_aroud = tmp[i - 10 : i + 10]
+                else:
+                    print("not found")
+            print(target_aroud)
+            res = make_response(
+                {
+                    "message": "ランキングを取得しました。",
+                    "data": tmp,
+                    "target_info": target_aroud,
+                },
+                200,
+            )
+            return res
+        elif fetch_target_user_name is None:
+            return make_response(
+                {"message": "ランキングを取得しました。", "data": tmp}, 200
+            )
+    except KeyError as e:
+        print(e)
+        print("not found")
+        return make_response({"message": "ランキングが見つかりません。"}, 404)
+    except Exception as e:
+        print(e)
+        return make_response({"message": f"エラーが発生しました: {str(e)}"}, 500)

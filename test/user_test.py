@@ -19,7 +19,6 @@ from app.config import config
 async def test_cashing():
     try:
         ins = fetch_ranking()
-        # print(await ins.ranking_cache["short"] , await ins.ranking_cache["normal"], await ins.ranking_cache["long"])
         for level in ["short", "normal", "long"]:
             ins.ranking_cache[level] = (
                 await fetch_ranking.fetch_ranking_from_db_to_list(level)

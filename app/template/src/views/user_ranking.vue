@@ -9,38 +9,57 @@ const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
 const displaying_level: Ref<string> = ref<string>('short')
 const rdm_ins = ref(new ranking_data_manager())
 const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_data_if)
-const type_to_search_user_text: string = 'ユーザー名を入力してください'
+const type_to_search_user_text: string = '/user:{名前}   又は   /rank:{順位}'
 const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 
 // onBeforeMount(async () => {}})
-
+// todo ここでfetch_dataを呼び出すと、データが取得される前にDOMが描画されてしまう
 onMounted(async () => {
   await rdm_ins.value.fetch_data({
-    level: 'short', 
+    level: 'short',
     range_from: 0,
-    range_to: 40
+    range_to: 40,
+    target_user_name: null
   })
   short_level.value?.classList.add('chosen_level')
 })
 
-// インスタンスしたクラスの中の変数を使うのは良くないのでは？？？？
+function search_user_by_name(target_user_name: string, level: string): void {
+  console.log(target_user_name)
+  const target_level: Array<ranking_data_if> =
+    rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long']
+  console.log(target_level, '実行時')
+  const value_obj = target_level.find((item) => item.name.includes(target_user_name))
+  console.log(value_obj , 'value_obj')
+  if(value_obj){
+    console.log('user exists')
+  }else{
+    console.log('user does not exist')
+  }
+}
 
 async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
   console.log(rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'])
   displaying_level.value = level
-  console.log(rdm_ins.value.ranking_data_obj , "33")
-  
+  console.log(rdm_ins.value.ranking_data_obj, '33')
+
   if (rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'].length === 0) {
     console.log('fetching data')
     await rdm_ins.value.fetch_data({
       level: level,
       range_from: 0,
-      range_to: 40
+      range_to: 40,
+      target_user_name: null
     })
   }
-  if (short_level.value && normal_level.value && long_level.value && ['short', 'normal', 'long'].includes(level)) {
+  if (
+    short_level.value &&
+    normal_level.value &&
+    long_level.value &&
+    ['short', 'normal', 'long'].includes(level)
+  ) {
     short_level.value.classList.remove('chosen_level')
     normal_level.value.classList.remove('chosen_level')
     long_level.value.classList.remove('chosen_level')
@@ -48,7 +67,7 @@ async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
       case 'short':
         short_level.value.classList.add('chosen_level')
         break
-        case 'normal':
+      case 'normal':
         normal_level.value.classList.add('chosen_level')
         break
       case 'long':
@@ -113,13 +132,14 @@ function display_charts(index: number): ranking_data_if | void {
         v-model="type_to_search_user_text"
         id="search_bar"
       ></textarea>
-
+      <!-- 
       <div id="goto_top_ranker" class="user_or_top_ranker">
         <i class="fas fa-crown"></i>
-      </div>
+      </div> -->
 
       <div id="goto_self_ranking" class="user_or_top_ranker">
         <i class="fa-solid fa-user"></i>
+        <div id="users_ranking">{{}}</div>
       </div>
     </div>
     <table id="ranking_table">
@@ -186,7 +206,7 @@ function display_charts(index: number): ranking_data_if | void {
   #ranking_action_container {
     position: absolute;
     display: grid;
-    grid-template-columns: 1fr 0.8fr 0.3fr 0.3fr;
+    grid-template-columns: 1fr 0.8fr 0.3fr;
     grid-column-gap: 20px;
     color: var(--font-color);
     height: 5%;

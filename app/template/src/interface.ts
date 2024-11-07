@@ -27,7 +27,8 @@ export interface fetching_ranking_res_if {
 export interface fetching_ranking_data_param_if {
     'level': string,
     'range_from': number,
-    'range_to': number
+    'range_to': number,
+    'target_user_name' : string | null
 }
 
 export interface ranking_data_if {
