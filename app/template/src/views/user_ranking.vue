@@ -39,6 +39,7 @@ function search_user_by_name(target_user_name: string, level: string): void {
     console.log('user does not exist')
   }
 }
+search_user_by_name('oppai_user', 'short')
 
 async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
   console.log(rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'])

@@ -1,16 +1,13 @@
 import cachetools
 import schedule
 from cachetools import TTLCache
-from ..config import db, config
+from ..config import db, config , ranking_cache
 
 
 class fetch_ranking:
 
     def __init__(self) -> None:
-        self.ranking_cache = TTLCache(
-            maxsize=config.RANKING_STOREGE_MAX_SIZE,
-            ttl=config.RANKING_STOREGE_EXPIRES_IN,
-        )
+        pass
 
     @staticmethod
     async def fetch_ranking_from_db_to_list(fetch_one_level: str) -> list | None:
@@ -41,6 +38,7 @@ class fetch_ranking:
             sorted(
                 best_play_lists, key=lambda x: x["input_per_second_num"], reverse=True
             )
+
             for ranking in best_play_lists:
                 ranking['ranking'] = best_play_lists.index(ranking)
 
@@ -49,3 +47,25 @@ class fetch_ranking:
         except Exception as e:
             print("fetch_ranking_data_from_dbのtry文 ", f"Error: {e}")
             return None
+
+    @staticmethod
+    def fetch_user_around(target_user_name: str , level: str)-> list:
+        target_aroud = []
+        target_chache = ranking_cache[level]
+        if target_user_name is not None:
+            for user in target_chache:
+                if user["name"] == target_user_name:
+                    # そもそもフロントエンドで確認するから50位以内のリクエストは来ない
+                    index:int = target_chache.index(user)
+                    print(index)
+                    front = index - 10
+                    end = index + 10
+                    target_aroud = target_chache[front: end]
+                    break
+        return target_aroud
+
+    @staticmethod
+    def fetch_ranking_by_renge (start:int , end:int, level:str)->list:
+        # if start or end or level is None:
+        #     raise None
+        return ranking_cache[level][start:end]

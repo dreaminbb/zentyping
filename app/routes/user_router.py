@@ -10,8 +10,11 @@ from flask import (
 from flask_limiter.util import get_remote_address
 from ..model.log import recorder
 from ..model.user import user, play
-from ..config import ranking_cache, limiter
+from ..config import config, limiter
 from ..model.auth import jwt_manager, require_api_key
+from ..storege.ranking_manager import fetch_ranking
+import traceback
+
 
 user_bp = Blueprint("user_bp", __name__)
 
@@ -62,48 +65,81 @@ def return_ranking() -> Response:
     # is_valid = require_api_key(api_key)
     # if not is_valid or api_key is None:
     #     return make_response({"message": "APIキーが不正です。"}, 401)
+
+    # *** コメント
+    # *** 設計 = ターゲットがいる場合そのユーザーの付近のランキング(10~{user}~10)も送信
+
     try:
-        print(
-            request.args.get("level"),
-            request.args.get("range_from"),
-            request.args.get("range_to"),
-            request.args.get("target"),
-        )
-        fetch_level: Optional[str] = request.args.get("level")
-        fetch_renge_start: Optional[int] = int(request.args.get("range_from") or 0)
-        fetch_renge_end: Optional[int] = int(request.args.get("range_to") or 10)
+        fetch_level: Optional[str] = request.args.get("level" or None)
+        fetch_renge_start: Optional[int] = int(request.args.get("range_from")) if request.args.get('range_from') else None
+        fetch_renge_end: Optional[int] = int(request.args.get("range_to")) if request.args.get("range_to") else None
         fetch_target_user_name: Optional[str] = request.args.get("target" or None)
 
-        tmp = ranking_cache[fetch_level][fetch_renge_start:fetch_renge_end]
-        # ?  設計 = ターゲットがいる場合そのユーザーの付近のランキング(10~{user}~10)も送信
+        if fetch_level is None:
+            print("anal")
+            make_response({"message": "パラメーターねえ"}, 410)
 
-        target_aroud = []
-        if fetch_target_user_name:
-            for i, user in enumerate(tmp):
-                if user["name"] == fetch_target_user_name:
-                    print(i)
-                    if i < 50:
-                       target_aroud = tmp[i - 10 : i + 10]
-                else:
-                    print("not found")
-            print(target_aroud)
-            res = make_response(
-                {
-                    "message": "ランキングを取得しました。",
-                    "data": tmp,
-                    "target_info": target_aroud,
-                },
-                200,
-            )
-            return res
-        elif fetch_target_user_name is None:
-            return make_response(
-                {"message": "ランキングを取得しました。", "data": tmp}, 200
-            )
-    except KeyError as e:
-        print(e)
-        print("not found")
-        return make_response({"message": "ランキングが見つかりません。"}, 404)
+        # レスポンスパターン
+        # 1. 範囲 + ターゲットとその周辺
+        # 2. 範囲のみ
+        # 3. ターゲットとその周辺のみ
+        # 4. 値エラー
+
+        # i fucking hate this shit every fucking time
+
+        print([fetch_level, fetch_renge_start, fetch_renge_end, fetch_target_user_name])
+
+        if (
+            fetch_target_user_name == None
+            and fetch_renge_start
+            and fetch_renge_end
+            and fetch_level
+        ):
+            try:
+                return make_response(
+                    {
+                        "message": "性行",
+                        "range": fetch_ranking.fetch_ranking_by_renge(
+                            start=fetch_renge_start, end=fetch_renge_end
+                        ),
+                    },
+                    200,
+                )
+
+            except Exception as e:
+                return make_response({"messge": "error"}, 500)
+
+        elif (
+            fetch_renge_start == None
+            and fetch_renge_end == None
+            and fetch_target_user_name
+            and fetch_level
+        ):
+            try:
+                return make_response(
+                    {
+                        "message": "性行",
+                        "target": fetch_ranking.fetch_user_around(
+                            level=fetch_level, target_user_name=fetch_target_user_name
+                        ),
+                    },
+                    200,
+                )
+            except Exception as e:
+                return make_response({"messge": "error"}, 500)
+
+        renge_res = fetch_ranking.fetch_ranking_by_renge(
+            level=fetch_level, start=fetch_renge_start, end=fetch_renge_end
+        )
+        target_res = fetch_ranking.fetch_user_around(
+            level=fetch_level, target_user_name=fetch_target_user_name
+        )
+        
+        return make_response(
+            {"message": "取得に成功", "range": renge_res, "target": target_res}, 200
+        )
+
     except Exception as e:
         print(e)
-        return make_response({"message": f"エラーが発生しました: {str(e)}"}, 500)
+        traceback.print_exc()
+        return make_response({"message": "お前はちんこだ"}, 500)

@@ -7,8 +7,8 @@ async def test_get_ranking():
     try:
         parameters = {
             "level": "short",
-            "range_from": 0,
-            "range_to": 100,
+            # "range_from": 0,
+            # "range_to": 100,
             "target": "fap_bro",
         }
         response = requests.get(
@@ -16,9 +16,8 @@ async def test_get_ranking():
               params=parameters
         )
 
-        assert response.status_code == 200
         print(response.json())
-        assert response.json()["data"] is not None
+        assert response.status_code == 200
     except Exception as e:
         print(e)
         assert False

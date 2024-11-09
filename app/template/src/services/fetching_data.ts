@@ -44,7 +44,8 @@ export class ranking_data_manager {
 
                 // APIからデータを取得
                 public async fetch_data(parameter: fetching_ranking_data_param_if): Promise<any> {
-                                const queryParams = new URLSearchParams(Object.entries(parameter).map(([key, value]) => [key, value.toString()])).toString();
+
+                                const queryParams = new URLSearchParams(Object.entries(parameter).map(([key, value]) => [key, value != null ? value.toString() : ''])).toString();
 
                                 const response = await fetch(`${this.base_url}?${queryParams}`, {
                                                 method: 'GET',
