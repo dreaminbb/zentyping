@@ -26,8 +26,8 @@ export interface fetching_ranking_res_if {
 }
 export interface fetching_ranking_data_param_if {
     'level': string,
-    'range_from': number,
-    'range_to': number,
+    'range_from': number | null,
+    'range_to': number | null,
     'target_user_name' : string | null
 }
 
@@ -46,7 +46,8 @@ export interface ranking_data_if {
     "play_count": number,
     "played_at": string,
     "time": number,
-    "pun_count": number
+    "pun_count": number,
+    ranking: number,
 }
 
 export interface all_play_history {

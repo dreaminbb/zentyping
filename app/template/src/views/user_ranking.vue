@@ -15,7 +15,7 @@ const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 
 // onBeforeMount(async () => {}})
-// todo ここでfetch_dataを呼び出すと、データが取得される前にDOMが描画されてしまう
+// todo ここでfetch_dataを呼び出すと、eデータが取得される前にDOMが描画されてしまう
 onMounted(async () => {
   await rdm_ins.value.fetch_data({
     level: 'short',
@@ -24,6 +24,12 @@ onMounted(async () => {
     target_user_name: null
   })
   short_level.value?.classList.add('chosen_level')
+  await rdm_ins.value.fetch_data({
+    level: 'short',
+    range_from: null,
+    range_to: null,
+    target_user_name: 'fap_bro'
+  })
 })
 
 function search_user_by_name(target_user_name: string, level: string): void {
@@ -84,6 +90,7 @@ async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
 }
 
 function show_off_display_result_chart_keydown(event: KeyboardEvent): void {
+
   if (KeyboardEvent && event instanceof KeyboardEvent) {
     if (event.key === 'Escape') {
       console.log('Escape key is pressed')

@@ -3,7 +3,6 @@ import type { ranking_data_if } from "@/interface";
 
 export class ranking_data_manager {
                 base_url: string;
-                pra: { level: string; range_from: number; range_to: number };
                 error_data: Array<ranking_data_if> = [];
                 ranking_data_obj: {
                                 'short': Array<ranking_data_if>,
@@ -29,16 +28,33 @@ export class ranking_data_manager {
                                 play_count: 0,
                                 played_at: 'the time',
                                 time: 0,
-                                pun_count: 0
+                                pun_count: 0,
+                                ranking: 0
                 }
 
                 constructor() {
                                 this.base_url = 'http://localhost:8000/user/ranking';
-                                this.pra = {
-                                                level: 'short',
-                                                range_from: 0,
-                                                range_to: 10
-                                };
+                }
+
+                public async format_add_ranking_arr_data(params: Array<ranking_data_if> | null, target_params: Array<ranking_data_if> | null, level: string) {
+
+
+                                if (params) {
+                                                console.log('im doing')
+                                                for (let i = 0; i < params.length; i++) {
+                                                                this.ranking_data_obj[level as keyof typeof this.ranking_data_obj].push(params[i])
+                                                }
+                                }
+
+                                if (target_params) {
+                                                console.log('target')
+                                                for (let i = 0; i < target_params.length; i++) {
+                                                                this.ranking_data_obj[level as keyof typeof this.ranking_data_obj].push(target_params[i])
+
+                                                }
+                                }
+
+                                this.ranking_data_obj[level as keyof typeof this.ranking_data_obj].sort((a, b) => a.ranking - b.ranking)
                 }
 
 
@@ -61,16 +77,26 @@ export class ranking_data_manager {
                                                 throw new Error(`Network response was not ok: ${text}`);
                                 }
 
+
                                 // レスポンスをJSONとして解析
                                 const contentType = response.headers.get('Content-Type');
                                 const status_code = response.status
                                 const res = JSON.parse(text);
                                 console.log(res)
+
+
                                 if (contentType && contentType.includes('application/json') && status_code === 200) {
-                                                this.ranking_data_obj[parameter['level'] as 'short' | 'normal' | 'long'] = res['data']
+
+                                                const target_around_data: Array<ranking_data_if> = await res['target']
+                                                const range_data: Array<ranking_data_if> = await res['range']
+                                                const level: string = parameter['level']
+                                                this.format_add_ranking_arr_data(target_around_data ? target_around_data : null,
+                                                                range_data ? range_data : null,
+                                                                level
+                                                )
+
                                                 return text ? { 'message': res['message'], 'data': res['data'] } : {};
                                 } else {
-                                                console.log('bad res')
                                                 const tmp_arr = []
                                                 for (let i = 0; i < 50; i++) {
                                                                 tmp_arr.push(this.sample_ranking_data_obj)
