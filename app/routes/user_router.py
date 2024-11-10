@@ -79,16 +79,17 @@ def return_ranking() -> Response:
             print("anal")
             make_response({"message": "パラメーターねえ"}, 410)
 
+
         # レスポンスパターン
         # 1. 範囲 + ターゲットとその周辺
-        # 2. 範囲のみ
+         # 2. 範囲のみ
         # 3. ターゲットとその周辺のみ
         # 4. 値エラー
 
         # i fucking hate this shit every fucking time
 
         print([fetch_level, fetch_renge_start, fetch_renge_end, fetch_target_user_name])
-
+        
         if (
             fetch_target_user_name == None
             and fetch_renge_start
@@ -100,7 +101,8 @@ def return_ranking() -> Response:
                     {
                         "message": "性行",
                         "range": fetch_ranking.fetch_ranking_by_renge(
-                            start=fetch_renge_start, end=fetch_renge_end
+                            start=fetch_renge_start, end=fetch_renge_end,
+                            level=fetch_level
                         ),
                     },
                     200,
