@@ -9,7 +9,6 @@ const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
 const displaying_level: Ref<string> = ref<string>('short')
 const rdm_ins = ref(new ranking_data_manager())
 const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_data_if)
-const type_to_search_user_text: string = '/user:{名前}   又は   /rank:{順位}'
 const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
@@ -23,29 +22,10 @@ onMounted(async () => {
     range_to: 40,
     target_user_name: null
   })
-  short_level.value?.classList.add('chosen_level')
-  await rdm_ins.value.fetch_data({
-    level: 'short',
-    range_from: null,
-    range_to: null,
-    target_user_name: 'fap_bro'
-  })
-})
 
-function search_user_by_name(target_user_name: string, level: string): void {
-  console.log(target_user_name)
-  const target_level: Array<ranking_data_if> =
-    rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long']
-  console.log(target_level, '実行時')
-  const value_obj = target_level.find((item) => item.name.includes(target_user_name))
-  console.log(value_obj , 'value_obj')
-  if(value_obj){
-    console.log('user exists')
-  }else{
-    console.log('user does not exist')
-  }
-}
-search_user_by_name('oppai_user', 'short')
+  console.log(rdm_ins.value.client_raking, 'client_ranking_value')
+  short_level.value?.classList.add('chosen_level')
+})
 
 async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
   console.log(rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'])
@@ -90,7 +70,6 @@ async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
 }
 
 function show_off_display_result_chart_keydown(event: KeyboardEvent): void {
-
   if (KeyboardEvent && event instanceof KeyboardEvent) {
     if (event.key === 'Escape') {
       console.log('Escape key is pressed')
@@ -129,17 +108,6 @@ function display_charts(index: number): ranking_data_if | void {
         <th id="long_level" ref="long_level" @click="switch_level('long')">long</th>
       </table>
 
-      <textarea
-        name="search_user"
-        autocomplete="off"
-        spellcheck="false"
-        autocapitalize="none"
-        autocorrect="off"
-        autofocus
-        resize="none"
-        v-model="type_to_search_user_text"
-        id="search_bar"
-      ></textarea>
       <!-- 
       <div id="goto_top_ranker" class="user_or_top_ranker">
         <i class="fas fa-crown"></i>
@@ -147,7 +115,7 @@ function display_charts(index: number): ranking_data_if | void {
 
       <div id="goto_self_ranking" class="user_or_top_ranker">
         <i class="fa-solid fa-user"></i>
-        <div id="users_ranking">{{}}</div>
+        <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
       </div>
     </div>
     <table id="ranking_table">
@@ -214,7 +182,7 @@ function display_charts(index: number): ranking_data_if | void {
   #ranking_action_container {
     position: absolute;
     display: grid;
-    grid-template-columns: 1fr 0.8fr 0.3fr;
+    grid-template-columns: 1.3fr 0.2fr;
     grid-column-gap: 20px;
     color: var(--font-color);
     height: 5%;
@@ -258,23 +226,21 @@ function display_charts(index: number): ranking_data_if | void {
       }
     }
 
-    .user_or_top_ranker {
-      display: flex;
+    #goto_self_ranking {
+      width: 100%;
+      height: 80%;
       cursor: pointer;
-      background-color: transparent;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      justify-self: center;
-      align-self: center;
-      justify-content: center;
       align-items: center;
+      display: flex;
+      justify-content: space-around;
+      border-radius: 20px;
+
       i {
         font-size: 1rem;
         color: var(--sub-font-color);
       }
       &:hover {
-        background-color: var(--secondary-color);
+        border: solid 1px var(--font-color);
         i {
           color: var(--font-color);
         }

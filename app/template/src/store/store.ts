@@ -11,7 +11,7 @@ export const user_status = defineStore('user_auth', {
 
 export const user_info = defineStore('user_info', {
   state: () => ({
-    user_name: 'タイピングニキ',
+    user_name: 'ilovecodinsir',
     joined_day: '',
     user_read_me: 'hhkb is piece of  shit',
     keyboard: '',

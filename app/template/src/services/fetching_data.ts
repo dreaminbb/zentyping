@@ -1,8 +1,10 @@
 import type { fetching_ranking_data_param_if } from "@/interface";
 import type { ranking_data_if } from "@/interface";
+import { user_info } from "@/store/store";
 
 export class ranking_data_manager {
                 base_url: string;
+                client_raking: number | null = null;
                 error_data: Array<ranking_data_if> = [];
                 ranking_data_obj: {
                                 'short': Array<ranking_data_if>,
@@ -36,6 +38,16 @@ export class ranking_data_manager {
                                 this.base_url = 'http://localhost:8000/user/ranking';
                 }
 
+                private search_user_by_name(target_user_name: string, level: string): number | null {
+                                const target_level: Array<ranking_data_if> = this.ranking_data_obj[level as 'short' | 'normal' | 'long']
+                                const value_obj = target_level.find((item) => item.name.includes(target_user_name))
+                                console.log(value_obj)
+                                return value_obj ? value_obj.ranking as number : null
+                }
+
+
+
+
                 public async format_add_ranking_arr_data(params: Array<ranking_data_if> | null, target_params: Array<ranking_data_if> | null, level: string) {
 
 
@@ -59,7 +71,7 @@ export class ranking_data_manager {
 
 
                 // APIからデータを取得
-                public async fetch_data(parameter: fetching_ranking_data_param_if): Promise<any> {
+                public async fetch_data(parameter: fetching_ranking_data_param_if): Promise<void> {
 
                                 const queryParams = new URLSearchParams(Object.entries(parameter).map(([key, value]) => [key, value != null ? value.toString() : ''])).toString();
 
@@ -82,8 +94,6 @@ export class ranking_data_manager {
                                 const contentType = response.headers.get('Content-Type');
                                 const status_code = response.status
                                 const res = JSON.parse(text);
-                                console.log(res)
-
 
                                 if (contentType && contentType.includes('application/json') && status_code === 200) {
 
@@ -94,14 +104,15 @@ export class ranking_data_manager {
                                                                 range_data ? range_data : null,
                                                                 level
                                                 )
+                                                this.client_raking = this.search_user_by_name(user_info().user_name, parameter.level)
 
-                                                return text ? { 'message': res['message'], 'data': res['data'] } : {};
+                                                return
                                 } else {
                                                 const tmp_arr = []
                                                 for (let i = 0; i < 50; i++) {
                                                                 tmp_arr.push(this.sample_ranking_data_obj)
                                                 }
-                                                return text ? { 'message': res['message'] } : {}
+                                                return
                                 }
 
                 }
