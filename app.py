@@ -26,7 +26,6 @@ app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(user_bp, url_prefix="/user")
 try:
     client.admin.command("ismaster")
-    print("hello world")
     print("MongoDB connection successful")
 
 except Exception as e:
@@ -69,12 +68,11 @@ def index():
 async def start_ranking_init():
     while True:
         await ranking_init()
-        await asyncio.sleep(config.RANKING_RELOAD_INTERVAL)
-
+        traceback.print_exc()
+        asyncio.sleep(config.RANKING_RELOAD_INTERVAL)
 
 def run_asyncio_task():
     asyncio.run(start_ranking_init())
-
 
 with app.app_context():
     asyncio.run(ranking_init())
