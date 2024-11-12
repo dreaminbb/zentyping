@@ -118,7 +118,6 @@ function display_charts(index: number): ranking_data_if | void {
         id="goto_self_ranking"
         class="user_or_top_ranker"
         href="#client_ranking_row"
-        @click="move_to_client_ranking()"
       >
         <i class="fa-solid fa-user"></i>
         <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
