@@ -42,7 +42,7 @@ export class ranking_data_manager {
                                 const target_level: Array<ranking_data_if> = this.ranking_data_obj[level as 'short' | 'normal' | 'long']
                                 const value_obj = target_level.find((item) => item.name.includes(target_user_name))
                                 console.log(value_obj)
-                                return value_obj ? value_obj.ranking as number : null
+                                return value_obj ? value_obj.ranking as number + 1 : null
                 }
 
 
@@ -104,6 +104,8 @@ export class ranking_data_manager {
                                                                 range_data ? range_data : null,
                                                                 level
                                                 )
+
+                                                // todo もしログインしていたら
                                                 this.client_raking = this.search_user_by_name(user_info().user_name, parameter.level)
 
                                                 return

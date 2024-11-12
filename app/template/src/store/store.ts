@@ -3,7 +3,7 @@ import type { activity_calendar, all_play_history, play_history_if } from '@/int
 
 export const user_status = defineStore('user_auth', {
   state: (): { is_login: boolean; is_user: boolean; is_admin: boolean } => ({
-    is_login: false,
+    is_login: true,
     is_user: false,
     is_admin: false
   })

@@ -3,6 +3,7 @@ import type { ranking_data_if } from '@/interface'
 import { onMounted, ref, type Ref } from 'vue'
 import { ranking_data_manager } from '../services/fetching_data'
 import play_result from '@/components/play_result.vue'
+import { user_info, user_status } from '@/store/store'
 
 // クリック => グラフのデータを関数で返す => グラフを表示する
 const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
@@ -12,28 +13,27 @@ const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_dat
 const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
+const client_ranking_row_elm = ref<HTMLElement>()
 
 // onBeforeMount(async () => {}})
 // todo ここでfetch_dataを呼び出すと、eデータが取得される前にDOMが描画されてしまう
 onMounted(async () => {
+  console.log(user_status().is_login, user_info().user_name, 'login', 'name')
   await rdm_ins.value.fetch_data({
     level: 'short',
     range_from: 0,
     range_to: 40,
-    target_user_name: null
+    target_user_name: user_status().is_login ? user_info().user_name : null
   })
 
   console.log(rdm_ins.value.client_raking, 'client_ranking_value')
   short_level.value?.classList.add('chosen_level')
+  console.log(client_ranking_row_elm.value)
 })
 
 async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
-  console.log(rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'])
   displaying_level.value = level
-  console.log(rdm_ins.value.ranking_data_obj, '33')
-
   if (rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'].length === 0) {
-    console.log('fetching data')
     await rdm_ins.value.fetch_data({
       level: level,
       range_from: 0,
@@ -83,6 +83,7 @@ function show_off_display_result_chart(): void {
   is_display_result_chart.value = false
   removeEventListener('keydown', show_off_display_result_chart_keydown)
 }
+
 function display_charts(index: number): ranking_data_if | void {
   const tmp = rdm_ins.value.ranking_data_obj[displaying_level.value as 'short' | 'normal' | 'long']
 
@@ -113,10 +114,15 @@ function display_charts(index: number): ranking_data_if | void {
         <i class="fas fa-crown"></i>
       </div> -->
 
-      <div id="goto_self_ranking" class="user_or_top_ranker">
+      <a
+        id="goto_self_ranking"
+        class="user_or_top_ranker"
+        href="#client_ranking_row"
+        @click="move_to_client_ranking()"
+      >
         <i class="fa-solid fa-user"></i>
         <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
-      </div>
+      </a>
     </div>
     <table id="ranking_table">
       <tr id="ranking_label_fm">
@@ -134,13 +140,20 @@ function display_charts(index: number): ranking_data_if | void {
           }}
         </th>
       </tr>
+      <!-- todo もしユーザーが存在するならidをclient_user_rowにする -->
       <tr
         v-for="(user, index) in rdm_ins.ranking_data_obj[
           displaying_level as 'short' | 'normal' | 'long'
         ]"
         :key="`${user.id}-${index}`"
-        class="ranking_list"
-        @click="() => display_charts(index)"
+        :class="user.name === user_info().user_name ? {shosen_ranking_row:true , ranking_list:true}:'ranking_list'"
+        :id="user.name === user_info().user_name ? 'client_ranking_row' : ''"
+        :ref="user.name === user_info().user_name ? 'client_ranking_row_elm' : ''"
+        @click="
+          () => {
+            display_charts(index)
+          }
+        "
       >
         <td>{{ index + 1 }}</td>
         <td>{{ user.name }}</td>
@@ -173,8 +186,13 @@ function display_charts(index: number): ranking_data_if | void {
   color: var(--text-color) !important;
 }
 
+.shosen_ranking_row {
+  // todo アニメーション変更
+  background: var(--secondary-color) !important;
+}
+
 #ranking_main {
-  height: 700%;
+  height:700%;
   width: 100%;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -234,6 +252,10 @@ function display_charts(index: number): ranking_data_if | void {
       display: flex;
       justify-content: space-around;
       border-radius: 20px;
+
+      #users_ranking {
+        color: var(--font-color);
+      }
 
       i {
         font-size: 1rem;
