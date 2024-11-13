@@ -13,22 +13,23 @@ const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_dat
 const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
-const client_ranking_row_elm = ref<HTMLElement>()
 
-// onBeforeMount(async () => {}})
-// todo ここでfetch_dataを呼び出すと、eデータが取得される前にDOMが描画されてしまう
+// todo
+// クライアントのランキングの表示を真ん中にする。
 onMounted(async () => {
   console.log(user_status().is_login, user_info().user_name, 'login', 'name')
   await rdm_ins.value.fetch_data({
     level: 'short',
     range_from: 0,
     range_to: 40,
-    target_user_name: user_status().is_login ? user_info().user_name : null
+    target_user_name: user_status().is_login ? (user_info().user_name as string) : null
   })
-
-  console.log(rdm_ins.value.client_raking, 'client_ranking_value')
+  
+  console.log(
+    rdm_ins.value.ranking_data_obj['short'].some((item) => item.name.includes('theguy')),
+    'oppai'
+  )
   short_level.value?.classList.add('chosen_level')
-  console.log(client_ranking_row_elm.value)
 })
 
 async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
@@ -114,11 +115,7 @@ function display_charts(index: number): ranking_data_if | void {
         <i class="fas fa-crown"></i>
       </div> -->
 
-      <a
-        id="goto_self_ranking"
-        class="user_or_top_ranker"
-        href="#client_ranking_row"
-      >
+      <a id="goto_self_ranking" class="user_or_top_ranker" href="#client_ranking_row">
         <i class="fa-solid fa-user"></i>
         <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
       </a>
@@ -139,13 +136,16 @@ function display_charts(index: number): ranking_data_if | void {
           }}
         </th>
       </tr>
-      <!-- todo もしユーザーが存在するならidをclient_user_rowにする -->
       <tr
         v-for="(user, index) in rdm_ins.ranking_data_obj[
           displaying_level as 'short' | 'normal' | 'long'
         ]"
         :key="`${user.id}-${index}`"
-        :class="user.name === user_info().user_name ? {shosen_ranking_row:true , ranking_list:true}:'ranking_list'"
+        :class="
+          user.name === user_info().user_name
+            ? { shosen_ranking_row: true, ranking_list: true }
+            : 'ranking_list'
+        "
         :id="user.name === user_info().user_name ? 'client_ranking_row' : ''"
         :ref="user.name === user_info().user_name ? 'client_ranking_row_elm' : ''"
         @click="
@@ -186,12 +186,12 @@ function display_charts(index: number): ranking_data_if | void {
 }
 
 .shosen_ranking_row {
-  // todo アニメーション変更
+  color: var(--text-color);
   background: var(--secondary-color) !important;
 }
 
 #ranking_main {
-  height:700%;
+  height: 700%;
   width: 100%;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -251,6 +251,7 @@ function display_charts(index: number): ranking_data_if | void {
       display: flex;
       justify-content: space-around;
       border-radius: 20px;
+      text-decoration: none;
 
       #users_ranking {
         color: var(--font-color);

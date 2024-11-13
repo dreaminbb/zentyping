@@ -89,24 +89,24 @@ export class ranking_data_manager {
                                                 throw new Error(`Network response was not ok: ${text}`);
                                 }
 
-
+ 
                                 // レスポンスをJSONとして解析
                                 const contentType = response.headers.get('Content-Type');
                                 const status_code = response.status
                                 const res = JSON.parse(text);
 
                                 if (contentType && contentType.includes('application/json') && status_code === 200) {
-
                                                 const target_around_data: Array<ranking_data_if> = await res['target']
                                                 const range_data: Array<ranking_data_if> = await res['range']
+                                                console.log(target_around_data , 'thuot')
                                                 const level: string = parameter['level']
                                                 this.format_add_ranking_arr_data(target_around_data ? target_around_data : null,
                                                                 range_data ? range_data : null,
                                                                 level
                                                 )
+                                                
+                                                this.client_raking = user_info().user_name ? this.search_user_by_name(user_info().user_name, parameter.level) : null
 
-                                                // todo もしログインしていたら
-                                                this.client_raking = this.search_user_by_name(user_info().user_name, parameter.level)
 
                                                 return
                                 } else {

@@ -1,7 +1,7 @@
 import cachetools
 import schedule
 from cachetools import TTLCache
-from ..config import db, config , ranking_cache
+from ..config import db, config, ranking_cache
 
 
 class fetch_ranking:
@@ -40,7 +40,7 @@ class fetch_ranking:
             )
 
             for ranking in best_play_lists:
-                ranking['ranking'] = best_play_lists.index(ranking)
+                ranking["ranking"] = best_play_lists.index(ranking)
 
             # ソート
             return best_play_lists
@@ -49,23 +49,29 @@ class fetch_ranking:
             return None
 
     @staticmethod
-    def fetch_user_around(target_user_name: str , level: str)-> list:
+    def fetch_user_around(target_user_name: str, level: str) -> list:
         target_aroud = []
         target_chache = ranking_cache[level]
         if target_user_name is not None:
             for user in target_chache:
                 if user["name"] == target_user_name:
                     # そもそもフロントエンドで確認するから50位以内のリクエストは来ない
-                    index:int = target_chache.index(user)
+                    index: int = target_chache.index(user)
                     print(index)
                     front = index - 10
-                    end = index + 10
-                    target_aroud = target_chache[front: end]
+                    end:int = index
+                    if index +10 is len(target_chache):
+                        end = index
+                    elif index + 10 > len(target_chache):
+                        end =len(target_chache)
+                    print(end , 'end')
+                    target_aroud = target_chache[front:end]
+                    print(len(target_chache))
                     break
         return target_aroud
 
     @staticmethod
-    def fetch_ranking_by_renge (start:int , end:int, level:str)->list:
+    def fetch_ranking_by_renge(start: int, end: int, level: str) -> list:
         # if start or end or level is None:
         #     raise None
         return ranking_cache[level][start:end]

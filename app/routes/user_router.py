@@ -71,25 +71,32 @@ def return_ranking() -> Response:
 
     try:
         fetch_level: Optional[str] = request.args.get("level" or None)
-        fetch_renge_start: Optional[int] = int(request.args.get("range_from")) if request.args.get('range_from') else None
-        fetch_renge_end: Optional[int] = int(request.args.get("range_to")) if request.args.get("range_to") else None
-        fetch_target_user_name: Optional[str] = request.args.get("target" or None)
+        fetch_renge_start: Optional[int] = (
+            int(request.args.get("range_from"))
+            if request.args.get("range_from")
+            else None
+        )
+        fetch_renge_end: Optional[int] = (
+            int(request.args.get("range_to")) if request.args.get("range_to") else None
+        )
+        fetch_target_user_name: Optional[str] = request.args.get(
+            "target_user_name" or None
+        )
 
         if fetch_level is None:
             print("anal")
             make_response({"message": "パラメーターねえ"}, 410)
 
-
         # レスポンスパターン
         # 1. 範囲 + ターゲットとその周辺
-         # 2. 範囲のみ
+        # 2. 範囲のみ
         # 3. ターゲットとその周辺のみ
         # 4. 値エラー
 
         # i fucking hate this shit every fucking time
 
         print([fetch_level, fetch_renge_start, fetch_renge_end, fetch_target_user_name])
-        
+
         if (
             fetch_target_user_name == None
             and fetch_renge_start
@@ -101,8 +108,9 @@ def return_ranking() -> Response:
                     {
                         "message": "性行",
                         "range": fetch_ranking.fetch_ranking_by_renge(
-                            start=fetch_renge_start, end=fetch_renge_end,
-                            level=fetch_level
+                            start=fetch_renge_start,
+                            end=fetch_renge_end,
+                            level=fetch_level,
                         ),
                     },
                     200,
@@ -136,7 +144,7 @@ def return_ranking() -> Response:
         target_res = fetch_ranking.fetch_user_around(
             level=fetch_level, target_user_name=fetch_target_user_name
         )
-        
+
         return make_response(
             {"message": "取得に成功", "range": renge_res, "target": target_res}, 200
         )
