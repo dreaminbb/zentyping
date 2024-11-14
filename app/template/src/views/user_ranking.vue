@@ -8,39 +8,62 @@ import { user_info, user_status } from '@/store/store'
 // クリック => グラフのデータを関数で返す => グラフを表示する
 const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
 const displaying_level: Ref<string> = ref<string>('short')
+const is_fetching: Ref<boolean> = ref<boolean>(false)
 const rdm_ins = ref(new ranking_data_manager())
 const result_data: Ref<ranking_data_if> = ref<ranking_data_if>({} as ranking_data_if)
 const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
+const ranking_table_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+let observe;
 
-// todo
-// クライアントのランキングの表示を真ん中にする。
-onMounted(async () => {
-  console.log(user_status().is_login, user_info().user_name, 'login', 'name')
-  await rdm_ins.value.fetch_data({
-    level: 'short',
-    range_from: 0,
-    range_to: 40,
-    target_user_name: user_status().is_login ? (user_info().user_name as string) : null
-  })
+  // 📝
+  // イベントリスナーでスクロールを監視、無効化する。
+  // ローダーを追加する。
+  // データの境界にある要素が表示されたら && スクロールーされた時 = データをAPIから取得
+
   
-  console.log(
-    rdm_ins.value.ranking_data_obj['short'].some((item) => item.name.includes('theguy')),
-    'oppai'
-  )
-  short_level.value?.classList.add('chosen_level')
-})
+  function is_border_data_displaying(entries: any) {
+    entries.forEach((entry: any) => {
+      if (entry.isIntersecting) {
+        console.log('border data is displaying')
+      }
+    })
+  }
+  
+  onMounted(async () => {
+    console.log(user_status().is_login, user_info().user_name, 'login', 'name')
+    is_fetching.value = true
+    await rdm_ins.value.fetch_data({
+      level: 'short',
+      range_from: 0,
+      range_to: 40,
+      target_user_name: user_status().is_login ? (user_info().user_name as string) : null
+    })
 
-async function switch_level(level: 'short' | 'normal' | 'long'): Promise<void> {
+    
+    is_fetching.value = false
+    // observe = new IntersectionObserver(is_border_data_displaying, {
+      //   root: null,
+    //   threshold: 0.5
+    // })
+    console.log(ranking_table_elm.value)
+    
+  short_level.value?.classList.add('chosen_level')
+  })
+
+async function switch_level(level: 'short' | 'normal' | 'long') {
   displaying_level.value = level
   if (rdm_ins.value.ranking_data_obj[level as 'short' | 'normal' | 'long'].length === 0) {
     await rdm_ins.value.fetch_data({
       level: level,
       range_from: 0,
       range_to: 40,
-      target_user_name: null
+      target_user_name: user_status().is_login ? user_info().user_name : null
     })
+    //取得されてないデータのインデックスを更新
+    rdm_ins.value.updata_border_data_index(displaying_level.value)
+    console.log(rdm_ins.value.ranking_border_index_obj)
   }
   if (
     short_level.value &&
@@ -102,7 +125,7 @@ function display_charts(index: number): ranking_data_if | void {
 </script>
 
 <template>
-  <div id="ranking_main">
+  <div id="ranking_main" :class="{ fetching_ranking_no_scroll: is_fetching }">
     <div id="ranking_action_container">
       <table id="each_ranking_level_container">
         <th id="short_level" @click="switch_level('short')" ref="short_level">short</th>
@@ -120,7 +143,7 @@ function display_charts(index: number): ranking_data_if | void {
         <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
       </a>
     </div>
-    <table id="ranking_table">
+    <table id="ranking_table" ref="ranking_table_elm">
       <tr id="ranking_label_fm">
         <th v-for="key in 7" :key="key">
           {{
@@ -154,7 +177,7 @@ function display_charts(index: number): ranking_data_if | void {
           }
         "
       >
-        <td>{{ index + 1 }}</td>
+        <td>{{ user.ranking + 1 }}</td>
         <td>{{ user.name }}</td>
         <td>{{ user.correct_rate.toFixed(2) }}%</td>
         <td>{{ user.correct_per_second_num.toFixed(2) }}</td>

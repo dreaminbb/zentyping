@@ -57,16 +57,14 @@ class fetch_ranking:
                 if user["name"] == target_user_name:
                     # そもそもフロントエンドで確認するから50位以内のリクエストは来ない
                     index: int = target_chache.index(user)
-                    print(index)
-                    front = index - 10
+                    front = index - 20
+                    
                     end:int = index
-                    if index +10 is len(target_chache):
+                    if index +20 is len(target_chache):
                         end = index
-                    elif index + 10 > len(target_chache):
+                    elif index + 20 > len(target_chache):
                         end =len(target_chache)
-                    print(end , 'end')
                     target_aroud = target_chache[front:end]
-                    print(len(target_chache))
                     break
         return target_aroud
 

@@ -6,6 +6,12 @@ export class ranking_data_manager {
                 base_url: string;
                 client_raking: number | null = null;
                 error_data: Array<ranking_data_if> = [];
+                ranking_border_index_obj: {
+                                start: number
+                                end: number
+                } = {
+                                                start: 0, end: 0
+                                }
                 ranking_data_obj: {
                                 'short': Array<ranking_data_if>,
                                 'normal': Array<ranking_data_if>,
@@ -43,6 +49,22 @@ export class ranking_data_manager {
                                 const value_obj = target_level.find((item) => item.name.includes(target_user_name))
                                 console.log(value_obj)
                                 return value_obj ? value_obj.ranking as number + 1 : null
+                }
+
+                public updata_border_data_index(level: string) {
+                                if (this.ranking_data_obj) {
+                                                console.log('おっぱい')
+                                                const target_level = this.ranking_data_obj[level as keyof typeof this.ranking_data_obj]
+                                                console.log(target_level.length)
+                                                for (let i = 0; i < target_level.length; i++) {
+                                                                console.log('KMR')
+                                                                if (i > 0 && target_level[i].ranking !== target_level[i - 1].ranking + 1) {
+                                                                                this.ranking_border_index_obj.start = i 
+                                                                                this.ranking_border_index_obj.end = i + 1
+                                                                }
+
+                                                }
+                                }
                 }
 
 
@@ -89,7 +111,7 @@ export class ranking_data_manager {
                                                 throw new Error(`Network response was not ok: ${text}`);
                                 }
 
- 
+
                                 // レスポンスをJSONとして解析
                                 const contentType = response.headers.get('Content-Type');
                                 const status_code = response.status
@@ -98,13 +120,13 @@ export class ranking_data_manager {
                                 if (contentType && contentType.includes('application/json') && status_code === 200) {
                                                 const target_around_data: Array<ranking_data_if> = await res['target']
                                                 const range_data: Array<ranking_data_if> = await res['range']
-                                                console.log(target_around_data , 'thuot')
+                                                console.log(target_around_data, 'thuot')
                                                 const level: string = parameter['level']
                                                 this.format_add_ranking_arr_data(target_around_data ? target_around_data : null,
                                                                 range_data ? range_data : null,
                                                                 level
                                                 )
-                                                
+
                                                 this.client_raking = user_info().user_name ? this.search_user_by_name(user_info().user_name, parameter.level) : null
 
 
