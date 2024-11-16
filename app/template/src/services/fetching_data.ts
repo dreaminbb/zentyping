@@ -47,23 +47,22 @@ export class ranking_data_manager {
                 private search_user_by_name(target_user_name: string, level: string): number | null {
                                 const target_level: Array<ranking_data_if> = this.ranking_data_obj[level as 'short' | 'normal' | 'long']
                                 const value_obj = target_level.find((item) => item.name.includes(target_user_name))
-                                console.log(value_obj)
                                 return value_obj ? value_obj.ranking as number + 1 : null
                 }
 
                 public updata_border_data_index(level: string) {
                                 if (this.ranking_data_obj) {
-                                                console.log('おっぱい')
                                                 const target_level = this.ranking_data_obj[level as keyof typeof this.ranking_data_obj]
                                                 console.log(target_level.length)
                                                 for (let i = 0; i < target_level.length; i++) {
-                                                                console.log('KMR')
                                                                 if (i > 0 && target_level[i].ranking !== target_level[i - 1].ranking + 1) {
-                                                                                this.ranking_border_index_obj.start = i 
+                                                                                this.ranking_border_index_obj.start = i
                                                                                 this.ranking_border_index_obj.end = i + 1
                                                                 }
 
                                                 }
+                                } else {
+                                                console.log('データがありません')
                                 }
                 }
 
@@ -120,15 +119,15 @@ export class ranking_data_manager {
                                 if (contentType && contentType.includes('application/json') && status_code === 200) {
                                                 const target_around_data: Array<ranking_data_if> = await res['target']
                                                 const range_data: Array<ranking_data_if> = await res['range']
-                                                console.log(target_around_data, 'thuot')
                                                 const level: string = parameter['level']
-                                                this.format_add_ranking_arr_data(target_around_data ? target_around_data : null,
+                                                this.format_add_ranking_arr_data(
+                                                                target_around_data ? target_around_data : null,
                                                                 range_data ? range_data : null,
                                                                 level
                                                 )
 
                                                 this.client_raking = user_info().user_name ? this.search_user_by_name(user_info().user_name, parameter.level) : null
-
+                                                this.updata_border_data_index(level)
 
                                                 return
                                 } else {

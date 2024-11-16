@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { ranking_data_if } from '@/interface'
-import { onMounted, ref, type Ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { ranking_data_manager } from '../services/fetching_data'
 import play_result from '@/components/play_result.vue'
 import { user_info, user_status } from '@/store/store'
@@ -15,42 +15,165 @@ const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 const ranking_table_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-let observe;
+let up_observe: any
+let down_observe: any
+const ranking_border_row_start_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const ranking_border_row_end_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const is_display_ranking_tabel: Ref<boolean> = ref<boolean>(true)
+const reload_ranking_elm: Ref<number> = ref<number>(0)
 
-  // 📝
-  // イベントリスナーでスクロールを監視、無効化する。
-  // ローダーを追加する。
-  // データの境界にある要素が表示されたら && スクロールーされた時 = データをAPIから取得
+// 📝
+// イベントリスナーでスクロールを監視、無効化する。
+// 下のスクロールと上のスクロールで分ける。
+// ローダーを追加する。
+// データの境界にある要素が表示されたら && スクロールーされた時 = データをAPIから取得
 
-  
-  function is_border_data_displaying(entries: any) {
-    entries.forEach((entry: any) => {
-      if (entry.isIntersecting) {
-        console.log('border data is displaying')
-      }
-    })
+const prevent_down_scroll = (event: any) => {
+  const delta = event.deltaY || event.wheelDelta
+  console.log(delta)
+  if (delta > 0) {
+    event.preventDefault()
   }
-  
-  onMounted(async () => {
-    console.log(user_status().is_login, user_info().user_name, 'login', 'name')
-    is_fetching.value = true
-    await rdm_ins.value.fetch_data({
-      level: 'short',
-      range_from: 0,
-      range_to: 40,
-      target_user_name: user_status().is_login ? (user_info().user_name as string) : null
-    })
+}
 
-    
-    is_fetching.value = false
-    // observe = new IntersectionObserver(is_border_data_displaying, {
-      //   root: null,
-    //   threshold: 0.5
-    // })
-    console.log(ranking_table_elm.value)
-    
-  short_level.value?.classList.add('chosen_level')
+const prevent_up_scroll = (event: any) => {
+  const delta = event.deltaY || event.wheelDelta
+  console.log(delta)
+  if (delta < 0) {
+    event.preventDefault()
+  }
+}
+
+// watch(ranking_border_row_start_elm, (newVal, oldVal) => {
+//   if (up_observe) {
+//     if (oldVal) {
+//       up_observe.unobserve(oldVal)
+//     }
+//     if (newVal) {
+//       up_observe.observe(newVal)
+//     }
+//   }
+// })
+
+function is_up_border_data_displaying(entries: any) {
+  entries.forEach((entry: any) => {
+    if (entry.isIntersecting) {
+      setTimeout(async () => {
+        is_fetching.value = true
+        window.addEventListener('wheel', prevent_down_scroll, { passive: false })
+        await rdm_ins.value
+          .fetch_data({
+            level: displaying_level.value as keyof typeof rdm_ins.value.ranking_data_obj,
+            range_from: rdm_ins.value.ranking_border_index_obj['start'] as number,
+            range_to: (rdm_ins.value.ranking_border_index_obj['start'] as number) + 40,
+            target_user_name: null
+          })
+          .then(() => {
+            reload_ranking_elm.value += 1
+            is_fetching.value = false
+            console.log('値あり')
+            window.removeEventListener('wheel', prevent_down_scroll)
+            if (ranking_table_elm.value) {
+              try {
+                up_observe.unobserve(ranking_border_row_start_elm.value as HTMLElement)
+
+                console.log(
+                  ranking_border_row_start_elm.value,
+                  ranking_border_row_end_elm.value,
+                  'ビフォー'
+                )
+
+                ranking_border_row_start_elm.value = ranking_table_elm.value.children[
+                  rdm_ins.value.ranking_border_index_obj['start'] as number
+                ] as HTMLElement
+                ranking_border_row_end_elm.value = ranking_table_elm.value.children[
+                  rdm_ins.value.ranking_border_index_obj['end'] as number
+                ] as HTMLElement
+
+                console.log(
+                  ranking_border_row_start_elm.value,
+                  ranking_border_row_end_elm.value,
+                  'あふたー'
+                )
+
+                up_observe.observe(ranking_border_row_start_elm.value)
+              } catch (e) {
+                console.error(e)
+              }
+            } else {
+              console.error('値なし')
+            }
+            //境界のhtml要素を更新
+          })
+        console.log('fetching data')
+      })
+    }
   })
+}
+
+// function is_down_border_data_displaying(entries: any) {
+//   entries.forEach((entry: any) => {
+//     if (entry.isIntersecting) {
+//       console.log('border data is displaying')
+//       setTimeout(async () => {
+//         is_fetching.value = true
+//         window.addEventListener('wheel', prevent_up_scroll, { passive: false})
+//       })
+//     }
+//   })
+// }
+
+onMounted(async () => {
+  is_fetching.value = true
+  await rdm_ins.value.fetch_data({
+    level: 'short',
+    range_from: 0,
+    range_to: 40,
+    target_user_name: user_status().is_login ? (user_info().user_name as string) : null
+  })
+
+  rdm_ins.value.updata_border_data_index(displaying_level.value)
+  is_fetching.value = false
+
+  up_observe = new IntersectionObserver(is_up_border_data_displaying, {
+    root: null,
+    rootMargin: '100px',
+    threshold: 0
+  })
+  // down_observe = new IntersectionObserver(is_down_border_data_displaying, {
+  //   root: null,
+  //   rootMargin: '100px',
+  //   threshold: 0
+  // })
+
+  if (ranking_table_elm.value) {
+    ranking_border_row_start_elm.value = ranking_table_elm.value.children[
+      rdm_ins.value.ranking_border_index_obj['start'] as number
+    ] as HTMLElement
+    ranking_border_row_end_elm.value = ranking_table_elm.value.children[
+      rdm_ins.value.ranking_border_index_obj['end'] as number
+    ] as HTMLElement
+    //監視対象の要素を指定
+    console.log(ranking_border_row_start_elm.value, ranking_border_row_end_elm.value)
+    up_observe.observe(ranking_border_row_start_elm.value)
+    // down_observe.observe(ranking_border_row_end_elm.value)
+  } else {
+    console.error('Element is not found')
+  }
+
+  short_level.value?.classList.add('chosen_level')
+})
+
+onUnmounted(() => {
+  if (
+    up_observe &&
+    ranking_border_row_end_elm.value !== null &&
+    ranking_border_row_start_elm.value !== null
+  ) {
+    up_observe.observe(ranking_border_row_start_elm.value as HTMLElement)
+    // up_observe.observe(ranking_border_row_end_elm.value as HTMLElement)
+  }
+})
 
 async function switch_level(level: 'short' | 'normal' | 'long') {
   displaying_level.value = level
@@ -143,7 +266,12 @@ function display_charts(index: number): ranking_data_if | void {
         <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
       </a>
     </div>
-    <table id="ranking_table" ref="ranking_table_elm">
+    <table
+      id="ranking_table"
+      ref="ranking_table_elm"
+      v-if="is_display_ranking_tabel"
+      :key="reload_ranking_elm"
+    >
       <tr id="ranking_label_fm">
         <th v-for="key in 7" :key="key">
           {{
