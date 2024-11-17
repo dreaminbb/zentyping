@@ -15,8 +15,8 @@ const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 const ranking_table_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-let up_observe: any
-let down_observe: any
+let up_observe: IntersectionObserver
+// let down_observe: IntersectionObserver;
 const ranking_border_row_start_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const ranking_border_row_end_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const is_display_ranking_tabel: Ref<boolean> = ref<boolean>(true)
@@ -44,21 +44,44 @@ const prevent_up_scroll = (event: any) => {
   }
 }
 
-// watch(ranking_border_row_start_elm, (newVal, oldVal) => {
-//   if (up_observe) {
-//     if (oldVal) {
-//       up_observe.unobserve(oldVal)
-//     }
-//     if (newVal) {
-//       up_observe.observe(newVal)
-//     }
-//   }
-// })
+function updata_observe_elm(): void {
+  if (ranking_table_elm.value) {
+    try {
+      if (ranking_border_row_start_elm.value) {
+        up_observe.unobserve(ranking_border_row_start_elm.value)
+      }
 
-function is_up_border_data_displaying(entries: any) {
+      ranking_border_row_start_elm.value = ranking_table_elm.value.children[
+        rdm_ins.value.ranking_border_index_obj['start'] as number
+      ] as HTMLElement
+      ranking_border_row_end_elm.value = ranking_table_elm.value.children[
+        rdm_ins.value.ranking_border_index_obj['end'] as number
+      ] as HTMLElement
+
+      if (ranking_border_row_start_elm.value) {
+        up_observe.observe(ranking_border_row_start_elm.value)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  } else {
+    console.error('値なし')
+  }
+}
+
+function handle_intersection(entries: IntersectionObserverEntry[]): void {
   entries.forEach((entry: any) => {
     if (entry.isIntersecting) {
       setTimeout(async () => {
+        const ahead: number = rdm_ins.value.ranking_border_index_obj['start'] as number
+        const end: number = rdm_ins.value.ranking_border_index_obj['end'] as number
+        const target_level_arr: Array<ranking_data_if> =
+          rdm_ins.value.ranking_data_obj[
+            displaying_level.value as keyof typeof rdm_ins.value.ranking_data_obj
+          ]
+          
+        if (target_level_arr[ahead - 1].ranking === target_level_arr[end - 1].ranking) return //もしデータが全部ある場合は何もしない。
+
         is_fetching.value = true
         window.addEventListener('wheel', prevent_down_scroll, { passive: false })
         await rdm_ins.value
@@ -69,41 +92,10 @@ function is_up_border_data_displaying(entries: any) {
             target_user_name: null
           })
           .then(() => {
+            console.log(rdm_ins.value.ranking_border_index_obj, '境界ライン')
             reload_ranking_elm.value += 1
             is_fetching.value = false
-            console.log('値あり')
             window.removeEventListener('wheel', prevent_down_scroll)
-            if (ranking_table_elm.value) {
-              try {
-                up_observe.unobserve(ranking_border_row_start_elm.value as HTMLElement)
-
-                console.log(
-                  ranking_border_row_start_elm.value,
-                  ranking_border_row_end_elm.value,
-                  'ビフォー'
-                )
-
-                ranking_border_row_start_elm.value = ranking_table_elm.value.children[
-                  rdm_ins.value.ranking_border_index_obj['start'] as number
-                ] as HTMLElement
-                ranking_border_row_end_elm.value = ranking_table_elm.value.children[
-                  rdm_ins.value.ranking_border_index_obj['end'] as number
-                ] as HTMLElement
-
-                console.log(
-                  ranking_border_row_start_elm.value,
-                  ranking_border_row_end_elm.value,
-                  'あふたー'
-                )
-
-                up_observe.observe(ranking_border_row_start_elm.value)
-              } catch (e) {
-                console.error(e)
-              }
-            } else {
-              console.error('値なし')
-            }
-            //境界のhtml要素を更新
           })
         console.log('fetching data')
       })
@@ -111,17 +103,7 @@ function is_up_border_data_displaying(entries: any) {
   })
 }
 
-// function is_down_border_data_displaying(entries: any) {
-//   entries.forEach((entry: any) => {
-//     if (entry.isIntersecting) {
-//       console.log('border data is displaying')
-//       setTimeout(async () => {
-//         is_fetching.value = true
-//         window.addEventListener('wheel', prevent_up_scroll, { passive: false})
-//       })
-//     }
-//   })
-// }
+watch([ranking_table_elm, rdm_ins.value.ranking_border_index_obj], updata_observe_elm)
 
 onMounted(async () => {
   is_fetching.value = true
@@ -135,7 +117,7 @@ onMounted(async () => {
   rdm_ins.value.updata_border_data_index(displaying_level.value)
   is_fetching.value = false
 
-  up_observe = new IntersectionObserver(is_up_border_data_displaying, {
+  up_observe = new IntersectionObserver(handle_intersection, {
     root: null,
     rootMargin: '100px',
     threshold: 0
@@ -153,14 +135,16 @@ onMounted(async () => {
     ranking_border_row_end_elm.value = ranking_table_elm.value.children[
       rdm_ins.value.ranking_border_index_obj['end'] as number
     ] as HTMLElement
-    //監視対象の要素を指定
-    console.log(ranking_border_row_start_elm.value, ranking_border_row_end_elm.value)
+    console.log(
+      ranking_border_row_start_elm.value,
+      ranking_border_row_end_elm.value,
+      '監視対象の要素を指定'
+    )
     up_observe.observe(ranking_border_row_start_elm.value)
     // down_observe.observe(ranking_border_row_end_elm.value)
   } else {
     console.error('Element is not found')
   }
-
   short_level.value?.classList.add('chosen_level')
 })
 
@@ -170,7 +154,7 @@ onUnmounted(() => {
     ranking_border_row_end_elm.value !== null &&
     ranking_border_row_start_elm.value !== null
   ) {
-    up_observe.observe(ranking_border_row_start_elm.value as HTMLElement)
+    up_observe.unobserve(ranking_border_row_start_elm.value as HTMLElement)
     // up_observe.observe(ranking_border_row_end_elm.value as HTMLElement)
   }
 })

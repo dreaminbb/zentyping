@@ -7,8 +7,8 @@ export class ranking_data_manager {
                 client_raking: number | null = null;
                 error_data: Array<ranking_data_if> = [];
                 ranking_border_index_obj: {
-                                start: number
-                                end: number
+                                start: number | null,
+                                end: number | null,
                 } = {
                                                 start: 0, end: 0
                                 }
@@ -59,11 +59,8 @@ export class ranking_data_manager {
                                                                                 this.ranking_border_index_obj.start = i
                                                                                 this.ranking_border_index_obj.end = i + 1
                                                                 }
-
                                                 }
-                                } else {
-                                                console.log('データがありません')
-                                }
+                                } 
                 }
 
 
