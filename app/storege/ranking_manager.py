@@ -49,24 +49,27 @@ class fetch_ranking:
             return None
 
     @staticmethod
-    def fetch_user_around(target_user_name: str, level: str) -> list:
-        target_aroud = []
+    def fetch_user_ranking_info(target_user_name: str, level: str) -> list:
+        # target_aroud = []
         target_chache = ranking_cache[level]
-        if target_user_name is not None:
-            for user in target_chache:
-                if user["name"] == target_user_name:
-                    # そもそもフロントエンドで確認するから50位以内のリクエストは来ない
-                    index: int = target_chache.index(user)
-                    front = index - 20
-                    
-                    end:int = index
-                    if index +20 is len(target_chache):
-                        end = index
-                    elif index + 20 > len(target_chache):
-                        end =len(target_chache)
-                    target_aroud = target_chache[front:end]
-                    break
-        return target_aroud
+        # select target user data from cache 
+        target_data = list(filter(lambda x: x["name"] == target_user_name, target_chache))
+
+        # if target_user_name is not None:
+        #     for user in target_chache:
+        #         if user["name"] == target_user_name:
+        #             # そもそもフロントエンドで確認するから50位以内のリクエストは来ない
+        #             index: int = target_chache.index(user)
+        #             front = index - 20
+
+        #             end:int = index
+        #             if index +20 is len(target_chache):
+        #                 end = index
+        #             elif index + 20 > len(target_chache):
+        #                 end =len(target_chache)
+        #             target_aroud = target_chache[front:end]
+        #             break
+        return target_data
 
     @staticmethod
     def fetch_ranking_by_renge(start: int, end: int, level: str) -> list:

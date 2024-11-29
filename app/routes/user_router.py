@@ -66,9 +66,6 @@ def return_ranking() -> Response:
     # if not is_valid or api_key is None:
     #     return make_response({"message": "APIキーが不正です。"}, 401)
 
-    # *** コメント
-    # *** 設計 = ターゲットがいる場合そのユーザーの付近のランキング(10~{user}~10)も送信
-
     try:
         fetch_level: Optional[str] = request.args.get("level" or None)
         fetch_renge_start: Optional[int] = (
@@ -117,7 +114,7 @@ def return_ranking() -> Response:
                 )
 
             except Exception as e:
-                return make_response({"messge": "error"}, 500)
+                return make_response({"mes<sge": "error"}, 500)
 
         elif (
             fetch_renge_start == None
@@ -129,7 +126,7 @@ def return_ranking() -> Response:
                 return make_response(
                     {
                         "message": "性行",
-                        "target": fetch_ranking.fetch_user_around(
+                        "target": fetch_ranking.fetch_user_ranking_info(
                             level=fetch_level, target_user_name=fetch_target_user_name
                         ),
                     },
@@ -141,7 +138,7 @@ def return_ranking() -> Response:
         renge_res = fetch_ranking.fetch_ranking_by_renge(
             level=fetch_level, start=fetch_renge_start, end=fetch_renge_end
         )
-        target_res = fetch_ranking.fetch_user_around(
+        target_res = fetch_ranking.fetch_user_ranking_info(
             level=fetch_level, target_user_name=fetch_target_user_name
         )
 

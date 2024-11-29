@@ -5,7 +5,6 @@ import { ranking_data_manager } from '../services/fetching_data'
 import play_result from '@/components/play_result.vue'
 import { user_info, user_status } from '@/store/store'
 
-// クリック => グラフのデータを関数で返す => グラフを表示する
 const is_display_result_chart: Ref<boolean> = ref<boolean>(false)
 const displaying_level: Ref<string> = ref<string>('short')
 const is_fetching: Ref<boolean> = ref<boolean>(false)
@@ -16,17 +15,11 @@ const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 const ranking_table_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 let up_observe: IntersectionObserver
-// let down_observe: IntersectionObserver;
-const ranking_border_row_start_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const ranking_border_row_end_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const is_display_ranking_tabel: Ref<boolean> = ref<boolean>(true)
 const reload_ranking_elm: Ref<number> = ref<number>(0)
 
 // 📝
-// イベントリスナーでスクロールを監視、無効化する。
-// 下のスクロールと上のスクロールで分ける。
-// ローダーを追加する。
-// データの境界にある要素が表示されたら && スクロールーされた時 = データをAPIから取得
+// スクロールダウンしたらデータを取得して更新する
 
 const prevent_down_scroll = (event: any) => {
   const delta = event.deltaY || event.wheelDelta
@@ -36,75 +29,6 @@ const prevent_down_scroll = (event: any) => {
   }
 }
 
-const prevent_up_scroll = (event: any) => {
-  const delta = event.deltaY || event.wheelDelta
-  console.log(delta)
-  if (delta < 0) {
-    event.preventDefault()
-  }
-}
-
-function updata_observe_elm(): void {
-  if (ranking_table_elm.value) {
-    try {
-      if (ranking_border_row_start_elm.value) {
-        up_observe.unobserve(ranking_border_row_start_elm.value)
-      }
-
-      ranking_border_row_start_elm.value = ranking_table_elm.value.children[
-        rdm_ins.value.ranking_border_index_obj['start'] as number
-      ] as HTMLElement
-      ranking_border_row_end_elm.value = ranking_table_elm.value.children[
-        rdm_ins.value.ranking_border_index_obj['end'] as number
-      ] as HTMLElement
-
-      if (ranking_border_row_start_elm.value) {
-        up_observe.observe(ranking_border_row_start_elm.value)
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  } else {
-    console.error('値なし')
-  }
-}
-
-function handle_intersection(entries: IntersectionObserverEntry[]): void {
-  entries.forEach((entry: any) => {
-    if (entry.isIntersecting) {
-      setTimeout(async () => {
-        const ahead: number = rdm_ins.value.ranking_border_index_obj['start'] as number
-        const end: number = rdm_ins.value.ranking_border_index_obj['end'] as number
-        const target_level_arr: Array<ranking_data_if> =
-          rdm_ins.value.ranking_data_obj[
-            displaying_level.value as keyof typeof rdm_ins.value.ranking_data_obj
-          ]
-          
-        if (target_level_arr[ahead - 1].ranking === target_level_arr[end - 1].ranking) return //もしデータが全部ある場合は何もしない。
-
-        is_fetching.value = true
-        window.addEventListener('wheel', prevent_down_scroll, { passive: false })
-        await rdm_ins.value
-          .fetch_data({
-            level: displaying_level.value as keyof typeof rdm_ins.value.ranking_data_obj,
-            range_from: rdm_ins.value.ranking_border_index_obj['start'] as number,
-            range_to: (rdm_ins.value.ranking_border_index_obj['start'] as number) + 40,
-            target_user_name: null
-          })
-          .then(() => {
-            console.log(rdm_ins.value.ranking_border_index_obj, '境界ライン')
-            reload_ranking_elm.value += 1
-            is_fetching.value = false
-            window.removeEventListener('wheel', prevent_down_scroll)
-          })
-        console.log('fetching data')
-      })
-    }
-  })
-}
-
-watch([ranking_table_elm, rdm_ins.value.ranking_border_index_obj], updata_observe_elm)
-
 onMounted(async () => {
   is_fetching.value = true
   await rdm_ins.value.fetch_data({
@@ -113,50 +37,10 @@ onMounted(async () => {
     range_to: 40,
     target_user_name: user_status().is_login ? (user_info().user_name as string) : null
   })
+  console.log(rdm_ins.value.ranking_data_obj)
 
-  rdm_ins.value.updata_border_data_index(displaying_level.value)
   is_fetching.value = false
-
-  up_observe = new IntersectionObserver(handle_intersection, {
-    root: null,
-    rootMargin: '100px',
-    threshold: 0
-  })
-  // down_observe = new IntersectionObserver(is_down_border_data_displaying, {
-  //   root: null,
-  //   rootMargin: '100px',
-  //   threshold: 0
-  // })
-
-  if (ranking_table_elm.value) {
-    ranking_border_row_start_elm.value = ranking_table_elm.value.children[
-      rdm_ins.value.ranking_border_index_obj['start'] as number
-    ] as HTMLElement
-    ranking_border_row_end_elm.value = ranking_table_elm.value.children[
-      rdm_ins.value.ranking_border_index_obj['end'] as number
-    ] as HTMLElement
-    console.log(
-      ranking_border_row_start_elm.value,
-      ranking_border_row_end_elm.value,
-      '監視対象の要素を指定'
-    )
-    up_observe.observe(ranking_border_row_start_elm.value)
-    // down_observe.observe(ranking_border_row_end_elm.value)
-  } else {
-    console.error('Element is not found')
-  }
   short_level.value?.classList.add('chosen_level')
-})
-
-onUnmounted(() => {
-  if (
-    up_observe &&
-    ranking_border_row_end_elm.value !== null &&
-    ranking_border_row_start_elm.value !== null
-  ) {
-    up_observe.unobserve(ranking_border_row_start_elm.value as HTMLElement)
-    // up_observe.observe(ranking_border_row_end_elm.value as HTMLElement)
-  }
 })
 
 async function switch_level(level: 'short' | 'normal' | 'long') {
@@ -168,9 +52,6 @@ async function switch_level(level: 'short' | 'normal' | 'long') {
       range_to: 40,
       target_user_name: user_status().is_login ? user_info().user_name : null
     })
-    //取得されてないデータのインデックスを更新
-    rdm_ins.value.updata_border_data_index(displaying_level.value)
-    console.log(rdm_ins.value.ranking_border_index_obj)
   }
   if (
     short_level.value &&
@@ -245,7 +126,7 @@ function display_charts(index: number): ranking_data_if | void {
         <i class="fas fa-crown"></i>
       </div> -->
 
-      <a id="goto_self_ranking" class="user_or_top_ranker" href="#client_ranking_row">
+      <a id="goto_self_ranking" class="user_or_top_ranker">
         <i class="fa-solid fa-user"></i>
         <div id="users_ranking">{{ rdm_ins.client_raking ? rdm_ins.client_raking : '?' }}位</div>
       </a>
@@ -318,6 +199,7 @@ function display_charts(index: number): ranking_data_if | void {
 .chosen_level {
   background: var(--secondary-color) !important;
   color: var(--text-color) !important;
+  color: rgba(0, 0, 0);
 }
 
 .shosen_ranking_row {

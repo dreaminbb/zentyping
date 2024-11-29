@@ -1,6 +1,5 @@
 import asyncio
 import threading
-import time
 import traceback
 from dotenv import load_dotenv
 import os
@@ -8,11 +7,10 @@ from flask_cors import CORS
 from flask_limiter.util import get_remote_address
 from flask import Flask, jsonify, render_template, request
 from app.storege.ranking_manager import fetch_ranking
-from app.config import config, app, client, ranking_cache
 from app.storege.ranking_manager import fetch_ranking
 from app.routes.user_router import user_bp
 from app.routes.server_router import auth_bp
-
+from app.config import config, app, client, ranking_cache
 
 # 本番環境で変更すること
 # cookieの設定(Secure HTTPOnly)
@@ -33,8 +31,6 @@ except Exception as e:
 
 CORS(app, resources={r"/*": {"origins": "*"}})  # セキュリティ意識高めでいこう
 
-# ランキングのキャッシュの初期化のスケジューリング
-
 
 async def ranking_init():
     try:
@@ -44,7 +40,6 @@ async def ranking_init():
             ranking_cache[level] = await fetch_ranking.fetch_ranking_from_db_to_list(
                 level
             )
-            # print(ranking_cache["short"], "\n" ,  ranking_cache["normal"] ,"\n", ranking_cache["long"])
     except Exception:
         traceback.print_exc()
         print("ランキングのキャッシュの初期化に失敗しました")
@@ -55,7 +50,7 @@ def ratelimit_handler():
     ip_address = request.remote_addr
     return jsonify({"message": "dipshit"}), 429
 
-
+ 
 @app.route("/", methods=["GET"])
 def index():
     # access_token = request.cookies.get("access_token")
@@ -71,8 +66,10 @@ async def start_ranking_init():
         traceback.print_exc()
         asyncio.sleep(config.RANKING_RELOAD_INTERVAL)
 
+
 def run_asyncio_task():
     asyncio.run(start_ranking_init())
+
 
 with app.app_context():
     asyncio.run(ranking_init())

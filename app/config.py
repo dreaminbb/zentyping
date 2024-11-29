@@ -66,11 +66,8 @@ app.config["RATELIMIT_HEADERS_ENABLED"] = True
 
 limiter = Limiter(
     get_remote_address,
-    app=app,
-    # default_limits=["900 per day", "50 per hour", "1000 per minutes"],
+   # default_limits=["900 per day", "50 per hour", "1000 per minutes"],
     # storage_uri="memory://"
 )
-
 db = MongoClient(config.MONGO_URL)[config.MONGO_DB_NAME]
-
 ranking_cache = TTLCache(maxsize=config.RANKING_STOREGE_MAX_SIZE, ttl=config.RANKING_STOREGE_EXPIRES_IN)

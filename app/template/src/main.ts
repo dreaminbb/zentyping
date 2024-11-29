@@ -19,6 +19,7 @@ import {
   faUser,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons'
+
 import { faCrow } from '@fortawesome/free-solid-svg-icons/faCrow'
 import { faGithub, faXTwitter } from '@fortawesome/free-brands-svg-icons'
 import { session_manager } from '@/services/auth'
@@ -57,7 +58,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'login',
     // beforeEnter: (to, from, next) => {
-    //     // await new token_manager().verify_session()
+    // await new token_manager().verify_session()
     //     next()
     // },
     component: () => import('@/views/user_login.vue'),
