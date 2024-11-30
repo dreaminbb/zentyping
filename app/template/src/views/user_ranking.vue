@@ -14,12 +14,12 @@ const short_level = ref<HTMLElement>()
 const normal_level = ref<HTMLElement>()
 const long_level = ref<HTMLElement>()
 const ranking_table_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const ranking_target_row_elm: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 let up_observe: IntersectionObserver
 const is_display_ranking_tabel: Ref<boolean> = ref<boolean>(true)
 const reload_ranking_elm: Ref<number> = ref<number>(0)
 
 // 📝
-// スクロールダウンしたらデータを取得して更新する
 
 const prevent_down_scroll = (event: any) => {
   const delta = event.deltaY || event.wheelDelta
@@ -29,18 +29,82 @@ const prevent_down_scroll = (event: any) => {
   }
 }
 
+function handle_intersection(entries: IntersectionObserverEntry[]): void {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      console.log('Intersecting')
+      window.addEventListener('wheel', prevent_down_scroll)
+      is_fetching.value = true
+      rdm_ins.value
+        .fetch_data({
+          level: displaying_level.value as 'short' | 'normal' | 'long',
+          range_from:
+            rdm_ins.value.ranking_data_obj[displaying_level.value as 'short' | 'normal' | 'long']
+              .length,
+          range_to:
+            rdm_ins.value.ranking_data_obj[displaying_level.value as 'short' | 'normal' | 'long']
+              .length + 50,
+          target_user_name: null
+        })
+        .then(() => {
+          is_fetching.value = false
+          window.removeEventListener('wheel', prevent_down_scroll)
+          reload_ranking_elm.value += 1
+          updata_observe()
+        })
+    }
+  })
+}
+
+const updata_target_row_elm = () => {
+  ranking_target_row_elm.value =
+    (ranking_table_elm.value?.children[
+      rdm_ins.value.ranking_data_border[
+        displaying_level.value as 'short' | 'normal' | 'long'
+      ] as number
+    ] as HTMLElement) ?? null
+}
+
+const updata_observe = () => {
+  if (ranking_target_row_elm.value && up_observe) {
+    up_observe.unobserve(ranking_target_row_elm.value as HTMLTableRowElement)
+    up_observe.observe(ranking_target_row_elm.value as HTMLTableRowElement)
+  }
+}
+
 onMounted(async () => {
   is_fetching.value = true
   await rdm_ins.value.fetch_data({
     level: 'short',
     range_from: 0,
-    range_to: 40,
+    range_to: 50,
     target_user_name: user_status().is_login ? (user_info().user_name as string) : null
   })
-  console.log(rdm_ins.value.ranking_data_obj)
+
+  console.log(ranking_target_row_elm?.value as HTMLElement)
+
+  if (ranking_table_elm.value) {
+    up_observe = new IntersectionObserver(handle_intersection, {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0
+    })
+    updata_target_row_elm()
+    up_observe.observe(ranking_table_elm?.value as HTMLTableElement)
+  }
 
   is_fetching.value = false
   short_level.value?.classList.add('chosen_level')
+})
+
+onUnmounted(() => {
+  console.log('Unmounted')
+  up_observe.disconnect()
+})
+
+watch([ranking_table_elm, rdm_ins.value.ranking_data_border], () => {
+  updata_target_row_elm()
+  updata_observe()
 })
 
 async function switch_level(level: 'short' | 'normal' | 'long') {
