@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import play from '@/views/play_test.vue'
@@ -39,3 +40,5 @@ const router = createRouter({
 })
 
 export default router
+=======
+>>>>>>> e5457f7 (ランキンングのデータをAPIから取得して表示するためのコード)

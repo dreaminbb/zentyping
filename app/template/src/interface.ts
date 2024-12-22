@@ -20,6 +20,33 @@ export interface play_history_if {
     'play_count': number
 }
 
+export interface fetching_ranking_res_if {
+    'message': string,
+    'deta': Array<ranking_data_if>
+}
+export interface fetching_ranking_deta_param_if {
+    'level': string,
+    'range_from': number,
+    'range_to': number
+}
+
+export interface ranking_data_if {
+    "correct_count": number,
+    "correct_per_second": Array<number>,
+    "correct_per_second_num": number,
+    "correct_rate": number
+    "id": number,
+    "incorrect_count": number,
+    "input_per_second": Array<number>,
+    "input_per_second_num": number,
+    "length": number
+    "level": string,
+    "name": string,
+    "play_count": number,
+    "played_at": string,
+    "time": number,
+}
+
 export interface all_play_history {
     'short': Array<play_history_if>,
     'normal': Array<play_history_if>,
