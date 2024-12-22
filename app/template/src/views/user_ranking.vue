@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-// import { ref } from 'vue'
-// const ranking_table = ref<HTMLTableElement | null>(null)
+import { ref } from 'vue'
+const ranking_table = ref<HTMLTableElement | null>(null)
 const test_value = [
   {
     correct_count: 59,
@@ -477,7 +477,6 @@ const ranking_deta_label_len = ranking_deta_label_arr.length
 
 <template>
   <body>
-
     <table id="ranking_table">
       <tr id="ranking_label_fm">
         <th v-for="key in ranking_deta_label_len" :key="key">

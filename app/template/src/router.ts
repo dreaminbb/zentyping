@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
-import home from '@/views/user_home.vue'
 import play from '@/views/play_test.vue'
 import login from '@/views/user_login.vue'
 import account from '@/views/user_account.vue'
@@ -8,11 +7,6 @@ import ranking from '@/views/user_ranking.vue'
 
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'home',
-    component: home
-  },
   {
     path: '/play',
     name: 'play',
