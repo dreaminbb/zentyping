@@ -102,9 +102,14 @@ function display_charts(index: number): ranking_data_if {
       </tr>
     </table>
 
+<<<<<<< HEAD
     <div id="chart_area" v-if="is_display_result_chart">
       <line_chart :chart_data="line_chart_data" />
       <pie_chart :chart_data="pie_chart_data" />
+=======
+    <div id="play_result_container" v-if="is_display_result_chart">
+      <play_result :data="result_data" id="play_result_comp" />
+>>>>>>> 5c9b666 (UI作成順調!!!!!消すボタン、イベントリスナーとかもつけたい)
     </div>
   </div>
 </template>
@@ -149,12 +154,30 @@ body {
     }
   }
 
+<<<<<<< HEAD
   #chart_area {
     position: relative;
     background: rgba(169, 147, 147, 0.7);
     top: 20%;
     width: 100%;
     height: 70%;
+=======
+  #play_result_container {
+    position: absolute;
+    background: rgba(169, 147, 147, 0.7);
+    top: 20%;
+    right: 5%;
+    width: 90%;
+    height: 45%;
+
+    #play_result_comp {
+      position: relative;
+      width: 90%;
+      height: 95%;
+      justify-self: center;
+      align-self: center;
+    }
+>>>>>>> 5c9b666 (UI作成順調!!!!!消すボタン、イベントリスナーとかもつけたい)
   }
 }
 </style>
