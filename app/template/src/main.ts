@@ -5,23 +5,13 @@ import App from './App.vue'
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { library, type IconPack, type IconFamily } from '@fortawesome/fontawesome-svg-core'
+import { library, type IconPack } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'home',
-    component: () => import('@/views/user_home.vue'),
-  },
-  {
-    path: '/play',
-    name: 'play',
-    component: () => import('@/views/play_test.vue'),
-  },
   {
     path: '/login',
     name: 'login',

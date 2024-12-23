@@ -7,6 +7,17 @@ body {
                 padding: 0;
 }
 
+#main_container {
+                width: 90%;
+                margin: 0 auto;
+                height: 100vh;
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-template-rows: 15% 70% 15%;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+}
+
 header {
                 background: (var--primary-background-color);
                 color: var(--header-text-color);
@@ -27,8 +38,8 @@ header h1 {
 
 header h1 #site_name {
                 text-align: center;
-                align-items: center;
                 text-decoration: none;
+                align-items: center;
 }
 
 header nav {

@@ -1,27 +1,32 @@
-<script lang="ts" setup>
-import { provide, type Ref, ref } from 'vue'
+<script lang="ts">
+import { defineComponent, provide, type Ref, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { user_status } from '@/store/store'
-import { session_manager } from '@/services/auth'
 import base_header from './components/base_header.vue'
-
-// const tools = ref(true)
-// const login_button = ref(true)
-// const user_profile: Ref<boolean> = ref(false)
-// const header_normal_class = ref(true)
-// const header_focus_class = ref(false)
-
-// provide('tools', tools)
-// provide('header_normal_class', header_normal_class)
-// provide('header_focus_class', header_focus_class)
-
+import play_test from './components/play_test.vue'
+import base_footer from './components/base_footer.vue'
+export default defineComponent({
+  components: {
+    base_header,
+    play_test,
+    base_footer
+  },
+  setup() {
+    return {
+      base_header,
+      play_test,
+      base_footer
+    }
+  }
+})
 </script>
 
 <template>
-  <base_header />
-  <div></div>
-</template>
+  <main id="main_container">
+    <base_header />
+    <play_test />
+    <base_footer />
+  </main>
+  </template>
 
-<style >
-
-</style>
+<style></style>
