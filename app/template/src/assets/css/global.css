@@ -79,7 +79,7 @@ header nav div {
                 height: 100%;
                 margin: 0 auto;
                 font-size: 2rem;
-                border: solid 1px var(--header-text-color);
+                /* border: solid 1px var(--header-text-color); */
 }
 
 /* #code_play_main_container  span {
