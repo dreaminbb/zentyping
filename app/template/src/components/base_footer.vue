@@ -6,5 +6,5 @@ export default defineComponent({
 </script>
 
 <template>
-  <footer>足er</footer>
+  <footer></footer>
 </template>
