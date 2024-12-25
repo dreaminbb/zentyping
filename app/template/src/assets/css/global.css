@@ -79,25 +79,38 @@ header nav div {
                 height: 100%;
                 margin: 0 auto;
                 font-size: 2rem;
-                /* border: solid 1px var(--header-text-color); */
+                border: solid 1px var(--header-text-color);
 }
 
-/* #code_play_main_container  span {
-} */
-
-#code_play_main_container #code_display_container code{
+#code_play_main_container #code_display_container code {
                 width: 100%;
                 height: 100%;
 }
 
+#code_play_main_container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+}
+
+#code_display_container {
+                width: 90%;
+                height: 80%;
+                margin: 10% 5%;
+                font-size: 1.5rem;
+                font-family: 'Courier New', Courier, monospace;
+                padding: 1rem;
+                border-radius: 5px;
+}
 
 .each_line_elm {
                 display: block;
-                /* 各行をブロック要素として表示 */
 }
 
 .each_char_elm {
-                /* 各文字をインラインブロック要素として表示 */
+                display: inline-block;
+                color: var(--play-non-typed-color);
 }
 
 .non_typed {
@@ -110,4 +123,16 @@ header nav div {
 
 .incorrect {
                 color: var(--play-incorrect-color);
+}
+
+#type_input {
+                position: absolute;
+                background: transparent;
+                text-decoration: none;
+                outline: none;
+                border: none;
+                resize: none;
+                width: 0;
+                height: 0;
+                cursor: none;
 }
