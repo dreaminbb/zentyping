@@ -10,6 +10,7 @@ from app.storege.ranking_manager import fetch_ranking
 from app.storege.ranking_manager import fetch_ranking
 from app.routes.user_router import user_bp
 from app.routes.server_router import auth_bp
+
 from app.config import config, app, client, ranking_cache
 
 # 本番環境で変更すること

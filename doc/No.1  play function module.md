@@ -36,3 +36,11 @@ variable space_start_point and space_end_point represents the position of start 
 if there are space after line break. space_start_point become the index of i variable.
 Do it  until char_span_arr[i].textContent is not /u00A0(space) then space_end_point become the i.
 And we can get start of spacing also end as variables.
+
+# playing
+Use  essenced_spans_for_comparison variable to identify input is correct or not.
+Its spaces after line break were already removed in function.
+Comparing method in function of comparison_input_and_add_class_to_span.
+
+
+
