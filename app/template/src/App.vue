@@ -25,7 +25,6 @@ export default defineComponent({
   <main id="main_container">
     <base_header />
     <code_play />
- thunetuhenhuteoueoueoueouou
     <base_footer />
   </main>
   </template>
