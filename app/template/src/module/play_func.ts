@@ -1,12 +1,10 @@
-// todo => 1.改行後のスペースを無視してspanタグを取得する。 
-// ! 関数format....が動いてない
 class play_func {
-
-    [x: string]: any;
     user_keydown: string;
     line_break: string;
     user_input: string;
     is_playing: boolean;
+    type_counter: number;
+    time_value: number;
     char_all_spans_as_array_elm: Array<any>
     essenced_spans_for_comparison: Array<HTMLSpanElement>
     char_index: number
@@ -21,7 +19,9 @@ class play_func {
         this.line_break = '\n'
         this.char_all_spans_as_array_elm = []
         this.is_playing = false
+        this.time_value = 0.0
         this.char_index = 0
+        this.type_counter = 0
         this.line_index = 0
         this.essenced_spans_for_comparison = []
         this.char_spans = []
@@ -29,26 +29,52 @@ class play_func {
         this.splited_code_arr = []
     }
 
-    public init(terget_code_arg: string) {
+    private init(terget_code_arg: string, code_display_container: HTMLElement) {
         this.target_code = terget_code_arg
         this.splited_code_arr = terget_code_arg.split('')
         this.user_input = ''
+        this.time_value = 0.0
         this.char_index = 0
         this.line_index = 0
         this.char_all_spans_as_array_elm = []
         this.char_spans = []
+        this.fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container)
         window.addEventListener('keydown', this.handle_keydown.bind(this));
         window.addEventListener('keydown', this.handle_keydown_for_play.bind(this));
         console.log(this.target_code.split(''))
     }
 
-    //* work every time when user press key => use for watch shortcut key
-    private handle_keydown(e: KeyboardEvent): void {
-        this.user_keydown += e.key
+    private start_timer(): void {
+        setInterval(() => {
+            (this.time_value += 0.1).toFixed(2)
+            console.log(this.time_value, 'time')
+        }, 100)
     }
 
-    //* ignore meta, ctl , alt key and handle enter and backspace key => use for palying
-    handle_keydown_for_play(e: KeyboardEvent): void {
+    //* When first charater typed run this. So there is this func in handle_keydown_for_play() 
+    public init_set_start(code: string, code_display_container: HTMLElement): void {
+        this.init(code, code_display_container)
+        return
+    }
+
+    //* work every time when user press key => use for watch shortcut key.
+    private handle_keydown(e: KeyboardEvent): void {
+        this.user_keydown += e.key
+        return
+    }
+
+    //* ignore meta, ctl , alt key and handle enter and backspace key => use for palying.
+    private handle_keydown_for_play(e: KeyboardEvent): void {
+
+        if (e.key === 'Meta' || e.key === 'Control' || e.key === 'Alt') return
+
+        this.type_counter++
+
+        // It works only first type.
+        if (this.type_counter === 1) {
+            this.is_playing = true
+            this.start_timer()
+        }
 
         if (e.key === 'Backspace') {
             this.user_input = this.user_input.slice(0, -1)
@@ -60,7 +86,7 @@ class play_func {
         }
 
         if (e.key === 'Enter') {
-            this.char_index++ // important
+            this.char_index++ // important. I weast 1hours bcs, I forgot this simple a line of code.
             this.comparison_input_and_add_class_to_span(this.line_break as string)
             this.user_input += this.line_break
             console.log(this.user_input.split(''))
@@ -71,14 +97,13 @@ class play_func {
         this.comparison_input_and_add_class_to_span(e.key as string)
         this.user_input += e.key
         this.char_index++
-        console.log(this.user_input.split(''))
-        console.log(this.user_input)
+        return
     }
 
     private format_to_ignore_space_after_line_break(char_span_arr: NodeListOf<HTMLSpanElement>): any {
-        //* at first \u00A0 is space character
-        //* base of identify line break is before char is \n and after char is \u00A0 
-        //* store \u00A0 after \n until next char is not \u00A0
+        //* at first \u00A0 is space character.
+        //* base of identify line break is before char is \n and after char is \u00A0 .
+        //* store \u00A0 after \n until next char is not \u00A0.
 
         try {
             const char_span_arr_decoy = Array.from(char_span_arr);
@@ -100,7 +125,7 @@ class play_func {
                             break;
                         }
                     }
-                    //* store spans include \u00A0
+                    //* store spans include \u00A0.
                     console.log('start point', space_start_point);
                     console.log('end point', space_end_point);
                     for (let j = space_start_point; j < space_end_point; j++) {
@@ -124,7 +149,7 @@ class play_func {
     }
 
 
-    //* fetch all span tags in code dispaly container as array 
+    //* fetch all span tags in code dispaly container as array .
     public fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container: HTMLElement): void {
         if (code_display_container === null) return
         const char_spans_value = (code_display_container as HTMLElement).querySelectorAll(
@@ -167,7 +192,6 @@ class play_func {
             target_span_elm.classList.add('incorrect')
         }
     }
-
 }
 
 export default new play_func;
