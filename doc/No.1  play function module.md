@@ -44,5 +44,4 @@ Comparing method in function of comparison_input_and_add_class_to_span.
 
 
 # Timer 
-
-
+No explain feel code 👨‍💻😎 (write later)
