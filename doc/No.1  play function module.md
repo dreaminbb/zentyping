@@ -43,4 +43,6 @@ Its spaces after line break were already removed in function.
 Comparing method in function of comparison_input_and_add_class_to_span.
 
 
+# Timer 
+
 
