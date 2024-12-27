@@ -1,3 +1,6 @@
+//todo
+//* スペースに正誤の色をつける
+//* 結果画面のUIを作成する
 class play_func {
     user_keydown: string;
     line_break: string;
@@ -73,11 +76,13 @@ class play_func {
     //* ignore meta, ctl , alt key and handle enter and backspace key => use for palying.
     private handle_keydown_for_play(e: KeyboardEvent): void {
 
-        if (e.key === 'Meta' || e.key === 'Control' || e.key === 'Alt') return // short cut.
+        if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return
         if ((e.ctrlKey || e.metaKey) && e.key === 'r') return // prevent when page reload by keyboard shortcut.
         if (e.key === 'Backspace' && this.type_counter === 0) return // when barkspace typed and there are no input do nohing.
+        if (e.key === 'Backspace' && this.char_index === 0) return
 
         this.type_counter++
+        console.log(e.key, 'keyyyyyyy')
 
         // It works only first type.
         if (this.type_counter === 1) {
@@ -101,7 +106,6 @@ class play_func {
             return
         }
 
-        if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return
         this.comparison_input_and_add_class_to_span(e.key as string)
         this.user_input += e.key
         this.char_index++
@@ -122,10 +126,11 @@ class play_func {
             let space_end_point: number = 0;
             for (let i = 0; i < char_span_arr.length; i++) {
                 if (char_span_arr[i].textContent === '\u00A0' && char_span_arr[i - 1].textContent === '\n') {
-                    console.log('is it working?');
+
                     space_start_point = i; // set start point
                     space_index = i;
                     for (; ;) {
+
                         space_index++;
                         if (char_span_arr[space_index].textContent !== '\u00A0') {
                             console.log('point of space end', space_index);
@@ -137,7 +142,7 @@ class play_func {
                     console.log('start point', space_start_point);
                     console.log('end point', space_end_point);
                     for (let j = space_start_point; j < space_end_point; j++) {
-                        console.log('storing span');
+
                         removed_spans.push(char_span_arr_decoy[j]);
                     }
                 }
@@ -171,32 +176,30 @@ class play_func {
 
         const target_span_elm = this.essenced_spans_for_comparison[this.char_index]
         const before_target_span_elm = this.essenced_spans_for_comparison[this.char_index - 1]
-        //*
-        if (target_span_elm === undefined ) return
-        console.log(input_char, 'input char')
+
 
         if (input_char === this.line_break) {
-            console.log('line break!!!!!!!!', target_span_elm)
             before_target_span_elm.classList.add('correct');
             return
         }
 
         if (input_char === 'delete' && this.char_index > 0) {
-            console.log(before_target_span_elm , 'deldeledledledledle')
             before_target_span_elm.classList.remove('correct')
             before_target_span_elm.classList.remove('incorrect')
+            before_target_span_elm.classList.remove('incorrect_space')
             before_target_span_elm.classList.add('untyped')
             return
         }
 
+        const is_input_space = (target_span_elm.textContent === '\u00A0' && input_char !== ' ') ||
+            (target_span_elm.textContent === ' ' && input_char !== '\u00A0');
+
         if (target_span_elm.textContent === input_char) {
-            target_span_elm.classList.remove('incorrect')
-            target_span_elm.classList.add('correct')
-            console.log('coreect', target_span_elm.textContent, 'target', input_char, 'input')
-        } else {
-            console.log('incoreect', target_span_elm.textContent, 'target', input_char, 'input')
-            target_span_elm.classList.remove('correct')
-            target_span_elm.classList.add('incorrect')
+            target_span_elm.classList.remove('incorrect');
+            target_span_elm.classList.add('correct');
+        } else if (target_span_elm.textContent !== input_char || is_input_space) {
+            target_span_elm.classList.remove('correct');
+            target_span_elm.classList.add(is_input_space ? 'incorrect_space' : 'incorrect');
         }
     }
 }

@@ -21,7 +21,7 @@ body {
 }
 
 header {
-                background: (var--primary-background-color);
+                background: var(--primary-background-color);
                 color: var(--header-text-color);
                 display: flex;
                 align-items: center;
@@ -83,11 +83,16 @@ header nav div {
 }
 
 .untyped {
+                background: var(--primary-background-color);
                 color: var(--play-non-typed-color);
 }
 
 .correct {
                 color: var(--play-correct-color);
+}
+
+.incorrect_space {
+                background:red;
 }
 
 .incorrect {
@@ -101,4 +106,3 @@ header nav div {
 #code_display_container {
                 border: solid 2px var(--header-text-color);
 }
-

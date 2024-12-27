@@ -3,35 +3,13 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library, type IconPack } from '@fortawesome/fontawesome-svg-core'
+import routes from '@/router'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 
-
-const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/login',
-    name: 'login',
-    // beforeEnter: (to, from, next) => {
-    // await new token_manager().verify_session()
-    //     next()
-    // },
-    component: () => import('@/views/user_login.vue'),
-  },
-  {
-    path: '/account',
-    name: 'account',
-    component: () => import('@/views/user_account.vue'),
-  },
-  {
-    path: '/ranking',
-    name: 'ranking',
-    component: () => import('@/views/user_ranking.vue'),
-  }
-]
 
 const router = createRouter({
   history: createWebHistory(),  // HTML5 History モードを使用
