@@ -12,8 +12,11 @@ class play_func {
     char_spans: Array<any>
     target_code: string;
     splited_code_arr: Array<string>
+    time_display_display: HTMLElement
+    char_length_display_elm: HTMLElement
 
-    constructor() {
+
+    constructor(time_display_display_as_arg: HTMLElement, char_length_display_elm_as_arg: HTMLElement) {
         this.user_keydown = ''
         this.user_input = ''
         this.line_break = '\n'
@@ -26,17 +29,21 @@ class play_func {
         this.essenced_spans_for_comparison = []
         this.char_spans = []
         this.target_code = ''
+        this.time_display_display = time_display_display_as_arg
+        this.char_length_display_elm = char_length_display_elm_as_arg
         this.splited_code_arr = []
     }
 
-    private init(terget_code_arg: string, code_display_container: HTMLElement) {
+    private init(terget_code_arg: string, code_display_container: HTMLElement): void {
         this.target_code = terget_code_arg
         this.splited_code_arr = terget_code_arg.split('')
         this.user_input = ''
         this.time_value = 0.0
         this.char_index = 0
         this.line_index = 0
+        this.time_display_display.textContent = '0.0s'
         this.char_all_spans_as_array_elm = []
+        this.essenced_spans_for_comparison = []
         this.char_spans = []
         this.fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container)
         window.addEventListener('keydown', this.handle_keydown.bind(this));
@@ -47,7 +54,7 @@ class play_func {
     private start_timer(): void {
         setInterval(() => {
             (this.time_value += 0.1).toFixed(2)
-            console.log(this.time_value, 'time')
+            this.time_display_display.textContent = this.time_value.toFixed(2) + 's'
         }, 100)
     }
 
@@ -66,7 +73,9 @@ class play_func {
     //* ignore meta, ctl , alt key and handle enter and backspace key => use for palying.
     private handle_keydown_for_play(e: KeyboardEvent): void {
 
-        if (e.key === 'Meta' || e.key === 'Control' || e.key === 'Alt') return
+        if (e.key === 'Meta' || e.key === 'Control' || e.key === 'Alt') return // short cut.
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') return // prevent when page reload by keyboard shortcut.
+        if (e.key === 'Backspace' && this.type_counter === 0) return // when barkspace typed and there are no input do nohing.
 
         this.type_counter++
 
@@ -81,7 +90,6 @@ class play_func {
             console.log(this.user_input, 'user input')
             this.comparison_input_and_add_class_to_span('delete')
             this.char_index--
-            console.log(this.user_input.split(''))
             return
         }
 
@@ -138,8 +146,6 @@ class play_func {
             removed_spans.forEach((span) => {
                 char_span_arr_decoy.splice(char_span_arr_decoy.indexOf(span), 1);
             });
-            console.log('Removed spans:', removed_spans);
-            console.log('char_span_arr_decoy:', char_span_arr_decoy);
 
             return char_span_arr_decoy   // formatted char_span_arr and removed spans
         } catch (e) {
@@ -165,8 +171,8 @@ class play_func {
 
         const target_span_elm = this.essenced_spans_for_comparison[this.char_index]
         const before_target_span_elm = this.essenced_spans_for_comparison[this.char_index - 1]
-
-        if (target_span_elm === undefined) return
+        //*
+        if (target_span_elm === undefined ) return
         console.log(input_char, 'input char')
 
         if (input_char === this.line_break) {
@@ -176,6 +182,7 @@ class play_func {
         }
 
         if (input_char === 'delete' && this.char_index > 0) {
+            console.log(before_target_span_elm , 'deldeledledledledle')
             before_target_span_elm.classList.remove('correct')
             before_target_span_elm.classList.remove('incorrect')
             before_target_span_elm.classList.add('untyped')
@@ -194,4 +201,4 @@ class play_func {
     }
 }
 
-export default new play_func;
+export default play_func;
