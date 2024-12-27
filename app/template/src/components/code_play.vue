@@ -7,6 +7,8 @@ import type { Ref } from 'vue'
 
 const code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const char_spans: Ref<HTMLElement[]> = ref<HTMLElement[]>([])
+const ref_time_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const ref_char_length_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 
 const sample_code = `function main(): void {
   console.log('I use mac,btw')
@@ -27,7 +29,11 @@ function add_line_break_to_code_after_spliting(splited_code: Array<string>): Arr
 
 onMounted(() => {
   try {
-    play_func.init_set_start(sample_code , code_display_container.value as HTMLElement)
+    const play_func_ins = new play_func(
+      ref_time_display.value as HTMLElement,
+      ref_char_length_display.value as HTMLElement
+    )
+    play_func_ins.init_set_start(sample_code, code_display_container.value as HTMLElement)
   } catch (e) {
     console.error(e)
   }
@@ -35,24 +41,89 @@ onMounted(() => {
 </script>
 <template>
   <main id="code_play_main_container">
+    <div id="play_info_display_container" ref="ref_play_info_display_container">
+      <div id="time_display" ref="ref_time_display"></div>
+    </div>
     <code id="code_display_container" ref="code_display_container">
-      <span
+      <div id="code_display_window">
+        <span
         v-for="(char, index) in add_line_break_to_code_after_spliting(sample_code.split('\n'))"
         :key="index"
         ref="char_spans"
         class="each_line_elm"
-      >
-        <span
-          v-for="(each_char, each_index) in char.split('')"
-          :key="each_index"
-          :class="{
-            each_char_elm: true,
-            space_elm: each_char === ' ',
-            line_break_elm: each_char === '\n'
-          }"
-          >{{ each_char === ' ' ? '\u00A0' : each_char }}</span
         >
-      </span>
+        <span
+        v-for="(each_char, each_index) in char.split('')"
+        :key="each_index"
+        :class="{
+          each_char_elm: true,
+          space_elm: each_char === ' ',
+          line_break_elm: each_char === '\n'
+        }"
+          >{{ each_char === ' ' ? '\u00A0' : each_char }}</span
+          >
+        </span>
+      </div>
     </code>
   </main>
 </template>
+
+<style>
+#code_play_main_container {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 10% 90%;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: 30px auto;
+  bottom: 0;
+  width: 60%;
+  font-size: 2rem;
+}
+
+#play_info_display_container {
+  display: flex;
+  width: 100%;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#code_play_main_container #code_display_container code {
+  width: 100%;
+  height: 100%;
+}
+
+#code_display_container {
+  width: 100%;
+  height: 100%;
+  font-size: 1.5rem;
+  font-family: 'Courier New', Courier, monospace;
+  border-radius: 15px;
+  align-items: center;
+  justify-content: center;
+}
+
+#code_display_window{
+  width: 80%;
+  height: 80%;
+  margin: 10% auto;
+}
+
+#type_input {
+  position: absolute;
+  background: transparent;
+  text-decoration: none;
+  outline: none;
+  border: none;
+  resize: none;
+  width: 0;
+  height: 0;
+  cursor: none;
+}
+</style>
