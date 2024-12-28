@@ -1,4 +1,5 @@
 //todo  結果画面のUIを作成
+//! 改行後のuntypedが取れていない
 class play_func {
     private user_keydown: string;
     private line_break: string;
@@ -49,7 +50,7 @@ class play_func {
         this.essenced_spans_for_comparison = []
         this.char_spans = []
         this.fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container)
-        console.log(this.essenced_spans_for_comparison)
+        // console.log(this.essenced_spans_for_comparison)
         window.addEventListener('keydown', this.handle_keydown.bind(this));
         window.addEventListener('keydown', this.handle_keydown_for_play.bind(this));
     }
@@ -81,13 +82,12 @@ class play_func {
 
     private is_include_incorrect_class_in_ess_spans(): boolean {
         try {
-            this.essenced_spans_for_comparison.forEach((value) => {
+            for (const value of this.essenced_spans_for_comparison) {
                 const array_from_values_class_name: Array<string> = value.className.split(' ')
-                if (array_from_values_class_name.includes('incorrect_space') || array_from_values_class_name.includes('incorrect')) {
-                    // console.log(array_from_values_class_name)
+                if (array_from_values_class_name.includes('incorrect')) {
                     return true
                 }
-            })
+            }
             return false
         } catch (e) {
             console.error(e);
@@ -97,12 +97,13 @@ class play_func {
 
     private is_all_char_typed(): boolean {
         try {
-            this.essenced_spans_for_comparison.forEach((value) => {
+            for (const value of this.essenced_spans_for_comparison) {
                 const array_from_values_class_name: Array<string> = value.className.split(' ')
                 if (array_from_values_class_name.includes('untyped')) {
+                    console.log(array_from_values_class_name, value.textContent, ' this is the utyped')
                     return false
                 }
-            })
+            }
             return true
         } catch (e) {
             console.error(e);
@@ -150,6 +151,11 @@ class play_func {
         // console.log(this.is_all_char_typed(), 'all char typed')
         this.char_index++
         this.user_input += e.key
+        console.log(this.is_include_incorrect_class_in_ess_spans())
+        if (this.is_all_char_typed() === true && this.is_include_incorrect_class_in_ess_spans() === false) {
+            // end
+            console.log('the end')
+        }
         return
     }
 
@@ -218,12 +224,13 @@ class play_func {
         const before_target_span_elm = this.essenced_spans_for_comparison[this.char_index - 1]
 
         if (input_char === '\n' && before_target_span_elm.textContent === '\n') {
-            console.log(before_target_span_elm.textContent , 226)
+            console.log(before_target_span_elm.textContent, 226)
             before_target_span_elm.classList.add('correct');
+            before_target_span_elm.classList.remove('untyped')
             return
         }
-        if(input_char === '\n' && before_target_span_elm.textContent !== '\n') {
-            console.log(before_target_span_elm.textContent , this.char_index, 'char index', 231)
+        if (input_char === '\n' && before_target_span_elm.textContent !== '\n') {
+            console.log(before_target_span_elm.textContent, this.char_index, 'char index', 231)
             before_target_span_elm.classList.add('incorrect')
             before_target_span_elm.classList.remove('untyped')
             return
@@ -262,7 +269,7 @@ class play_func {
             target_span_elm.classList.remove('untyped')
             target_span_elm.classList.add('correct');
             return
-       } else if (target_span_elm.textContent !== input_char) {
+        } else if (target_span_elm.textContent !== input_char) {
             // console.log('fuck fuck fuck ')
             target_span_elm.classList.add('incorrect');
             target_span_elm.classList.remove('correct');
