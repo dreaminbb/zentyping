@@ -57,6 +57,7 @@ onMounted(() => {
         :key="each_index"
         :class="{
           each_char_elm: true,
+          untyped : true,
           space_elm: each_char === ' ',
           line_break_elm: each_char === '\n'
         }"

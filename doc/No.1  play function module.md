@@ -4,6 +4,10 @@
 
 *This file compensate the process of playing
 
+# Term of playing
+- Never finish if there are wrong type.
+- There is no retry in same code. If you wanna start from nothing. player has to refresh code.  
+
 # handle_keydown_for_play()
 To watch user input and del meta , ctl , alt ... 
 Format input  be identifiable  for playing , comparison
