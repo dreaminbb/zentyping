@@ -48,4 +48,21 @@ Comparing method in function of comparison_input_and_add_class_to_span.
 
 
 # Timer 
-No explain feel code 👨‍💻😎 (write later)
+No explain feel code 👨‍💻😎 (write later
+
+
+
+# Result
+
+-   component => result_view
+
+
+*How measure acc , wpm ?*
+
+--- 
+Wpm(word per minutes) = (input ÷ 5 ) ÷ time
+This 5 means number of statistic word characters.
+
+---
+Accuracy (ACC) % = (Correct Inputs ÷ Total Inputs) × 100
+

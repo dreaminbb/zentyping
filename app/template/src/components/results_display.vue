@@ -17,9 +17,9 @@ export default defineComponent({
 <template>
   <main id="result_main_container">
     <div id="wpm_acc_time_container">
-      <div class="wpm_acc_time_class">{{ result_data.wpm }}</div>
-      <div class="wpm_acc_time_class">{{ result_data.acc }}</div>
-      <div class="wpm_acc_time_class">{{ result_data.time }}</div>
+      <div class="wpm_acc_time_class">毎分単語数 {{ result_data.wpm }}</div>
+      <div class="wpm_acc_time_class">正入力率 {{ result_data.acc }} %</div>
+      <div class="wpm_acc_time_class">時間 {{ result_data.time.toFixed(2)}} 秒</div>
     </div>
   </main>
 </template>
@@ -29,7 +29,11 @@ export default defineComponent({
   width: 100%;
   height: 100%;
 }
+
 #wpm_acc_time_container{
-  color: white;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  top: 0;
 }
 </style>

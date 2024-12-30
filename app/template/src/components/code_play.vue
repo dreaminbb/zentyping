@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, defineExpose, type Ref } from 'vue'
-import { play_func, type result_data_itf } from '@/module/play_func'
+import { ref, onMounted, type Ref } from 'vue'
+import { play_func } from '@/module/play_func'
 import result_display from '@/components/results_display.vue'
-import {result_data_ref_obj ,  is_dislay_result_view} from '@/module/play_func'
+import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
 import '../assets/css/global.css'
 
 const code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
@@ -44,7 +44,7 @@ onMounted(() => {
     <div id="play_info_display_container" v-if="!is_dislay_result_view">
       <div id="time_display" ref="ref_time_display"></div>
     </div>
-    <code id="code_display_container" ref="code_display_container">
+    <code id="code_display_container" ref="code_display_container" v-if="!is_dislay_result_view">
       <div id="code_display_window">
         <span
           v-for="(char, index) in add_line_break_to_code_after_spliting(sample_code.split('\n'))"
@@ -66,8 +66,8 @@ onMounted(() => {
         </span>
       </div>
     </code>
+    <result_display v-if="is_dislay_result_view" :result_data="result_data_ref_obj" />
   </main>
-  <result_display v-if="is_dislay_result_view" :result_data="result_data_ref_obj" />
 </template>
 
 <style>

@@ -159,10 +159,13 @@ export class play_func {
 
         // This if statement means end of game.
         if (this.is_all_char_typed() === true && this.is_include_incorrect_class_in_ess_spans() === false) {
+        
+            // calculating result values
             window.removeEventListener('keydown', this.handle_keydown_for_play.bind(this));
-            const wpm: number = 0
-            const acc: number = 0
             const time: number = this.stop_timer()
+            const time_format_to_munutes: number = (time / 60)
+            const wpm: number = parseFloat(((this.char_all_spans_as_array_elm.length / 5) / time_format_to_munutes).toFixed(2))
+            const acc: number = parseFloat(((this.char_all_spans_as_array_elm.length as number / this.type_counter) * 100).toFixed(2))
             const data: result_data_itf = {
                 wpm: wpm,
                 acc: acc,

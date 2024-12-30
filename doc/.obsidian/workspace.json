@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "bdc4c0473b89c220",
+        "id": "067d369728e39737",
         "type": "tabs",
         "children": [
           {
-            "id": "90d3a10296239f77",
+            "id": "a0b093c166963bf2",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -77,8 +77,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "a82b64a576395da3",
@@ -163,9 +162,9 @@
       "command-palette:コマンドパレットを開く": false
     }
   },
-  "active": "90d3a10296239f77",
+  "active": "a0b093c166963bf2",
   "lastOpenFiles": [
-    "2024-12-26.md",
-    "No.1  play function module.md"
+    "No.1  play function module.md",
+    "2024-12-26.md"
   ]
 }
