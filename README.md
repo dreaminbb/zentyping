@@ -1,9 +1,9 @@
-# mode_typing
+# zenn typing
 
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
-
+X
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
 I recommed to use vscode.
@@ -20,31 +20,23 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 ## Project Setup
 
 ```sh
-npm install
+bun i
 ```
 
 ### Compile and Hot-Reload for Development
 
 ```sh
-npm run dev
+bun run dev
 ```
 
 ### Type-Check, Compile and Minify for Production
 
 ```sh
-npm run build
+bun run build
 ```
 
 ### Lint with [ESLint](https://eslint.org/)
 
 ```sh
-npm run lint
-```
-
-============================================================
-
-### this is a flask API all lib list are reqiremnts.txt so run
-
-```sh
-pip install -r requirements.txt
+bun run lint
 ```
