@@ -1,6 +1,17 @@
-//todo  結果画面のUIを作成
-//! 改行後のuntypedが取れていない
-class play_func {
+//todo  結果画面のUIを作
+
+import { ref, type Ref } from "vue";
+
+export interface result_data_itf {
+    wpm: number;
+    acc: number;
+    time: number;
+}
+
+export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({ wpm: 0, acc: 0, time: 0 })
+export const is_dislay_result_view: Ref<boolean> = ref<boolean>(false)
+
+export class play_func {
     private user_keydown: string;
     private line_break: string;
     private user_input: string;
@@ -9,17 +20,17 @@ class play_func {
     private time_value: number;
     private char_all_spans_as_array_elm: Array<any>
     private essenced_spans_for_comparison: Array<HTMLSpanElement>
+    public result_data: result_data_itf;
     private char_index: number
     public line_index: number
     public timer_func: | number;
     public char_spans: Array<any>
-    private target_code: string;
     public splited_code_arr: Array<string>
     private time_display_display: HTMLElement
     public char_length_display_elm: HTMLElement
+    public ref_play_code_display_container: HTMLElement
 
-
-    constructor(time_display_display_as_arg: HTMLElement, char_length_display_elm_as_arg: HTMLElement) {
+    constructor(time_display_display_as_arg: HTMLElement, char_length_display_elm_as_arg: HTMLElement, ref_play_code_display_container: HTMLElement) {
         this.user_keydown = ''
         this.user_input = ''
         this.line_break = '\n'
@@ -30,16 +41,16 @@ class play_func {
         this.type_counter = 0
         this.line_index = 0
         this.timer_func = 0
+        this.result_data = { 'wpm': 0, 'acc': 0, 'time': 0 }
         this.essenced_spans_for_comparison = []
         this.char_spans = []
-        this.target_code = ''
+        this.ref_play_code_display_container = ref_play_code_display_container
         this.time_display_display = time_display_display_as_arg
         this.char_length_display_elm = char_length_display_elm_as_arg
         this.splited_code_arr = []
     }
 
     private init(terget_code_arg: string, code_display_container: HTMLElement): void {
-        this.target_code = terget_code_arg
         this.splited_code_arr = terget_code_arg.split('')
         this.user_input = ''
         this.time_value = 0.0
@@ -50,7 +61,6 @@ class play_func {
         this.essenced_spans_for_comparison = []
         this.char_spans = []
         this.fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container)
-        // console.log(this.essenced_spans_for_comparison)
         window.addEventListener('keydown', this.handle_keydown.bind(this));
         window.addEventListener('keydown', this.handle_keydown_for_play.bind(this));
     }
@@ -144,18 +154,26 @@ class play_func {
 
 
         this.comparison_input_and_add_class_to_span(e.key as string)
-
-        // If this func return false . It means all player's all type is correct 
-        this.is_include_incorrect_class_in_ess_spans() //* Put this func after comparison_input_and_add_class_to_span 
-        // console.log(this.is_include_incorrect_class_in_ess_spans())
-        // console.log(this.is_all_char_typed(), 'all char typed')
         this.char_index++
         this.user_input += e.key
-        console.log(this.is_include_incorrect_class_in_ess_spans())
+
+        // This if statement means end of game.
         if (this.is_all_char_typed() === true && this.is_include_incorrect_class_in_ess_spans() === false) {
-            // end
-            console.log('the end')
+            window.removeEventListener('keydown', this.handle_keydown_for_play.bind(this));
+            const wpm: number = 0
+            const acc: number = 0
+            const time: number = this.stop_timer()
+            const data: result_data_itf = {
+                wpm: wpm,
+                acc: acc,
+                time: time,
+            }
+            is_dislay_result_view.value = true
+            result_data_ref_obj.value = data
+
+            return
         }
+
         return
     }
 
@@ -180,19 +198,18 @@ class play_func {
 
                         space_index++;
                         if (char_span_arr[space_index].textContent !== '\u00A0') {
-                            // console.log('point of space end', space_index);
                             space_end_point = space_index; // set end point
                             break;
                         }
                     }
+
                     //* store spans include \u00A0.
-                    // console.log('start point', space_start_point);
-                    // console.log('end point', space_end_point);
                     for (let j = space_start_point; j < space_end_point; j++) {
                         removed_spans.push(char_span_arr_decoy[j]);
                     }
                 }
             }
+
             // remove spans have space after line break by using rebovedSpans
             removed_spans.forEach((span) => {
                 char_span_arr_decoy.splice(char_span_arr_decoy.indexOf(span), 1);
@@ -200,7 +217,6 @@ class play_func {
 
             return char_span_arr_decoy   // formatted char_span_arr and removed spans
         } catch (e) {
-            // console.log(e);
             return null;
         }
     }
@@ -258,7 +274,6 @@ class play_func {
         }
 
         if (input_and_target_are_space) {
-            // console.log('input_and_target_are_space')
             target_span_elm.classList.add('correct')
             target_span_elm.classList.remove('untyped')
             return
@@ -270,12 +285,9 @@ class play_func {
             target_span_elm.classList.add('correct');
             return
         } else if (target_span_elm.textContent !== input_char) {
-            // console.log('fuck fuck fuck ')
             target_span_elm.classList.add('incorrect');
             target_span_elm.classList.remove('correct');
             return
         }
     }
 }
-
-export default play_func;

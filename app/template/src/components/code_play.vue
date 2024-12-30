@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import play_func from '@/module/play_func'
-import { ref } from 'vue'
+import { ref, onMounted, defineExpose, type Ref } from 'vue'
+import { play_func, type result_data_itf } from '@/module/play_func'
+import result_display from '@/components/results_display.vue'
+import {result_data_ref_obj ,  is_dislay_result_view} from '@/module/play_func'
 import '../assets/css/global.css'
-import type { Ref } from 'vue'
 
 const code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const char_spans: Ref<HTMLElement[]> = ref<HTMLElement[]>([])
 const ref_time_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const ref_char_length_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-
+const ref_play_code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const sample_code = `function main(): void {
-  console.log('I use mac,btw')
 }`
 
 //If split code by line break. This line break are romoved. So this func readd line break.
@@ -31,7 +30,8 @@ onMounted(() => {
   try {
     const play_func_ins = new play_func(
       ref_time_display.value as HTMLElement,
-      ref_char_length_display.value as HTMLElement
+      ref_char_length_display.value as HTMLElement,
+      ref_play_code_display_container.value as HTMLElement
     )
     play_func_ins.init_set_start(sample_code, code_display_container.value as HTMLElement)
   } catch (e) {
@@ -40,33 +40,34 @@ onMounted(() => {
 })
 </script>
 <template>
-  <main id="code_play_main_container">
-    <div id="play_info_display_container" ref="ref_play_info_display_container">
+  <main id="code_play_main_container" ref="ref_play_code_display_container">
+    <div id="play_info_display_container" v-if="!is_dislay_result_view">
       <div id="time_display" ref="ref_time_display"></div>
     </div>
     <code id="code_display_container" ref="code_display_container">
       <div id="code_display_window">
         <span
-        v-for="(char, index) in add_line_break_to_code_after_spliting(sample_code.split('\n'))"
-        :key="index"
-        ref="char_spans"
-        class="each_line_elm"
+          v-for="(char, index) in add_line_break_to_code_after_spliting(sample_code.split('\n'))"
+          :key="index"
+          ref="char_spans"
+          class="each_line_elm"
         >
-        <span
-        v-for="(each_char, each_index) in char.split('')"
-        :key="each_index"
-        :class="{
-          each_char_elm: true,
-          untyped : true,
-          space_elm: each_char === ' ',
-          line_break_elm: each_char === '\n'
-        }"
-          >{{ each_char === ' ' ? '\u00A0' : each_char }}</span
+          <span
+            v-for="(each_char, each_index) in char.split('')"
+            :key="each_index"
+            :class="{
+              each_char_elm: true,
+              untyped: true,
+              space_elm: each_char === ' ',
+              line_break_elm: each_char === '\n'
+            }"
+            >{{ each_char === ' ' ? '\u00A0' : each_char }}</span
           >
         </span>
       </div>
     </code>
   </main>
+  <result_display v-if="is_dislay_result_view" :result_data="result_data_ref_obj" />
 </template>
 
 <style>
@@ -110,7 +111,7 @@ onMounted(() => {
   justify-content: center;
 }
 
-#code_display_window{
+#code_display_window {
   width: 80%;
   height: 80%;
   margin: 10% auto;

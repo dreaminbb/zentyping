@@ -20,9 +20,11 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@types/chart.js": "^2.9.41",
+    "@types/events": "^3.0.3",
     "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "dotenv": "^16.4.7",
+    "events": "^3.3.0",
     "pinia": "^2.3.0",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.5.13",
@@ -45,7 +47,7 @@
     "prettier": "^3.4.2",
     "sass": "^1.83.0",
     "typescript": "~5.7.2",
-    "vite": "^6.0.5",
+    "vite": "^6.0.6",
     "vite-plugin-vue-devtools": "^7.6.8",
     "vue-tsc": "^2.2.0"
   }
