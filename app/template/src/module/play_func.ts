@@ -63,6 +63,7 @@ export class play_func {
         this.fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container)
         window.addEventListener('keydown', this.handle_keydown.bind(this));
         window.addEventListener('keydown', this.handle_keydown_for_play.bind(this));
+        this.char_all_spans_as_array_elm[0].classList.add('current_type_char')
     }
 
     private start_timer(): void {
@@ -121,6 +122,16 @@ export class play_func {
         }
     }
 
+    //* manage cursor movement
+    private move_cursor(): void {
+        this.char_all_spans_as_array_elm.forEach((value, index) => {
+            value.classList.remove('current_type_char')
+            if (index === this.char_index){
+                value.classList.add('current_type_char')
+            } 
+        })
+    }
+
     //* ignore meta, ctl , alt key and handle enter and backspace key => use for palying.
     private handle_keydown_for_play(e: KeyboardEvent): void {
 
@@ -130,36 +141,39 @@ export class play_func {
         if (e.key === 'Backspace' && this.char_index === 0) return
 
         this.type_counter++
-
+        
         // It works only first type.
         if (this.type_counter === 1) {
             this.is_playing = true
             this.start_timer()
         }
-
+        
         if (e.key === 'Backspace') {
             this.user_input = this.user_input.slice(0, -1)
             // console.log(this.user_input, 'user input')
             this.comparison_input_and_add_class_to_span('delete')
             this.char_index--
+            this.move_cursor() // cursor move 1
             return
         }
-
+        
         if (e.key === 'Enter') {
             this.char_index++ // important. I weast 1hours bcs, I forgot this simple a line of code.
             this.comparison_input_and_add_class_to_span('\n')
             this.user_input += this.line_break
+            this.move_cursor() // cursor move 2
             return
         }
-
-
+        
+        
         this.comparison_input_and_add_class_to_span(e.key as string)
         this.char_index++
         this.user_input += e.key
-
+        this.move_cursor()// cursor move 3
+        
         // This if statement means end of game.
         if (this.is_all_char_typed() === true && this.is_include_incorrect_class_in_ess_spans() === false) {
-        
+            
             // calculating result values
             window.removeEventListener('keydown', this.handle_keydown_for_play.bind(this));
             const time: number = this.stop_timer()
@@ -250,6 +264,11 @@ export class play_func {
         }
         if (input_char === '\n' && before_target_span_elm.textContent !== '\n') {
             console.log(before_target_span_elm.textContent, this.char_index, 'char index', 231)
+
+            if (before_target_span_elm.textContent === '\u00A0') {
+                before_target_span_elm.classList.add('incorrect_space')
+                before_target_span_elm.classList.remove('untyped')
+            }
             before_target_span_elm.classList.add('incorrect')
             before_target_span_elm.classList.remove('untyped')
             return
@@ -265,12 +284,10 @@ export class play_func {
 
         const is_target_elm_text_space: boolean = target_span_elm.textContent === '\u00A0'
         const is_input_space: boolean = input_char === ' '
-        const input_ist_space_but_target_is_space = !is_input_space === is_target_elm_text_space
-        const input_and_target_are_space = ((is_input_space === true) && (is_target_elm_text_space === true))
-
+        const input_ist_space_but_target_is_space: boolean = !is_input_space === is_target_elm_text_space
+        const input_and_target_are_space: boolean = ((is_input_space === true) && (is_target_elm_text_space === true))
 
         if (input_ist_space_but_target_is_space) {
-            // console.log('input_ist_space_but_target_is_space')
             target_span_elm.classList.add('incorrect_space');
             target_span_elm.classList.remove('untyped')
             return
