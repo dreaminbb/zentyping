@@ -124,7 +124,7 @@ export class play_func {
 
     //* manage cursor movement
     private move_cursor(): void {
-        this.char_all_spans_as_array_elm.forEach((value, index) => {
+        this.essenced_spans_for_comparison.forEach((value, index) => {
             value.classList.remove('current_type_char')
             if (index === this.char_index){
                 value.classList.add('current_type_char')
