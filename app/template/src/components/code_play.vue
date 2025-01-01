@@ -10,8 +10,8 @@ const char_spans: Ref<HTMLElement[]> = ref<HTMLElement[]>([])
 const ref_time_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const ref_char_length_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const ref_play_code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const sample_code = `function main(): void {
- void 0
+const sample_code = `function main():void {
+  return
 }`
 
 //If split code by line break. This line break are romoved. So this func readd line break.

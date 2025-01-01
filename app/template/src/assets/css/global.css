@@ -113,7 +113,7 @@ header nav div {
 }
 
 .line_break_elm::before {
-                content: ' <';
+                content:'<-';
 }
 
 #code_display_container {

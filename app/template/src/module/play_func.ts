@@ -1,5 +1,4 @@
-//todo  結果画面のUIを作
-
+// 1秒あたりのwpmとaccを変数として保管 && 結果画面でグラフとして表示
 import { ref, type Ref } from "vue";
 
 export interface result_data_itf {
@@ -22,11 +21,14 @@ export class play_func {
     private essenced_spans_for_comparison: Array<HTMLSpanElement>
     public result_data: result_data_itf;
     private char_index: number
+    private timer_score_watcher_func: number
     public line_index: number
     public timer_func: | number;
     public char_spans: Array<any>
     public splited_code_arr: Array<string>
     private time_display_display: HTMLElement
+    public wpm_every_second_arr: Array<number>
+    public acc_every_secend_arr: Array<number>
     public char_length_display_elm: HTMLElement
     public ref_play_code_display_container: HTMLElement
 
@@ -41,10 +43,13 @@ export class play_func {
         this.type_counter = 0
         this.line_index = 0
         this.timer_func = 0
+        this.timer_score_watcher_func = 0
         this.result_data = { 'wpm': 0, 'acc': 0, 'time': 0 }
         this.essenced_spans_for_comparison = []
         this.char_spans = []
         this.ref_play_code_display_container = ref_play_code_display_container
+        this.wpm_every_second_arr = []
+        this.acc_every_secend_arr = []
         this.time_display_display = time_display_display_as_arg
         this.char_length_display_elm = char_length_display_elm_as_arg
         this.splited_code_arr = []
@@ -70,11 +75,19 @@ export class play_func {
         this.timer_func = setInterval(() => {
             (this.time_value += 0.1).toFixed(2)
             this.time_display_display.textContent = this.time_value.toFixed(2) + 's'
+            this.cal_and_push_wpm()
+            this.cal_and_push_acc()
         }, 100)
+
+        this.timer_score_watcher_func = setInterval(() => {
+            this.cal_and_push_wpm()
+            this.cal_and_push_acc()
+        }, 1000)
     }
 
     private stop_timer(): number {
         clearInterval(this.timer_func)
+        clearInterval(this.timer_score_watcher_func)
         return this.time_value
     }
 
@@ -89,6 +102,19 @@ export class play_func {
     private handle_keydown(e: KeyboardEvent): void {
         this.user_keydown += e.key
         return
+    }
+
+    private cal_and_push_wpm(): void {
+        // wpm =(input /5) / time . input = numbre of corret char
+        const correct_number: number = this.essenced_spans_for_comparison.filter((value: HTMLElement) => (value.className.split(' ')).includes('correct')).length
+        const wpm: number = parseFloat(((correct_number / 5) / (this.time_value / 60)).toFixed(2))
+        this.wpm_every_second_arr.push(wpm)
+    }
+
+    private cal_and_push_acc(): void {
+        const incorrect_number: number = this.essenced_spans_for_comparison.filter((value: HTMLElement) => (value.className.split(' ')).includes('incorrect')).length
+        const acc: number = parseFloat((((this.essenced_spans_for_comparison.length - incorrect_number) / this.essenced_spans_for_comparison.length) * 100).toFixed(2))
+        this.acc_every_secend_arr.push(acc)
     }
 
     private is_include_incorrect_class_in_ess_spans(): boolean {
@@ -126,9 +152,9 @@ export class play_func {
     private move_cursor(): void {
         this.essenced_spans_for_comparison.forEach((value, index) => {
             value.classList.remove('current_type_char')
-            if (index === this.char_index){
+            if (index === this.char_index) {
                 value.classList.add('current_type_char')
-            } 
+            }
         })
     }
 
@@ -141,45 +167,49 @@ export class play_func {
         if (e.key === 'Backspace' && this.char_index === 0) return
 
         this.type_counter++
-        
+
+
         // It works only first type.
         if (this.type_counter === 1) {
             this.is_playing = true
             this.start_timer()
         }
-        
+
         if (e.key === 'Backspace') {
             this.user_input = this.user_input.slice(0, -1)
-            // console.log(this.user_input, 'user input')
             this.comparison_input_and_add_class_to_span('delete')
             this.char_index--
             this.move_cursor() // cursor move 1
             return
         }
-        
+
         if (e.key === 'Enter') {
             this.char_index++ // important. I weast 1hours bcs, I forgot this simple a line of code.
             this.comparison_input_and_add_class_to_span('\n')
             this.user_input += this.line_break
             this.move_cursor() // cursor move 2
+
             return
         }
-        
-        
+
+
         this.comparison_input_and_add_class_to_span(e.key as string)
         this.char_index++
         this.user_input += e.key
+        //*  wpm,accを更新する処理を書く
         this.move_cursor()// cursor move 3
-        
+
         // This if statement means end of game.
         if (this.is_all_char_typed() === true && this.is_include_incorrect_class_in_ess_spans() === false) {
-            
+
             // calculating result values
             window.removeEventListener('keydown', this.handle_keydown_for_play.bind(this));
             const time: number = this.stop_timer()
             const time_format_to_munutes: number = (time / 60)
-            const wpm: number = parseFloat(((this.char_all_spans_as_array_elm.length / 5) / time_format_to_munutes).toFixed(2))
-            const acc: number = parseFloat(((this.char_all_spans_as_array_elm.length as number / this.type_counter) * 100).toFixed(2))
+            this.cal_and_push_wpm()
+            this.cal_and_push_acc()
+            const wpm: number = parseFloat(((this.essenced_spans_for_comparison.length / 5) / time_format_to_munutes).toFixed(2))
+            const acc: number = parseFloat(((this.essenced_spans_for_comparison.length as number / this.type_counter) * 100).toFixed(2))
             const data: result_data_itf = {
                 wpm: wpm,
                 acc: acc,
@@ -257,7 +287,6 @@ export class play_func {
         const before_target_span_elm = this.essenced_spans_for_comparison[this.char_index - 1]
 
         if (input_char === '\n' && before_target_span_elm.textContent === '\n') {
-            console.log(before_target_span_elm.textContent, 226)
             before_target_span_elm.classList.add('correct');
             before_target_span_elm.classList.remove('untyped')
             return

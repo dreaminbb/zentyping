@@ -57,7 +57,7 @@ No explain feel code 👨‍💻😎 (write later
 -   component => result_view
 
 
-*How measure acc , wpm ?*
+*How measure acc , + ?*
 
 --- 
 Wpm(word per minutes) = (input ÷ 5 ) ÷ time
@@ -65,4 +65,12 @@ This 5 means number of statistic word characters.
 
 ---
 Accuracy (ACC) % = (Correct Inputs ÷ Total Inputs) × 100
+
+*functions*
+cal_wpm() -> cal and push every seconds wpm number
+cal_acc() -> cal and push every seconds acc number
+
+*When run this func ??*
+- Every one second.   timer is is *timer_score_watcher_func*
+- Play end.  *in handle_keydown_for_play function*
 
