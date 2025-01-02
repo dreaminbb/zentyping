@@ -8,7 +8,8 @@ export default defineComponent({
     function switchLang(langName: 'python' | 'rust' | 'typescript'): void {
       try {
         selectedLang.value = langName
-        code_param().store_long_param_local_storage(langName)      } catch (e) {
+        code_param().store_long_param_local_storage(langName)
+      } catch (e) {
         console.log(e)
       }
     }
