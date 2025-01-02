@@ -72,5 +72,4 @@ cal_acc() -> cal and push every seconds acc number
 
 *When run this func ??*
 - Every one second.   timer is is *timer_score_watcher_func*
-- Play end.  *in handle_keydown_for_play function*
-
+- Play end. **** *in handle_keydown_for_play function*
