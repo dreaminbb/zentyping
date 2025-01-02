@@ -110,7 +110,7 @@ header nav div {
 }
 
 .incorrect {
-                color: var(--play-incorrect-color);
+                background: var(--play-incorrect-color);
 }
 
 .line_break_elm::before {
@@ -120,6 +120,7 @@ header nav div {
 #code_display_container {
                 border: solid 2px var(--header-text-color);
 }
+
 .lang_switch_fm {
                 border: 1px solid var(--play-lang-switch-elm-border);
 }

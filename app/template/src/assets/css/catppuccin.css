@@ -40,9 +40,10 @@
   --play-non-typed-color: var(--ctp-subtext1);
   --play-cursor-color: var(--ctp-text);
   --play-correct-color: var(--ctp-mauve);
+  --play-correct-font-color: var(--ctp-overlay0);
   --play-incorrect-color: var(--ctp-maroon);
-  --play-lang-switch-elm-border:var(--ctp-maroon);
-  --play-lang-switch-elm-char:var(--ctp-overlay1);
-  --play-lang-switch-elm-chosen-bg:var(--ctp-green);
-  --play-lang-switch-elm-chosen-char:var(--ctp-flamingo);
+  --play-lang-switch-elm-border: var(--ctp-maroon);
+  --play-lang-switch-elm-char: var(--ctp-overlay1);
+  --play-lang-switch-elm-chosen-bg: var(--ctp-green);
+  --play-lang-switch-elm-chosen-char: var(--ctp-flamingo);
 }

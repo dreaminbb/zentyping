@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { activity_calendar, all_play_history, play_history_if } from '@/interface'
+import type { store_code_type } from '@/interface'
 
 export const user_status = defineStore('user_status', {
   state: (): { is_login: boolean; is_user: boolean; is_admin: boolean } => ({
@@ -10,7 +10,7 @@ export const user_status = defineStore('user_status', {
 })
 
 
-export const code_param = defineStore('user_param', {
+export const code_param = defineStore('code_param', {
   actions: {
     get_lang_from_local_storage(): void {
       this.code_lang = localStorage.getItem('code_lang') ?? 'ts'
@@ -20,7 +20,20 @@ export const code_param = defineStore('user_param', {
     }
   },
   state: (): { code_lang: string } => ({
-    code_lang: 'ts'
+    code_lang: 'rust'
+  })
+})
+
+
+export const codes_storege = defineStore('codes_storage', {
+  actions: {
+  },
+  state: (): { store_code: store_code_type } => ({
+    store_code: {
+      python: null,
+      rust: null,
+      typescript: null
+    }
   })
 })
 

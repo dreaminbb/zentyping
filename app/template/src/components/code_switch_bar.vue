@@ -1,11 +1,15 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import { code_param } from '@/store/store'
 export default defineComponent({
   name: 'code_switch_bar',
   setup() {
-    const selectedLang = ref<'python' | 'rust' | 'typescript' | null>(null)
-    function switchLang(langName: 'python' | 'rust' | 'typescript'): void {
+    const selectedLang = ref<string | null>(null)
+    onMounted(() => {
+      selectedLang.value = code_param().code_lang ? code_param().code_lang : 'rust'
+      console.log(code_param().code_lang, selectedLang.value)
+    })
+    function switchLang(langName: string): void {
       try {
         selectedLang.value = langName
         code_param().store_long_param_local_storage(langName)
