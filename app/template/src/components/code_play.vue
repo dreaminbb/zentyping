@@ -10,8 +10,8 @@ const char_spans: Ref<HTMLElement[]> = ref<HTMLElement[]>([])
 const ref_time_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const ref_char_length_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const ref_play_code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const sample_code = `function main():void {
-  return
+const sample_code = `function main(): void {
+  return 0 == []
 }`
 
 //If split code by line break. This line break are romoved. So this func readd line break.
@@ -41,11 +41,15 @@ onMounted(() => {
 })
 </script>
 <template>
-  <main id="code_play_main_container" ref="ref_play_code_display_container">
-    <div id="play_info_display_container" v-if="!is_dislay_result_view">
+  <main
+    id="code_play_main_container"
+    ref="ref_play_code_display_container"
+    v-if="!is_dislay_result_view"
+  >
+    <div id="play_info_display_container">
       <div id="time_display" ref="ref_time_display"></div>
     </div>
-    <code id="code_display_container" ref="code_display_container" v-if="!is_dislay_result_view">
+    <code id="code_display_container" ref="code_display_container">
       <div id="code_display_window">
         <span
           v-for="(char, index) in add_line_break_to_code_after_spliting(sample_code.split('\n'))"
@@ -67,6 +71,8 @@ onMounted(() => {
         </span>
       </div>
     </code>
+  </main>
+  <main id="result_view_container" v-if="is_dislay_result_view">
     <result_display v-if="is_dislay_result_view" :result_data="result_data_ref_obj" />
   </main>
 </template>
@@ -80,9 +86,9 @@ onMounted(() => {
   grid-row-gap: 0px;
   justify-content: center;
   align-items: center;
-  height: 100%;
   margin: 30px auto;
   bottom: 0;
+  height: 100%;
   width: 60%;
   font-size: 2rem;
 }

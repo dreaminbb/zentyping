@@ -1,13 +1,14 @@
-// 1秒あたりのwpmとaccを変数として保管 && 結果画面でグラフとして表示
+//  結果画面でグラフとして表示
 import { ref, type Ref } from "vue";
-
+//* acc_arr dosend used now. 
 export interface result_data_itf {
     wpm: number;
     acc: number;
     time: number;
+    wpm_arr: Array<number>
 }
 
-export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({ wpm: 0, acc: 0, time: 0 })
+export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({ wpm: 0, acc: 0, time: 0, wpm_arr: [] })
 export const is_dislay_result_view: Ref<boolean> = ref<boolean>(false)
 
 export class play_func {
@@ -44,7 +45,7 @@ export class play_func {
         this.line_index = 0
         this.timer_func = 0
         this.timer_score_watcher_func = 0
-        this.result_data = { 'wpm': 0, 'acc': 0, 'time': 0 }
+        this.result_data = { 'wpm': 0, 'acc': 0, 'time': 0, wpm_arr: [] }
         this.essenced_spans_for_comparison = []
         this.char_spans = []
         this.ref_play_code_display_container = ref_play_code_display_container
@@ -75,13 +76,13 @@ export class play_func {
         this.timer_func = setInterval(() => {
             (this.time_value += 0.1).toFixed(2)
             this.time_display_display.textContent = this.time_value.toFixed(2) + 's'
-            this.cal_and_push_wpm()
-            this.cal_and_push_acc()
         }, 100)
 
         this.timer_score_watcher_func = setInterval(() => {
-            this.cal_and_push_wpm()
-            this.cal_and_push_acc()
+            if(this.timer_score_watcher_func > 0){
+                this.cal_and_push_wpm()
+                this.cal_and_push_acc()
+            }
         }, 1000)
     }
 
@@ -163,6 +164,13 @@ export class play_func {
 
         if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return
         if ((e.ctrlKey || e.metaKey) && e.key === 'r') return // prevent when page reload by keyboard shortcut.
+        const ignoredKeys = [
+            'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+            'PageUp', 'PageDown', 'End', 'Home', 'Insert', 'Delete', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
+        ];
+
+        // Ignore keys in the ignoredKeys list
+        if (ignoredKeys.includes(e.key)) return;
         if (e.key === 'Backspace' && this.type_counter === 0) return // when barkspace typed and there are no input do nohing.
         if (e.key === 'Backspace' && this.char_index === 0) return
 
@@ -193,6 +201,7 @@ export class play_func {
         }
 
 
+
         this.comparison_input_and_add_class_to_span(e.key as string)
         this.char_index++
         this.user_input += e.key
@@ -214,6 +223,7 @@ export class play_func {
                 wpm: wpm,
                 acc: acc,
                 time: time,
+                wpm_arr: this.wpm_every_second_arr
             }
             is_dislay_result_view.value = true
             result_data_ref_obj.value = data
