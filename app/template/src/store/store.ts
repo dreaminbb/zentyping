@@ -12,15 +12,12 @@ export const user_status = defineStore('user_status', {
 
 export const code_param = defineStore('code_param', {
   actions: {
-    get_lang_from_local_storage(): void {
-      this.code_lang = localStorage.getItem('code_lang') ?? 'ts'
-    },
-    store_long_param_local_storage(lang: string): void {
+    store_lang_param_local_storage(lang: string): void {
       localStorage.setItem('code_lang', lang)
     }
   },
   state: (): { code_lang: string } => ({
-    code_lang: 'rust'
+    code_lang: localStorage.getItem('code_lang') === null ? 'rust' : localStorage.getItem('code_lang') as string
   })
 })
 

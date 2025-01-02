@@ -6,13 +6,14 @@ export default defineComponent({
   setup() {
     const selectedLang = ref<string | null>(null)
     onMounted(() => {
-      selectedLang.value = code_param().code_lang ? code_param().code_lang : 'rust'
+                console.log(code_param().code_lang)
+      selectedLang.value = code_param().code_lang 
       console.log(code_param().code_lang, selectedLang.value)
     })
     function switchLang(langName: string): void {
       try {
         selectedLang.value = langName
-        code_param().store_long_param_local_storage(langName)
+        code_param().store_lang_param_local_storage(langName)
       } catch (e) {
         console.log(e)
       }
