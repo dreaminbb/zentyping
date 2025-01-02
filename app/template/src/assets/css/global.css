@@ -1,4 +1,5 @@
 @import './catppuccin.css';
+@import "https://www.nerdfonts.com/assets/css/webfont.css";
 
 * {
                 font-family: monospace;
@@ -113,9 +114,28 @@ header nav div {
 }
 
 .line_break_elm::before {
-                content:'<-';
+                content: '<-';
 }
 
 #code_display_container {
                 border: solid 2px var(--header-text-color);
+}
+.lang_switch_fm {
+                border: 1px solid var(--play-lang-switch-elm-border);
+}
+
+.lang_switch_fm i {
+                padding: 0;
+                margin: 0;
+                color: var(--play-lang-switch-elm-char);
+}
+
+
+.chosen_switch {
+                background-color: var(--play-lang-switch-elm-chosen-bg);
+                border: none;
+}
+
+.chosen_switch i {
+                color: var(--play-lang-switch-elm-chosen-char);
 }

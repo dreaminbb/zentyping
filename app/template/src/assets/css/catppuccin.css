@@ -41,5 +41,8 @@
   --play-cursor-color: var(--ctp-text);
   --play-correct-color: var(--ctp-mauve);
   --play-incorrect-color: var(--ctp-maroon);
-  --play_line_break_color: var(--ctp-teal)
+  --play-lang-switch-elm-border:var(--ctp-maroon);
+  --play-lang-switch-elm-char:var(--ctp-overlay1);
+  --play-lang-switch-elm-chosen-bg:var(--ctp-green);
+  --play-lang-switch-elm-chosen-char:var(--ctp-flamingo);
 }

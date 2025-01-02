@@ -2,6 +2,7 @@
 import { ref, onMounted, type Ref } from 'vue'
 import { play_func } from '@/module/play_func'
 import result_display from '@/components/results_display.vue'
+import code_switch_bar from '@/components/code_switch_bar.vue'
 import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
 import '../assets/css/global.css'
 
@@ -71,6 +72,7 @@ onMounted(() => {
         </span>
       </div>
     </code>
+    <code_switch_bar />
   </main>
   <main id="result_view_container" v-if="is_dislay_result_view">
     <result_display v-if="is_dislay_result_view" :result_data="result_data_ref_obj" />
@@ -81,7 +83,7 @@ onMounted(() => {
 #code_play_main_container {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 10% 90%;
+  grid-template-rows: 10% 80% 10%;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   justify-content: center;
@@ -130,7 +132,7 @@ onMounted(() => {
   text-decoration: none;
   outline: none;
   border: none;
-  resize: none;
+  resize: no ne;
   width: 0;
   height: 0;
   cursor: none;

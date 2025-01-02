@@ -14,7 +14,7 @@ export default defineComponent({
       required: true
     }
   },
-  setup(props) {
+  setup(props:any) {
     return {
       char_data: {
         labels: Array.from({ length: props.result_data.wpm_arr.length }, (_, i) => `${i + 1}秒`),
