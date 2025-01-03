@@ -4,6 +4,7 @@ import { play_func } from '@/module/play_func'
 import result_display from '@/components/results_display.vue'
 import code_switch_bar from '@/components/code_switch_bar.vue'
 import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
+import { code_data } from '@/store/store'
 import '../assets/css/global.css'
 
 const code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
@@ -27,6 +28,12 @@ function add_line_break_to_code_after_spliting(splited_code: Array<string>): Arr
   return_code.push(splited_code[line_index])
   return return_code
 }
+console.log(
+  code_data().code_data_obj[code_data().code_lang as 'python' | 'rust' | 'typescript']?.[
+    code_data().code_point
+  ]['code'],
+  'おっぱい'
+)
 
 onMounted(() => {
   try {
@@ -53,7 +60,13 @@ onMounted(() => {
     <code id="code_display_container" ref="code_display_container">
       <div id="code_display_window">
         <span
-          v-for="(char, index) in add_line_break_to_code_after_spliting(sample_code.split('\n'))"
+          v-for="(char, index) in add_line_break_to_code_after_spliting(
+            String(
+              code_data().code_data_obj[
+                code_data().code_lang as 'python' | 'rust' | 'typescript'
+              ]?.[code_data().code_point].code || '404'
+            ).split('\n')
+          )"
           :key="index"
           ref="char_spans"
           class="each_line_elm"

@@ -1,6 +1,6 @@
 export interface code_obj_type {
     code: string,
-    github_url: string,
+    url: string,
 }
 
 export interface store_code_type {

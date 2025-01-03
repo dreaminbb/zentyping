@@ -1,24 +1,23 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
-import { code_param } from '@/store/store'
+import { code_data } from '@/store/store'
+
 export default defineComponent({
   name: 'code_switch_bar',
   setup() {
     const selectedLang = ref<string | null>(null)
     onMounted(() => {
-                console.log(code_param().code_lang)
-      selectedLang.value = code_param().code_lang 
-      console.log(code_param().code_lang, selectedLang.value)
+      selectedLang.value = code_data().code_lang
     })
     function switchLang(langName: string): void {
       try {
         selectedLang.value = langName
-        code_param().store_lang_param_local_storage(langName)
+        code_data().store_lang_param_local_storage(langName)
       } catch (e) {
         console.log(e)
       }
     }
-    return { switchLang, selectedLang }
+    return { switchLang, selectedLang, code_data }
   }
 })
 </script>
@@ -32,6 +31,9 @@ export default defineComponent({
       :key="lang"
     >
       <i :class="`nf nf-dev-${lang} lang`"></i>
+    </div>
+    <div class="code_change_fm" @click="code_data().refresh_code()">
+      <font-awesome-icon icon="arrow-rotate-left" id="code_change_icon" />
     </div>
   </div>
 </template>
@@ -49,12 +51,21 @@ export default defineComponent({
 
 .lang_switch_fm {
   display: flex;
-  width: 30%;
+  width: 22%;
   height: 90%;
   border-radius: 15px;
   align-items: center;
   justify-content: center;
   z-index: 10;
   /*if dont use z-index sometimes touching dosent work*/
+}
+.code_change_fm {
+  display: flex;
+  width: 10%;
+  height: 90%;
+  border-radius: 15px;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 </style>

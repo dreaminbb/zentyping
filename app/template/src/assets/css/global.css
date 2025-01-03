@@ -140,3 +140,11 @@ header nav div {
 .chosen_switch i {
                 color: var(--play-lang-switch-elm-chosen-char);
 }
+
+.code_change_fm {
+                border: 1px solid var(--header-text-color);
+}
+
+.code_change_fm #code_change_icon {
+                color: var(--nav-icon-1);
+}
