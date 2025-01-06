@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
 import { code_data } from '@/store/store'
+import { code_load } from '@/module/code_load'
 
 export default defineComponent({
   name: 'code_switch_bar',
@@ -9,15 +10,18 @@ export default defineComponent({
     onMounted(() => {
       selectedLang.value = code_data().code_lang
     })
+
     function switchLang(langName: string): void {
       try {
         selectedLang.value = langName
         code_data().store_lang_param_local_storage(langName)
+        code_data().code_lang = langName
+        code_load(true)
       } catch (e) {
         console.log(e)
       }
     }
-    return { switchLang, selectedLang, code_data }
+    return { switchLang, selectedLang, code_data, code_load }
   }
 })
 </script>
@@ -32,7 +36,7 @@ export default defineComponent({
     >
       <i :class="`nf nf-dev-${lang} lang`"></i>
     </div>
-    <div class="code_change_fm" @click="code_data().refresh_code()">
+    <div class="code_change_fm" @click="code_load(false)">
       <font-awesome-icon icon="arrow-rotate-left" id="code_change_icon" />
     </div>
   </div>

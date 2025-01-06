@@ -1,64 +1,58 @@
-<script setup lang="ts">
-import { ref, onMounted, type Ref } from 'vue'
-import { play_func } from '@/module/play_func'
+<script lang="ts">
+import { defineComponent, onMounted, provide, ref, type Ref } from 'vue'
 import result_display from '@/components/results_display.vue'
 import code_switch_bar from '@/components/code_switch_bar.vue'
 import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
+import { code_load } from '@/module/code_load'
 import { code_data } from '@/store/store'
-import '../assets/css/global.css'
 
-const code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const char_spans: Ref<HTMLElement[]> = ref<HTMLElement[]>([])
-const ref_time_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const ref_char_length_display: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const ref_play_code_display_container: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
-const sample_code = `function main(): void {
-  return 0 == []
-}`
+export default defineComponent({
+  name: 'code_play',
+  components: {
+    result_display,
+    code_switch_bar
+  },
 
-//If split code by line break. This line break are romoved. So this func readd line break.
-function add_line_break_to_code_after_spliting(splited_code: Array<string>): Array<string> {
-  const line_index: number = splited_code.length - 1
-  const return_code: Array<string> = []
-  for (let i = 0; i < line_index; i++) {
-    const tmp: Array<string> = splited_code[i].split('')
-    tmp.push('\n')
-    return_code.push(tmp.join(''))
-  }
-  return_code.push(splited_code[line_index])
-  return return_code
-}
-console.log(
-  code_data().code_data_obj[code_data().code_lang as 'python' | 'rust' | 'typescript']?.[
-    code_data().code_point
-  ]['code'],
-  'おっぱい'
-)
+  setup() {
+    onMounted(() => {
+      try {
+        code_load(true)
+      } catch (e) {
+        console.error(e)
+      }
+    })
 
-onMounted(() => {
-  try {
-    const play_func_ins = new play_func(
-      ref_time_display.value as HTMLElement,
-      ref_char_length_display.value as HTMLElement,
-      ref_play_code_display_container.value as HTMLElement
-    )
-    play_func_ins.init_set_start(sample_code, code_display_container.value as HTMLElement)
-  } catch (e) {
-    console.error(e)
+    // If split code by line break. This line break are romoved. So this func readd line break.
+    function add_line_break_to_code_after_spliting(splited_code: Array<string>): Array<string> {
+      const line_index: number = splited_code.length - 1
+      const return_code: Array<string> = []
+      for (let i = 0; i < line_index; i++) {
+        const tmp: Array<string> = splited_code[i].split('')
+        tmp.push('\n')
+        return_code.push(tmp.join(''))
+      }
+      return_code.push(splited_code[line_index])
+      return return_code
+    }
+
+    return {
+      result_display,
+      code_switch_bar,
+      result_data_ref_obj,
+      is_dislay_result_view,
+      code_data,
+      add_line_break_to_code_after_spliting
+    }
   }
 })
 </script>
 <template>
-  <main
-    id="code_play_main_container"
-    ref="ref_play_code_display_container"
-    v-if="!is_dislay_result_view"
-  >
+  <main id="code_play_main_container" v-if="!is_dislay_result_view">
     <div id="play_info_display_container">
       <div id="time_display" ref="ref_time_display"></div>
     </div>
-    <code id="code_display_container" ref="code_display_container">
-      <div id="code_display_window">
+    <code id="code_display_container">
+      <div id="code_display_window" ref="ref_play_code_display_container">
         <span
           v-for="(char, index) in add_line_break_to_code_after_spliting(
             String(

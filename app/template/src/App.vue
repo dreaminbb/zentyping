@@ -1,7 +1,5 @@
 <script lang="ts">
 import { defineComponent, provide, type Ref, ref } from 'vue'
-import { RouterView } from 'vue-router'
-import { user_status } from '@/store/store'
 import base_header from './components/base_header.vue'
 import code_play from './components/code_play.vue'
 import base_footer from './components/base_footer.vue'

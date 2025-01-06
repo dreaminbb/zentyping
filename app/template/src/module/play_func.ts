@@ -1,12 +1,5 @@
-//  結果画面でグラフとして表示
 import { ref, type Ref } from "vue";
-//* acc_arr dosend used now. 
-export interface result_data_itf {
-    wpm: number;
-    acc: number;
-    time: number;
-    wpm_arr: Array<number>
-}
+import { type result_data_itf } from "@/interface";
 
 export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({ wpm: 0, acc: 0, time: 0, wpm_arr: [] })
 export const is_dislay_result_view: Ref<boolean> = ref<boolean>(false)
@@ -27,13 +20,12 @@ export class play_func {
     public timer_func: | number;
     public char_spans: Array<any>
     public splited_code_arr: Array<string>
-    private time_display_display: HTMLElement
+    private time_display_display: HTMLElement | null
     public wpm_every_second_arr: Array<number>
     public acc_every_secend_arr: Array<number>
-    public char_length_display_elm: HTMLElement
-    public ref_play_code_display_container: HTMLElement
+    public play_code_display_container: HTMLElement | null
 
-    constructor(time_display_display_as_arg: HTMLElement, char_length_display_elm_as_arg: HTMLElement, ref_play_code_display_container: HTMLElement) {
+    constructor() {
         this.user_keydown = ''
         this.user_input = ''
         this.line_break = '\n'
@@ -48,16 +40,25 @@ export class play_func {
         this.result_data = { 'wpm': 0, 'acc': 0, 'time': 0, wpm_arr: [] }
         this.essenced_spans_for_comparison = []
         this.char_spans = []
-        this.ref_play_code_display_container = ref_play_code_display_container
         this.wpm_every_second_arr = []
         this.acc_every_secend_arr = []
-        this.time_display_display = time_display_display_as_arg
-        this.char_length_display_elm = char_length_display_elm_as_arg
+        this.play_code_display_container = null
+        this.time_display_display = null
+        this.play_code_display_container = null
         this.splited_code_arr = []
     }
 
-    private init(terget_code_arg: string, code_display_container: HTMLElement): void {
-        this.splited_code_arr = terget_code_arg.split('')
+    //* When first charater typed run this. So there is this func in handle_keydown_for_play() 
+    public init(code: string): void {
+        this.time_display_display = document.getElementById('time_display') as HTMLElement
+        this.play_code_display_container = document.getElementById('code_display_container') as HTMLElement
+        console.log(
+            this.play_code_display_container, this.time_display_display
+        )
+        if (!this.play_code_display_container || !this.time_display_display) {
+            throw new Error('something is null')
+        }
+        this.splited_code_arr = code.split('')
         this.user_input = ''
         this.time_value = 0.0
         this.char_index = 0
@@ -66,20 +67,46 @@ export class play_func {
         this.char_all_spans_as_array_elm = []
         this.essenced_spans_for_comparison = []
         this.char_spans = []
-        this.fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container)
         window.addEventListener('keydown', this.handle_keydown.bind(this));
         window.addEventListener('keydown', this.handle_keydown_for_play.bind(this));
-        this.char_all_spans_as_array_elm[0].classList.add('current_type_char')
+        console.log('init')
+    }
+
+    public delete(): void {
+        window.removeEventListener('keydown', this.handle_keydown.bind(this));
+        window.removeEventListener('keydown', this.handle_keydown_for_play.bind(this));
+        this.time_display_display = document.getElementById('time_display') as HTMLElement
+        this.play_code_display_container = document.getElementById('code_display_container') as HTMLElement
+        console.log(
+            this.play_code_display_container, this.time_display_display
+        )
+        if (!this.play_code_display_container || !this.time_display_display) {
+            throw new Error('something is null')
+        }
+        this.splited_code_arr = []
+        this.user_input = ''
+        this.time_value = 0.0
+        this.char_index = 0
+        this.line_index = 0
+        this.time_display_display.textContent = '0.0s'
+        this.char_all_spans_as_array_elm = []
+        this.essenced_spans_for_comparison = []
+        this.char_spans = []
     }
 
     private start_timer(): void {
         this.timer_func = setInterval(() => {
+
+            if (!this.time_display_display) {
+                throw new Error("Time display element is not available")
+            }
+
             (this.time_value += 0.1).toFixed(2)
             this.time_display_display.textContent = this.time_value.toFixed(2) + 's'
         }, 100)
 
         this.timer_score_watcher_func = setInterval(() => {
-            if(this.timer_score_watcher_func > 0){
+            if (this.timer_score_watcher_func > 0) {
                 this.cal_and_push_wpm()
                 this.cal_and_push_acc()
             }
@@ -93,11 +120,6 @@ export class play_func {
     }
 
 
-    //* When first charater typed run this. So there is this func in handle_keydown_for_play() 
-    public init_set_start(code: string, code_display_container: HTMLElement): void {
-        this.init(code, code_display_container)
-        return
-    }
 
     //* work every time when user press key => use for watch shortcut key.
     private handle_keydown(e: KeyboardEvent): void {
@@ -136,9 +158,10 @@ export class play_func {
     private is_all_char_typed(): boolean {
         try {
             for (const value of this.essenced_spans_for_comparison) {
+                console.log(1)
                 const array_from_values_class_name: Array<string> = value.className.split(' ')
                 if (array_from_values_class_name.includes('untyped')) {
-                    console.log(array_from_values_class_name, value.textContent, ' this is the utyped')
+                    // console.log(array_from_values_class_name, value.textContent, ' this is the utyped')
                     return false
                 }
             }
@@ -175,7 +198,7 @@ export class play_func {
         if (e.key === 'Backspace' && this.char_index === 0) return
 
         this.type_counter++
-
+        console.log(this.essenced_spans_for_comparison)
 
         // It works only first type.
         if (this.type_counter === 1) {
@@ -279,16 +302,19 @@ export class play_func {
     }
 
 
-    //* fetch all span tags in code dispaly container as array .
-    public fetch_char_spans_ignore_space_after_line_break_as_elm(code_display_container: HTMLElement): void {
-        if (code_display_container === null) return
-        const char_spans_value = (code_display_container as HTMLElement).querySelectorAll(
+    //* fetch all span tags in code dispaly container as array. And remove space after line break.
+    public fetch_char_spans_ignore_space_after_line_break_as_elm(): void {
+        if (this.play_code_display_container === null) return
+
+        const char_spans_value = (this.play_code_display_container as HTMLElement).querySelectorAll(
             '.each_char_elm'
         )
+        console.log(char_spans_value, 'i hate coding')
         char_spans_value.forEach((char_span: any): void => {
             this.char_all_spans_as_array_elm.push(char_span)
         })
         this.essenced_spans_for_comparison = this.format_to_ignore_space_after_line_break(this.char_all_spans_as_array_elm as any)
+        this.char_all_spans_as_array_elm[0].classList.add('current_type_char')
     }
 
     private comparison_input_and_add_class_to_span(input_char: string): void {

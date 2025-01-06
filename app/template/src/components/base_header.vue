@@ -15,20 +15,20 @@ export default defineComponent({
 <template>
   <header id="header_container">
     <h1>
-      <router-link id='site_name' to="/">{{ config.site_name }} <i class="fa-solid fa-code"></i></router-link>
+      <header id='site_name' >{{ config.site_name }} <i class="fa-solid fa-code"></i></header>
     </h1>
     <nav>
       <div>
-        <router-link to="/ranking"><font-awesome-icon class="nav_icon1"  icon="crown" /></router-link>
+        <div ><font-awesome-icon class="nav_icon1"  icon="crown" /></div>
       </div>
       <div>
-        <router-link to="/setting"><font-awesome-icon class="nav_icon2"  icon="gear" /></router-link>
+        <div ><font-awesome-icon class="nav_icon2"  icon="gear" /></div>
       </div>
       <div>
-        <router-link to="/notic"><font-awesome-icon class="nav_icon3" icon="bell" /></router-link>
+        <div ><font-awesome-icon class="nav_icon3" icon="bell" /></div>
       </div>
       <div>
-        <router-link to="/profile"><font-awesome-icon class="nav_icon4" icon="user" /></router-link>
+        <div ><font-awesome-icon class="nav_icon4" icon="user" /></div>
       </div>
     </nav>
   </header>

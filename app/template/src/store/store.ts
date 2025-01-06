@@ -15,17 +15,18 @@ export const code_data = defineStore('code_data', {
     store_lang_param_local_storage(lang: string): void {
       localStorage.setItem('code_lang', lang)
     },
-    refresh_code() {
-      this.code_point++
+    init_store(): void {
+      this.ready = true
     }
   },
-  state: (): { code_lang: string, code_point: number, code_data_obj: store_code_type } => ({
+  state: (): { code_lang: string, code_point: number, code_data_obj: store_code_type, ready: boolean } => ({
     code_lang: localStorage.getItem('code_lang') === null ? 'rust' : localStorage.getItem('code_lang') as string,
+    ready: false,
     code_point: 0,
     code_data_obj: {
       python: [
         {
-          code: 'print("hello")',
+          code: 'print("',
           url: 'https://github.com'
         },
         {

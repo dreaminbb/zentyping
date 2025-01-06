@@ -57,7 +57,7 @@ No explain feel code 👨‍💻😎 (write later
 -   component => result_view
 
 
-*How measure acc , + ?*
++**How measure acc , + ?*
 
 --- 
 Wpm(word per minutes) = (input ÷ 5 ) ÷ time
