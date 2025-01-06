@@ -11,12 +11,11 @@ export function code_load(first_mount: boolean): void {
                 // If before of code had 10 char and change the code it still 10 char.
                 // So I add this code to fix this bug.
                 // If code is changed, rerender the play ui.
-
-                first_mount ? void 0 : code_data().code_point++
                 play_func_ins.delete()
                 const code: string = code_data().code_data_obj[
                                 code_data().code_lang as 'python' | 'rust' | 'typescript'
                 ]?.[code_data().code_point].code || '404'
+                console.log(code_data().code_point)
                 console.error(code)
                 setTimeout(() => {
 
