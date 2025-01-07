@@ -14,7 +14,8 @@ export function code_load(first_mount: boolean): void {
                 play_func_ins.delete()
                 const code: string = code_data().code_data_obj[
                                 code_data().code_lang as 'python' | 'rust' | 'typescript'
-                ]?.[code_data().code_point].code || '404'
+                ]?.[code_data().code_point]?.code || '404'
+                
                 console.log(code_data().code_point)
                 console.error(code)
                 setTimeout(() => {

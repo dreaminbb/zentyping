@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import type { result_data_itf } from '@/module/play_func'
+import type { result_data_itf } from '@/interface'
 import { Line } from 'vue-chartjs'
 import { Chart, registerables } from 'chart.js'
 
