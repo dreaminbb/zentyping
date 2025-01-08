@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, provide, type Ref, ref } from 'vue'
+import { defineComponent } from 'vue'
 import base_header from './components/base_header.vue'
 import code_play from './components/code_play.vue'
 import base_footer from './components/base_footer.vue'
@@ -25,6 +25,6 @@ export default defineComponent({
     <code_play />
     <base_footer />
   </main>
-  </template>
+</template>
 
 <style></style>
