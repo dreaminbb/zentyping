@@ -15,7 +15,11 @@ export function code_load(first_mount: boolean): void {
     code_data().code_lang as 'python' | 'rust' | 'typescript'
   ]?.[code_data().code_point]?.code || '404'
   //* wait until finish rendering
+  // I think this code supposed to be not wait time. 
+  // It supposed to be chack the rendering is finished.
+  // But I don't know how to do that.
+
   setTimeout(() => {
     play_func_inc.init(code)
-  },500)
+  },200)
 }

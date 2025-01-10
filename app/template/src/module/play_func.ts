@@ -1,5 +1,8 @@
 import { type Ref, ref } from "vue";
 import { type result_data_itf } from "@/interface";
+import { code_load } from "./code_load";
+import { code_data } from "@/store/store";
+import short_cut_ins from "./short_cut_manager";
 
 export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({
   wpm: 0,
@@ -29,7 +32,6 @@ class play_func {
   public wpm_every_second_arr: Array<number>;
   public acc_every_secend_arr: Array<number>;
   public play_code_display_container: HTMLElement | null;
-  private handle_keydown_bound: (e: KeyboardEvent) => void;
   private handle_keydown_for_play_bound: (e: KeyboardEvent) => void;
 
   constructor() {
@@ -53,12 +55,10 @@ class play_func {
     this.time_display_display = null;
     this.play_code_display_container = null;
     this.splited_code_arr = [];
-    this.handle_keydown_bound = this.handle_keydown.bind(this);
     this.handle_keydown_for_play_bound = this.handle_keydown_for_play.bind(this);
   }
 
   private reset_state(): void {
-    window.removeEventListener("keydown", this.handle_keydown_bound);
     window.removeEventListener("keydown", this.handle_keydown_for_play_bound);
     this.user_keydown = "";
     this.user_input = "";
@@ -104,8 +104,9 @@ class play_func {
     this.char_all_spans_as_array_elm = [];
     this.essenced_spans_for_comparison = [];
     this.char_spans = [];
-    window.addEventListener("keydown", this.handle_keydown_bound);
     window.addEventListener("keydown", this.handle_keydown_for_play_bound);
+    // set chort cut listener
+    short_cut_ins.able_short_cut();
     this.fetch_char_spans_ignore_space_after_line_break_as_elm();
     console.log(this.essenced_spans_for_comparison);
     console.log("init");
@@ -113,8 +114,9 @@ class play_func {
 
   public delete(): void {
     this.reset_state();
-    window.removeEventListener("keydown", this.handle_keydown_bound);
-    window.removeEventListener("keydown",this.handle_keydown_for_play_bound);
+    window.removeEventListener("keydown", this.handle_keydown_for_play_bound);
+    // delete chort cut listener
+    short_cut_ins.disable_chort_cut();
     this.time_display_display = document.getElementById(
       "time_display",
     ) as HTMLElement;
@@ -163,12 +165,6 @@ class play_func {
     clearInterval(this.timer_func);
     clearInterval(this.timer_score_watcher_func);
     return this.time_value;
-  }
-
-  //* work every time when user press key => use for watch shortcut key.
-  private handle_keydown(e: KeyboardEvent): void {
-    this.user_keydown += e.key;
-    return;
   }
 
   private cal_and_push_wpm(): void {
@@ -237,6 +233,16 @@ class play_func {
       }
     });
   }
+
+
+  public next_code(): void {
+    is_dislay_result_view.value = false;
+    code_data().code_point++
+    setTimeout(() => {
+      code_load(false)
+    }, 100)
+  }
+
 
   //* ignore meta, ctl , alt key and handle enter and backspace key => use for palying.
   private handle_keydown_for_play(e: KeyboardEvent): void {
@@ -319,12 +325,9 @@ class play_func {
     this.move_cursor(); // cursor move 3
 
     // This if statement means end of game.
-    if (
-      this.is_all_char_typed() === true &&
-      this.is_include_incorrect_class_in_ess_spans() === false
-    ) {
+    if (this.is_all_char_typed() === true && this.is_include_incorrect_class_in_ess_spans() === false) {
       // calculating result values
-      window.removeEventListener("keydown",this.handle_keydown_for_play,);
+      window.removeEventListener("keydown", this.handle_keydown_for_play,);
 
       const time: number = this.stop_timer();
       const time_format_to_munutes: number = time / 60;
@@ -352,7 +355,6 @@ class play_func {
       };
       is_dislay_result_view.value = true;
       result_data_ref_obj.value = data;
-
       return;
     }
 
