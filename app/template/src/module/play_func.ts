@@ -13,7 +13,6 @@ export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({
 export const is_dislay_result_view: Ref<boolean> = ref<boolean>(false);
 
 class play_func {
-  private user_keydown: string;
   private line_break: string;
   private user_input: string;
   public is_playing: boolean;
@@ -35,7 +34,6 @@ class play_func {
   private handle_keydown_for_play_bound: (e: KeyboardEvent) => void;
 
   constructor() {
-    this.user_keydown = "";
     this.user_input = "";
     this.line_break = "\n";
     this.char_all_spans_as_array_elm = [];
@@ -60,7 +58,6 @@ class play_func {
 
   private reset_state(): void {
     window.removeEventListener("keydown", this.handle_keydown_for_play_bound);
-    this.user_keydown = "";
     this.user_input = "";
     this.line_break = "\n";
     this.char_all_spans_as_array_elm = [];
@@ -117,12 +114,9 @@ class play_func {
     window.removeEventListener("keydown", this.handle_keydown_for_play_bound);
     // delete chort cut listener
     short_cut_ins.disable_chort_cut();
-    this.time_display_display = document.getElementById(
-      "time_display",
-    ) as HTMLElement;
-    this.play_code_display_container = document.getElementById(
-      "code_display_container",
-    ) as HTMLElement;
+
+    this.time_display_display = document.getElementById("time_display",) as HTMLElement;
+    this.play_code_display_container = document.getElementById("code_display_container",) as HTMLElement;
     if (this.timer_func) {
       clearInterval(this.timer_func);
     }
@@ -169,9 +163,8 @@ class play_func {
 
   private cal_and_push_wpm(): void {
     // wpm =(input /5) / time . input = numbre of corret char
-    const correct_number: number = this.essenced_spans_for_comparison.filter(
-      (value: HTMLElement) => value.className.split(" ").includes("correct"),
-    ).length;
+    const correct_number: number = this.essenced_spans_for_comparison.filter((value: HTMLElement) => value.className.split(" ").includes("correct")).length;
+
     const wpm: number = parseFloat(
       (correct_number / 5 / (this.time_value / 60)).toFixed(2),
     );
@@ -179,9 +172,8 @@ class play_func {
   }
 
   private cal_and_push_acc(): void {
-    const incorrect_number: number = this.essenced_spans_for_comparison.filter(
-      (value: HTMLElement) => value.className.split(" ").includes("incorrect"),
-    ).length;
+
+    const incorrect_number: number = this.essenced_spans_for_comparison.filter((value: HTMLElement) => value.className.split(" ").includes("incorrect"),).length;
     const acc: number = parseFloat(
       (
         ((this.essenced_spans_for_comparison.length - incorrect_number) /
@@ -195,8 +187,7 @@ class play_func {
   private is_include_incorrect_class_in_ess_spans(): boolean {
     try {
       for (const value of this.essenced_spans_for_comparison) {
-        const array_from_values_class_name: Array<string> =
-          value.className.split(" ");
+        const array_from_values_class_name: Array<string> = value.className.split(" ");
         if (array_from_values_class_name.includes("incorrect")) {
           return true;
         }
@@ -211,8 +202,7 @@ class play_func {
   private is_all_char_typed(): boolean {
     try {
       for (const value of this.essenced_spans_for_comparison) {
-        const array_from_values_class_name: Array<string> =
-          value.className.split(" ");
+        const array_from_values_class_name: Array<string> = value.className.split(" ");
         if (array_from_values_class_name.includes("untyped")) {
           return false;
         }
@@ -340,13 +330,9 @@ class play_func {
           time_format_to_munutes
         ).toFixed(2),
       );
-      const acc: number = parseFloat(
-        (
-          ((this.essenced_spans_for_comparison.length as number) /
-            this.type_counter) *
-          100
-        ).toFixed(2),
-      );
+
+      const acc: number = parseFloat((((this.essenced_spans_for_comparison.length as number) / this.type_counter) * 100).toFixed(2),);
+
       const data: result_data_itf = {
         wpm: wpm,
         acc: acc,
@@ -357,7 +343,6 @@ class play_func {
       result_data_ref_obj.value = data;
       return;
     }
-
     return;
   }
 
@@ -416,6 +401,7 @@ class play_func {
     char_spans_value.forEach((char_span: any): void => {
       this.char_all_spans_as_array_elm.push(char_span);
     });
+    
     this.essenced_spans_for_comparison =
       this.format_to_ignore_space_after_line_break(
         this.char_all_spans_as_array_elm as any,
