@@ -1,11 +1,16 @@
-.venv
-.vscode
-.idea
+# IDE and System files
+.vscode/
+.idea/
 .DS_Store
+.obsidian/
+
+# Environment files
 .env
-api_maker.py
-app/template/dist
-__pycache__
-/app/template/node_modules
-.obsidian
+
+# Dependencies
+node_modules/P
+**/node_modules/
+*node_modules/
+
+# for zedder
 pyproject.toml
