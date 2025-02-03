@@ -82,12 +82,8 @@ class play_func {
   //* When first charater typed run this. So there is this func in handle_keydown_for_play_bound()
   public init(code: string): void {
     this.reset_state();
-    this.time_display_display = document.getElementById(
-      "time_display",
-    ) as HTMLElement;
-    this.play_code_display_container = document.getElementById(
-      "code_display_container",
-    ) as HTMLElement;
+    this.time_display_display = document.getElementById("time_display") as HTMLElement;
+    this.play_code_display_container = document.getElementById("code_display_container") as HTMLElement;
     // console.log(this.play_code_display_container, this.time_display_display)
     if (!this.play_code_display_container || !this.time_display_display) {
       throw new Error("something is null");
@@ -138,9 +134,7 @@ class play_func {
   }
 
   private start_timer(): void {
-    this.timer_func = setInterval(() => {
-      if (!this.time_display_display) {
-        throw new Error("Time display element is not available");
+    this.timer_func = setInterval(() => { if (!this.time_display_display) { throw new Error("Time display element is not available");
       }
 
       (this.time_value += 0.1).toFixed(2);
@@ -170,6 +164,7 @@ class play_func {
     );
     this.wpm_every_second_arr.push(wpm);
   }
+    
 
   private cal_and_push_acc(): void {
 
@@ -216,7 +211,7 @@ class play_func {
 
   //* manage cursor movement
   private move_cursor(): void {
-    this.essenced_spans_for_comparison.forEach((value, index) => {
+    this.essenced_spans_for_comparison.forEach((value: HTMLElement, index: number): void => {
       value.classList.remove("current_type_char");
       if (index === this.char_index) {
         value.classList.add("current_type_char");
@@ -401,7 +396,7 @@ class play_func {
     char_spans_value.forEach((char_span: any): void => {
       this.char_all_spans_as_array_elm.push(char_span);
     });
-    
+
     this.essenced_spans_for_comparison =
       this.format_to_ignore_space_after_line_break(
         this.char_all_spans_as_array_elm as any,

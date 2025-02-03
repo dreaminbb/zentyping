@@ -38,6 +38,6 @@ RUN apt-get update && apt-get install -y \
 # Copy binary from builder
 COPY --from=builder /usr/src/app/target/release/your-app-name ./
 
-EXPOSE 8080
+EXPOSE 8000
 
-CMD ["./your-app-name"]
+CMD ["./zenn-typing"]

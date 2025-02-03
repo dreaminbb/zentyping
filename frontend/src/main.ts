@@ -9,15 +9,13 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons' 
 import { code_data } from './store/store';
 const router = createRouter({
-  history: createWebHistory(),  // HTML5 History モードを使用
+  history: createWebHistory(),
   routes
 })
 library.add(fas as IconPack, far as IconPack, fab as IconPack)
-const app = createApp(App)
+const app :App<Element>= createApp(App)
 const pinia = createPinia()
 
 app.use(router)
-app.use(pinia)
-code_data().init_store()
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.mount('#app')
