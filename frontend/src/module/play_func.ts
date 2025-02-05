@@ -164,7 +164,6 @@ class play_func {
     );
     this.wpm_every_second_arr.push(wpm);
   }
-    
 
   private cal_and_push_acc(): void {
 
