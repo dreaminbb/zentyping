@@ -8,9 +8,11 @@
 .env
 
 # Dependencies
-node_modules/P
-**/node_modules/
-*node_modules/
-server/target/
-# for zedder
-pyproject.toml
+node_modules
+**/node_modules
+
+# Rust
+/target
+**/target/
+/debug/
+/Cargo.lock
