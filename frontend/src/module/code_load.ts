@@ -1,7 +1,7 @@
 import play_func_inc from '@/module/play_func'
 import { code_data } from '@/store/store'
 
-export function code_load(first_mount: boolean): void {
+export function code_load(): void {
 
   // If player change the code and start it before class 
   // play_func's essensed span dosen change so this cause a bug.
@@ -14,6 +14,7 @@ export function code_load(first_mount: boolean): void {
   const code: string = code_data().code_data_obj[
     code_data().code_lang as 'python' | 'rust' | 'typescript'
   ]?.[code_data().code_point]?.code || '404'
+  console.log(code , 'code_load.ts')
   //* wait until finish rendering
   // I think this code supposed to be not wait time. 
   // It supposed to be chack the rendering is finished.

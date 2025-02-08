@@ -17,7 +17,7 @@ export default defineComponent({
         code_data().code_point = 0
         code_data().store_lang_param_local_storage(langName)
         code_data().code_lang = langName
-        code_load(false)
+        code_load()
       } catch (e) {
         console.log(e)
       }
@@ -42,7 +42,7 @@ export default defineComponent({
       id="next_code"
       @click="
         () => {
-          code_load(false), code_data().code_point++
+          code_load(), code_data().code_point++
         }
       "
     >

@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     vue(),
     svgLoader(),
-    VueDevTools()
+    // VueDevTools()
   ],
   server: {
     port: 8000

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, onMounted, provide, ref, type Ref } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import result_display from '@/components/results_display.vue'
 import code_switch_bar from '@/components/code_switch_bar.vue'
 import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
@@ -16,22 +16,25 @@ export default defineComponent({
   setup() {
     onMounted(() => {
       try {
-        code_load(true)
+        code_load()
       } catch (e) {
         console.error(e)
       }
     })
 
     // If split code by line break. This line break are romoved. So this func readd line break.
-    function add_line_break_to_code_after_spliting(splited_code: Array<string>): Array<string> {
+    function add_line_break_to_code_after_spliting(
+      splited_code: Array<string>
+    ): Array<string> | void {
+      if (!splited_code.length) return
       const line_index: number = splited_code.length - 1
       const return_code: Array<string> = []
       for (let i = 0; i < line_index; i++) {
-        const tmp: Array<string> = splited_code[i].split('')
+        const tmp: Array<string> = (splited_code[i] ?? '').split('')
         tmp.push('\n')
         return_code.push(tmp.join(''))
       }
-      return_code.push(splited_code[line_index])
+      return_code.push(splited_code[line_index] ?? '')
       return return_code
     }
 
@@ -56,9 +59,9 @@ export default defineComponent({
         <span
           v-for="(char, index) in add_line_break_to_code_after_spliting(
             String(
-              code_data().code_data_obj[
+              (code_data().code_data_obj[
                 code_data().code_lang as 'python' | 'rust' | 'typescript'
-              ]?.[code_data().code_point].code || '404'
+              ]?.[code_data().code_point]?.code as string) ?? '404'
             ).split('\n')
           )"
           :key="index"

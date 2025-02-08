@@ -20,7 +20,6 @@ class short_cut {
     if (e.key === 'Tab') {
       play_func_ins.next_code();
     }
-
   }
 
 }

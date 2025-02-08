@@ -1,7 +1,7 @@
 import { type Ref, ref } from "vue";
-import { type result_data_itf } from "@/interface";
+import { type result_data_itf } from "../interface";
 import { code_load } from "./code_load";
-import { code_data } from "@/store/store";
+import { code_data } from "../store/store";
 import short_cut_ins from "./short_cut_manager";
 
 export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({
@@ -18,14 +18,14 @@ class play_func {
   public is_playing: boolean;
   private type_counter: number;
   private time_value: number;
-  private char_all_spans_as_array_elm: Array<any>;
+  private char_all_spans_as_array_elm: Array<HTMLTemplateElement>;
   private essenced_spans_for_comparison: Array<HTMLSpanElement>;
   public result_data: result_data_itf;
   private char_index: number;
-  private timer_score_watcher_func: number;
+  private timer_score_watcher_func: NodeJS.Timer | number;
+  public timer_func: NodeJS.Timer | number;
   public line_index: number;
-  public timer_func: number;
-  public char_spans: Array<any>;
+  public char_spans: Array<HTMLSpanElement>;
   public splited_code_arr: Array<string>;
   private time_display_display: HTMLElement | null;
   public wpm_every_second_arr: Array<number>;
@@ -42,8 +42,8 @@ class play_func {
     this.char_index = 0;
     this.type_counter = 0;
     this.line_index = 0;
-    this.timer_func = 0;
-    this.timer_score_watcher_func = 0;
+    this.timer_func = 0
+    this.timer_score_watcher_func = 0
     this.result_data = { wpm: 0, acc: 0, time: 0, wpm_arr: [] };
     this.essenced_spans_for_comparison = [];
     this.char_spans = [];
@@ -66,8 +66,8 @@ class play_func {
     this.char_index = 0;
     this.type_counter = 0;
     this.line_index = 0;
-    this.timer_func = 0;
-    this.timer_score_watcher_func = 0;
+    // this.timer_func = 0;
+    // this.timer_score_watcher_func = 0;
     this.result_data = { wpm: 0, acc: 0, time: 0, wpm_arr: [] };
     this.essenced_spans_for_comparison = [];
     this.char_spans = [];
@@ -101,8 +101,33 @@ class play_func {
     // set chort cut listener
     short_cut_ins.able_short_cut();
     this.fetch_char_spans_ignore_space_after_line_break_as_elm();
+    // add uthyped class to all spans
     console.log(this.essenced_spans_for_comparison);
     console.log("init");
+    this.add_untyped_class_to_all_spans();
+    this.add_cursor_to_first_char();
+  }
+
+  private add_untyped_class_to_all_spans(): void {
+    console.log('add untyped class to all spans function')
+    try {
+      this.essenced_spans_for_comparison.forEach((value: HTMLElement) => {
+        value.classList.add("untyped");
+        // We need also romve cursor class which added :after way
+        value.classList.remove("correct", "incorrect", "incorrect_space", "current_type_char");
+      })
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  //So when user type we have to add cursor to the first char.
+  private add_cursor_to_first_char(): void {
+    try {
+      this.essenced_spans_for_comparison[0]?.classList.add("current_type_char");
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   public delete(): void {
@@ -134,15 +159,16 @@ class play_func {
   }
 
   private start_timer(): void {
-    this.timer_func = setInterval(() => { if (!this.time_display_display) { throw new Error("Time display element is not available");
+    this.timer_func = setInterval(() => {
+      if (!this.time_display_display) {
+        throw new Error("Time display element is not available");
       }
-
       (this.time_value += 0.1).toFixed(2);
       this.time_display_display.textContent = this.time_value.toFixed(2) + "s";
     }, 100);
 
     this.timer_score_watcher_func = setInterval(() => {
-      if (this.timer_score_watcher_func > 0) {
+      if (typeof this.timer_score_watcher_func === 'number' && this.timer_score_watcher_func > 0) {
         this.cal_and_push_wpm();
         this.cal_and_push_acc();
       }
@@ -223,7 +249,7 @@ class play_func {
     is_dislay_result_view.value = false;
     code_data().code_point++
     setTimeout(() => {
-      code_load(false)
+      code_load()
     }, 100)
   }
 
@@ -400,7 +426,7 @@ class play_func {
       this.format_to_ignore_space_after_line_break(
         this.char_all_spans_as_array_elm as any,
       );
-    this.char_all_spans_as_array_elm[0].classList.add("current_type_char");
+    this.char_all_spans_as_array_elm[0]?.classList.add("current_type_char");
   }
 
   private comparison_input_and_add_class_to_span(input_char: string): void {
