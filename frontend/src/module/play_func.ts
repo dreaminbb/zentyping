@@ -427,7 +427,7 @@ class play_func {
         this.char_all_spans_as_array_elm as any,
       );
     this.char_all_spans_as_array_elm[0]?.classList.add("current_type_char");
-  }
+   }
 
   private comparison_input_and_add_class_to_span(input_char: string): void {
     const target_span_elm = this.essenced_spans_for_comparison[this.char_index];
