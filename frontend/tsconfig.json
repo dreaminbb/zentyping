@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    // Strict Type Checking
-    "strict": true,
+    // Strict Type Checking 
+   "strict": true,
     "noEmit": true,
     "allowJs": false,
     "noImplicitAny": true,

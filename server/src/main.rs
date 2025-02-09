@@ -1,23 +1,34 @@
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Request, Response, Server};
-use std::convert::Infallible;
+use actix_files::{Files, NamedFile};
+use actix_web::{middleware, App, HttpServer};
+use std::path::PathBuf;
 
-async fn handle_request(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    Ok(Response::new(Body::from("Hello, World!")))
+#[actix_web::get("/")]
+async fn server_index() -> actix_web::Result<NamedFile> {
+    println!("Serving index.html"); // Changed to println! for better logging
+    let path = PathBuf::from("./static/index.html");
+    Ok(NamedFile::open(path)?)
 }
 
 #[tokio::main]
-async fn main() {
-    let make_svc =
-        make_service_fn(|_conn| async { Ok::<_, Infallible>(service_fn(handle_request)) });
+async fn main() -> Result<(), std::io::Error> {
+    let port = 8000;
+    // let bebug = true;
+    env_logger::init();
 
-    let addr = ([127, 0, 0, 1], 3000).into();
+    println!("Server started at http://localhost:{}", port);
 
-    let server = Server::bind(&addr).serve(make_svc);
-
-    println!("Listening on http://{}", addr);
-
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
-    }
+    HttpServer::new(move || {
+        App::new()
+            .wrap(middleware::Logger::default())
+            .service(server_index)
+            .service(
+                Files::new("/assets", "./static/assets")
+                    .show_files_listing()
+                    .use_last_modified(true),
+            )
+    })
+    .bind(("127.0.0.1", port))?
+    .workers(4)
+    .run()
+    .await
 }
