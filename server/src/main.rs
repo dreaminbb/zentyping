@@ -12,7 +12,7 @@ async fn server_index() -> actix_web::Result<NamedFile> {
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     let port = 8000;
-    // let bebug = true;
+    let bebug = true;
     env_logger::init();
 
     println!("Server started at http://localhost:{}", port);
