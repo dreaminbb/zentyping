@@ -2,6 +2,10 @@ use actix_files::{Files, NamedFile};
 use actix_web::{middleware, App, HttpServer};
 use std::path::PathBuf;
 
+// import config module from ../config.rs
+#[path = "../config.rs"]
+mod config;
+
 #[actix_web::get("/")]
 async fn server_index() -> actix_web::Result<NamedFile> {
     println!("Serving index.html"); // Changed to println! for better logging
@@ -11,11 +15,12 @@ async fn server_index() -> actix_web::Result<NamedFile> {
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-    let port = 8000;
-    let bebug = true;
+    let config = config::Config::from_env();
     env_logger::init();
 
-    println!("Server started at http://localhost:{}", port);
+    println!("Server started at http://localhost:{}", config.port);
+    println!("The db url is {}", config.db_url);
+    println!("Domein is {}", config.domain);
 
     HttpServer::new(move || {
         App::new()
@@ -27,7 +32,7 @@ async fn main() -> Result<(), std::io::Error> {
                     .use_last_modified(true),
             )
     })
-    .bind(("127.0.0.1", port))?
+    .bind(("127.0.0.1", config.port))?
     .workers(4)
     .run()
     .await

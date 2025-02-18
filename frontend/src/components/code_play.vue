@@ -16,7 +16,7 @@ export default defineComponent({
   setup() {
     onMounted(() => {
       try {
-        code_load()
+        code_load(true)
       } catch (e) {
         console.error(e)
       }
