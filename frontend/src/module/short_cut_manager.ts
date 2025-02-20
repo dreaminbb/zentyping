@@ -17,8 +17,15 @@ class short_cut {
   }
 
   public handle_keydown_for_short_cut(e: KeyboardEvent): void {
+    console.log(e.key)
     if (e.key === 'Tab') {
-      play_func_ins.next_code();
+      try {
+
+        console.log('Tab')
+        play_func_ins.next_code();
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 

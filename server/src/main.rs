@@ -3,13 +3,12 @@ use actix_web::{middleware, App, HttpServer};
 use std::path::PathBuf;
 
 // import config module from ../config.rs
-#[path = "../config.rs"]
 mod config;
 
 #[actix_web::get("/")]
 async fn server_index() -> actix_web::Result<NamedFile> {
     println!("Serving index.html"); // Changed to println! for better logging
-    let path = PathBuf::from("./static/index.html");
+    let path = PathBuf::from("../static/index.html");
     Ok(NamedFile::open(path)?)
 }
 

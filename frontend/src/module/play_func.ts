@@ -198,7 +198,7 @@ class play_func {
       if (!this.time_display_display) {
         throw new Error('Time display element is not available')
       }
-      ;(this.time_value += 0.1).toFixed(2)
+      ; (this.time_value += 0.1).toFixed(2)
       this.time_display_display.textContent = this.time_value.toFixed(2) + 's'
     }, 100)
 
@@ -389,7 +389,7 @@ class play_func {
         ) {
           space_start_point = i // set start point
           space_index = i
-          for (;;) {
+          for (; ;) {
             space_index++
             if (char_span_arr[space_index]?.textContent !== '\u00A0') {
               space_end_point = space_index // set end point
