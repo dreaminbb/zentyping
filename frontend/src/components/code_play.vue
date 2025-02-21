@@ -22,12 +22,10 @@ export default defineComponent({
       }
     })
 
-
     // If split code by line break. This line break are romoved. So this func readd line break.
     function add_line_break_to_code_after_spliting(
       splited_code: Array<string>
     ): Array<string> | void {
-
       if (!splited_code.length) return
       const line_index: number = splited_code.length - 1
       const return_code: Array<string> = []
