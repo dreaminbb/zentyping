@@ -12,6 +12,12 @@ async fn server_index() -> actix_web::Result<NamedFile> {
     Ok(NamedFile::open(path)?)
 }
 
+// this api point returns code data type is json
+#[actix_web::get("/code")]
+async fn send_code_to_client() -> actix_web::Result<actix_web::HttpResponse> {
+
+}
+
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     let config = config::Config::from_env();

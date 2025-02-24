@@ -1,23 +1,15 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-# mode_typing
-=======
-===========================================
-# lets Coding !!!!!!!!!!!!!!!!
-===========================================
->>>>>>> a5c96d1 (Update README.md)
-=======
-# zenn typing
->>>>>>> 3b029bb2654fe688af71880c744608ac69794a1d
+# zentyping
+
+*backend rust frontend vue + typescript*
 
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
-X
+
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-I recommed to use vscode.
-but webstorm is also fire.
+I recommed to use vscode , neovim ? , whatever you like to use.
+I use vscode and sometimes use neovim btw
 
 ## Type Support for `.vue` Imports in TS
 
