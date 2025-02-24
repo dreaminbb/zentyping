@@ -1,0 +1,122 @@
+[
+                {
+                                "id": 1,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function main(): void {\n  console.log('Hello, World!')\n}"
+                },
+                {
+                                "id": 2,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function greet(name: string): void {\n  console.log(`Hello, ${name}!`)\n}"
+                },
+                {
+                                "id": 3,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function add(a: number, b: number): number {\n  return a + b;\n}"
+                },
+                {
+                                "id": 4,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function subtract(a: number, b: number): number {\n  return a - b;\n}"
+                },
+                {
+                                "id": 5,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function multiply(a: number, b: number): number {\n  return a * b;\n}"
+                },
+                {
+                                "id": 6,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function divide(a: number, b: number): number {\n  return a / b;\n}"
+                },
+                {
+                                "id": 7,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function square(n: number): number {\n  return n * n;\n}"
+                },
+                {
+                                "id": 8,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function cube(n: number): number {\n  return n * n * n;\n}"
+                },
+                {
+                                "id": 9,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function power(base: number, exponent: number): number {\n  return Math.pow(base, exponent);\n}"
+                },
+                {
+                                "id": 10,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function sqrt(n: number): number {\n  return Math.sqrt(n);\n}"
+                },
+                {
+                                "id": 11,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function log(n: number): number {\n  return Math.log(n);\n}"
+                },
+                {
+                                "id": 12,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function exp(n: number): number {\n  return Math.exp(n);\n}"
+                },
+                {
+                                "id": 13,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function sin(angle: number): number {\n  return Math.sin(angle);\n}"
+                },
+                {
+                                "id": 14,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function cos(angle: number): number {\n  return Math.cos(angle);\n}"
+                },
+                {
+                                "id": 15,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function tan(angle: number): number {\n  return Math.tan(angle);\n}"
+                },
+                {
+                                "id": 16,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function factorial(n: number): number {\n  if (n <= 1) return 1;\n  return n * factorial(n - 1);\n}"
+                },
+                {
+                                "id": 17,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function fibonacci(n: number): number {\n  if (n <= 1) return n;\n  return fibonacci(n - 1) + fibonacci(n - 2);\n}"
+                },
+                {
+                                "id": 18,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function isPrime(n: number): boolean {\n  if (n <= 1) return false;\n  for (let i = 2; i < n; i++) {\n    if (n % i === 0) return false;\n  }\n  return true;\n}"
+                },
+                {
+                                "id": 19,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function gcd(a: number, b: number): number {\n  if (!b) return a;\n  return gcd(b, a % b);\n}"
+                },
+                {
+                                "id": 20,
+                                "lang": "ts",
+                                "url": "https://www.github.com/",
+                                "code": "function lcm(a: number, b: number): number {\n  return (a * b) / gcd(a, b);\n}"
+                }
+]
