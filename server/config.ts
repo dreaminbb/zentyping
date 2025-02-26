@@ -3,10 +3,11 @@ import { z } from 'zod';
 
 dotenv.config();
 
+
 const envSchema = z.object({
-                PORT: z.string().default('8000'),
-                DB_URL: z.string().default('mongodb://localhost:27017'),
-                PRODUCTION: z.boolean().default(false),
+                port: z.string().default('8000'),
+                db_url: z.string().default('mongodb://localhost:27017'),
+                production: z.boolean().default(false),
 });
 
 
@@ -21,3 +22,13 @@ const get_config = () => {
 }
 
 export const config = get_config() as z.infer<typeof envSchema> ? get_config() as z.infer<typeof envSchema> : process.exit(1);
+
+
+// define type
+
+export interface code_data {
+                _id?:string,
+                id: number,
+                code: string,
+                lang:string,
+}
