@@ -1,34 +1,33 @@
-import dotenv from 'dotenv';
-import { z } from 'zod';
+import 'dotenv/config';
+import { undefined } from 'zod';
 
-dotenv.config();
-
-
-const envSchema = z.object({
-                port: z.string().default('8000'),
-                db_url: z.string().default('mongodb://localhost:27017'),
-                production: z.boolean().default(false),
-});
-
-
-const get_config = () => {
-                try {
-                                const config = envSchema.parse(process.env);
-                                return config;
-                } catch (error) {
-                                console.error('❌ Invalid environment variables:', error);
-                                throw new Error('Invalid environment variables');
-                }
+const from_env = {
+                DB_URL: process.env.DB_URL ?? undefined,
+                DB_NAME: process.env.DB_NAME ?? undefined,
+                API_HOST_PORT: process.env.API_HOST_PORT ?? undefined,
+                API_HOST_URL: process.env.API_HOST_URL ?? undefined,
+                PYTHON_COLLECTION_NAME: process.env.PYTHON_COLLECTION_NAME ?? undefined,
+                TS_COLLECTION_NAME: process.env.TS_COLLECTION_NAME ?? undefined
 }
 
-export const config = get_config() as z.infer<typeof envSchema> ? get_config() as z.infer<typeof envSchema> : process.exit(1);
+function is_available(): boolean {
+                // from_env 内のすべての値をチェック
+                for (const [key, value] of Object.entries(from_env)) {
+                                if (value === undefined) {
+                                                console.error(`Environment variable ${key} is not defined.`);
+                                                return false;
+                                }
+                }
+                return true;
+}
+// 呼び出してチェック
+export const config = is_available() ? from_env : process.exit(1);
 
+export const lang_list: Array<string> = ['python', 'ts']
 
-// define type
-
-export interface code_data {
-                _id?:string,
-                id: number,
-                code: string,
-                lang:string,
+export const error_code_data = {
+                _id: 'error',
+                id: 0,
+                code: "sorry , error happend in server and ofcourse we did't want it",
+                lang: 'error',
 }
