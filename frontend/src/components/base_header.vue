@@ -13,13 +13,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <header id="header_container">
-<<<<<<< HEAD:app/template/src/components/base_header.vue
-    <h1>{{ config.site_name }}</h1>
-  </header>
-</template>
-
-=======
+  <header>
     <h1>
       <header id='site_name' >{{ config.site_name }} <i class="fa-solid fa-code"></i></header>
     </h1>
@@ -39,4 +33,3 @@ export default defineComponent({
     </nav>
   </header>
 </template>
->>>>>>> 3b029bb2654fe688af71880c744608ac69794a1d:template/src/components/base_header.vue
