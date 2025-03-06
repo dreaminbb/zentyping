@@ -1,13 +1,17 @@
-import express, { type Request, type Response } from 'express';
+import express from 'express';
+import  { type Request, type Response } from 'express';
+import cors from 'cors';
 import { config } from './config';
 import db_class from './module/db'
 import code_router from './router/code';
-const bodyParser = require('body-parser');
 export const app = express();
 
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// * これでdb classの変数にコレクションが追加されたから他のコードからコレクションを使うことができる。
+
 app.use(cors({
                 origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
                                 if (!origin || (config.SITE_ORIGIN as string).includes(origin)) {
@@ -18,11 +22,7 @@ app.use(cors({
                 }
 }));
 
-
-
-// * これでdb classの変数にコレクションが追加されたから他のコードからコレクションを使うことができる。
-db_class.init()
-console.log(db_class.code_collection_obj)
+await db_class.init()
 app.use('/code', code_router);
 
 app.get('/', (req: Request, res: Response) => {
@@ -35,6 +35,3 @@ app.listen(config.API_HOST_PORT, () => {
                 console.log(`Server is running on http://localhost:${config.API_HOST_PORT}`);
 });
 
-function cors(arg0: { origin: (origin: any, callback: any) => void; }): any {
-                throw new Error('Function not implemented.');
-}
