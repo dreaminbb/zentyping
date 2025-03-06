@@ -10,9 +10,3 @@
 # Dependencies
 node_modules/
 **/node_modules/
-
-# Rust
-/target
-**/target/
-/debug/
-/Cargo.lock
