@@ -7,7 +7,6 @@ export interface code_data {
 }
 
 export interface code_req {
-                key: string,
                 mount?: number,
                 lang: string,
 }

@@ -8,7 +8,7 @@ const router = Router();
 
 router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
 
-                if (!req.body || !req.body.lang || !req.body.key) return res.status(400).send({
+                if (!req.body || !req.body.lang) return res.status(400).send({
                                 'error': 'wrong parameter'
                 })
 
@@ -21,7 +21,7 @@ router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
 
 
                 const collection = db_class.code_collection_obj?.[lang]
-                console.log(collection)
+
                 if (!collection) return res.status(500).send({
                                 message: 'server error at db',
                                 status: 500,

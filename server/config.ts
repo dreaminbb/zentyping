@@ -4,6 +4,7 @@ import { undefined } from 'zod';
 const from_env = {
                 DB_URL: process.env.DB_URL ?? undefined,
                 DB_NAME: process.env.DB_NAME ?? undefined,
+                SITE_ORIGIN: process.env.SITE_ORIGIN ?? undefined,
                 API_HOST_PORT: process.env.API_HOST_PORT ?? undefined,
                 API_HOST_URL: process.env.API_HOST_URL ?? undefined,
                 PYTHON_COLLECTION_NAME: process.env.PYTHON_COLLECTION_NAME ?? undefined,

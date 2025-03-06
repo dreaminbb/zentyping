@@ -8,6 +8,16 @@ export const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({
+                origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+                                if (!origin || (config.SITE_ORIGIN as string).includes(origin)) {
+                                                callback(null, true);
+                                } else {
+                                                callback(new Error('CORS policy violation'));
+                                }
+                }
+}));
+
 
 
 // * これでdb classの変数にコレクションが追加されたから他のコードからコレクションを使うことができる。
@@ -24,3 +34,7 @@ app.get('/', (req: Request, res: Response) => {
 app.listen(config.API_HOST_PORT, () => {
                 console.log(`Server is running on http://localhost:${config.API_HOST_PORT}`);
 });
+
+function cors(arg0: { origin: (origin: any, callback: any) => void; }): any {
+                throw new Error('Function not implemented.');
+}
