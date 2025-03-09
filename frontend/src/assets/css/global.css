@@ -1,4 +1,5 @@
 @import './catppuccin.css';
+@import "https://www.nerdfonts.com/assets/css/webfont.css";
 
 * {
                 font-family: monospace;
@@ -146,4 +147,12 @@ header nav div {
 
 .code_change_fm #code_change_icon {
                 color: var(--nav-icon-1);
+}
+
+#header_container {
+                position: absolute;
+                top: 0;
+                display: flex;
+                justify-content: space-between;
+
 }
