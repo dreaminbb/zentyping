@@ -8,9 +8,8 @@ const from_env = {
                 API_HOST_PORT: process.env.API_HOST_PORT ?? undefined,
                 API_HOST_URL: process.env.API_HOST_URL ?? undefined,
                 PYTHON_COLLECTION_NAME: process.env.PYTHON_COLLECTION_NAME ?? undefined,
-                TS_COLLECTION_NAME: process.env.TS_COLLECTION_NAME ?? undefined
+                TS_COLLECTION_NAME: process.env.TS_COLLECTION_NAME ?? undefined,
 }
-
 function is_available(): boolean {
                 // from_env 内のすべての値をチェック
                 for (const [key, value] of Object.entries(from_env)) {
@@ -24,7 +23,7 @@ function is_available(): boolean {
 // 呼び出してチェック
 export const config = is_available() ? from_env : process.exit(1);
 
-export const lang_list: Array<string> = ['python', 'ts']
+export const lang_list: Array<string> = ['python', 'typescript']
 
 export const error_code_data = {
                 _id: 'error',
