@@ -1,12 +1,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import config from '@/config'
 
 export default defineComponent({
   name: 'base_header',
   setup() {
     return {
-      config
+      SITE_SAME: import.meta.env.VITE_SITE_NAME
     }
   }
 })
@@ -15,20 +14,20 @@ export default defineComponent({
 <template>
   <header>
     <h1>
-      <header id='site_name' >{{ config.site_name }} <i class="fa-solid fa-code"></i></header>
+      <header id="site_name">{{ SITE_SAME }}<i class="fa-solid fa-code"></i></header>
     </h1>
     <nav>
       <div>
-        <div ><font-awesome-icon class="nav_icon1"  icon="crown" /></div>
+        <div><font-awesome-icon class="nav_icon1" icon="crown" /></div>
       </div>
       <div>
-        <div ><font-awesome-icon class="nav_icon2"  icon="gear" /></div>
+        <div><font-awesome-icon class="nav_icon2" icon="gear" /></div>
       </div>
       <div>
-        <div ><font-awesome-icon class="nav_icon3" icon="bell" /></div>
+        <div><font-awesome-icon class="nav_icon3" icon="bell" /></div>
       </div>
       <div>
-        <div ><font-awesome-icon class="nav_icon4" icon="user" /></div>
+        <div><font-awesome-icon class="nav_icon4" icon="user" /></div>
       </div>
     </nav>
   </header>

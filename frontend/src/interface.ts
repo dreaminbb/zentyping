@@ -1,12 +1,13 @@
-export interface code_obj_type {
+export interface code_obj {
     code: string,
+    lang: string,
     url: string,
 }
 
 export interface store_code_type {
-    'python': Array<code_obj_type> | null | undefined,
-    'rust': Array<code_obj_type> | null | undefined,
-    'typescript': Array<code_obj_type> | null | undefined
+    'python': Array<code_obj> | null,
+    'rust': Array<code_obj> | null,
+    'typescript': Array<code_obj> | null
 }
 
 export interface result_data_itf {
