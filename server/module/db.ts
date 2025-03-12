@@ -9,12 +9,14 @@ class db {
                 db: null | any
                 python_code_collection: null | Collection<code_data>
                 ts_code_collection: null | Collection<code_data>
+		rust_code_collection: null | Collection<code_data>
                 code_collection_obj: null | { [key: string]: Collection<code_data> | null }
 
                 constructor() {
                                 this.db = null
                                 this.python_code_collection = null
                                 this.ts_code_collection = null
+				this.rust_code_collection= null
                                 this.code_collection_obj = null
                 }
 
@@ -22,13 +24,15 @@ class db {
                                 await this.connect_db()
                                 this.python_code_collection = await db_class.get_collection(config.PYTHON_COLLECTION_NAME as string)
                                 this.ts_code_collection = await db_class.get_collection(config.TS_COLLECTION_NAME as string)
+				this.rust_code_collection = await db_class.get_collection(config.RUST_COLLECTION_NAME as string)
                                 this.init_colletion_obj()
                 }
 
                 init_colletion_obj() {
                                 this.code_collection_obj = {
                                                 python: this.python_code_collection ?? null,
-                                                ts: this.ts_code_collection ?? null
+                                                typescript: this.ts_code_collection ?? null,
+						rust:this.rust_code_collection ?? null
                                 }
                 }
 
