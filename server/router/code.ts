@@ -1,6 +1,7 @@
 import { Router, type Response, type Request } from "express"
 import db_class from "../module/db";
-import { lang_list, error_code_data } from "../config";
+import { available_code_list, error_code_data } from "../config";
+import { config } from "../config";
 
 const router = Router();
 
@@ -8,18 +9,62 @@ const router = Router();
 
 router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
 
-                if (!req.body || !req.body.lang) return res.status(400).send({
+
+                const lang: string = req.body.lang
+                const code_mount = req.body.mount
+                console.info('lang:', lang, 'code_mount:', code_mount)
+
+                if (!req.body || !code_mount) return res.status(400).send({
                                 'error': 'wrong parameter'
                 })
 
-                const lang: string = req.body.lang
 
-                if (!lang_list.includes(lang)) return res.status(400).send({
+                if (!available_code_list.includes(lang) && lang !== 'all') return res.status(400).send({
                                 'error': 'wrong parameter',
                                 code: [error_code_data]
                 })
 
 
+                // If req parameter has mount butno lang return all lang code data each mount.
+                // This process is only when user first access to the site.
+                if (lang === 'all' && code_mount) {
+
+                                const res_data: { [key: string]: Array<object> } = {}
+
+                                for (const lang of available_code_list) {
+
+
+                                                const collection = db_class.code_collection_obj?.[lang]
+
+                                                console.log(collection ? 'collection is available' : 'collection is not available')
+
+                                                if (!collection) return res.status(500).send({
+                                                                message: 'server error at db',
+                                                                status: 500,
+                                                                code: [error_code_data]
+                                                })
+
+                                                const random_codes: Array<object> = (await collection.aggregate([
+                                                                { $sample: { size: code_mount as number } }
+                                                ]).toArray())
+
+                                                if (!random_codes) return res.status(500).send({
+                                                                message: 'server error',
+                                                                status: 500,
+                                                                code: [error_code_data]
+                                                })
+
+                                                res_data[lang as string] = random_codes
+                                }
+
+                                return res.status(200).send({
+                                                message: 'success',
+                                                status: 200,
+                                                data: res_data
+                                })
+                }
+
+                //* If req parameter has lang
                 const collection = db_class.code_collection_obj?.[lang]
 
                 if (!collection) return res.status(500).send({
@@ -28,7 +73,7 @@ router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
                                 code: [error_code_data]
                 })
 
-                const code_mount = req.body.mount ?? 10
+
                 const random_codes: Array<object> = (await collection.aggregate([
                                 { $sample: { size: code_mount as number } }
                 ]).toArray())
@@ -42,7 +87,7 @@ router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
                 return res.status(200).send({
                                 message: 'success',
                                 status: 200,
-                                code_data: random_codes
+                                code: random_codes
                 })
 })
 
