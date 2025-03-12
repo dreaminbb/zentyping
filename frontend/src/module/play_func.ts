@@ -1,8 +1,9 @@
 import { type Ref, ref } from 'vue'
-import { type result_data_itf } from '../interface'
+import { store_code_type, type result_data_itf } from '../interface'
 import { code_load } from './code_load'
 import { code_data } from '../store/store'
 import short_cut_ins from './short_cut_manager'
+import config from '@/config'
 
 export const result_data_ref_obj: Ref<result_data_itf> = ref<result_data_itf>({
   wpm: 0,
@@ -31,7 +32,7 @@ class play_func {
   public wpm_every_second_arr: Array<number>
   public acc_every_secend_arr: Array<number>
   public play_code_display_container: HTMLElement | null
-  private handle_keydown_for_play_bound: (e: KeyboardEvent) => void
+  private handle_keydown_for_play_ground: (e: KeyboardEvent) => void
   private ignoredKeys: Array<string> = [
     'Shift',
     'Control',
@@ -84,11 +85,11 @@ class play_func {
     this.time_display_display = null
     this.play_code_display_container = null
     this.splited_code_arr = []
-    this.handle_keydown_for_play_bound = this.handle_keydown_for_play.bind(this)
+    this.handle_keydown_for_play_ground = this.handle_keydown_for_play.bind(this)
   }
 
   private reset_state(): void {
-    window.removeEventListener('keydown', this.handle_keydown_for_play_bound)
+    window.removeEventListener('keydown', this.handle_keydown_for_play_ground)
     this.user_input = ''
     this.line_break = '\n'
     this.char_all_spans_as_array_elm = []
@@ -110,7 +111,7 @@ class play_func {
     this.splited_code_arr = []
   }
 
-  //* When first charater typed run this. So there is this func in handle_keydown_for_play_bound()
+  //* When first charater typed run this. So there is this func in handle_keydown_for_play_ground()
   public init(code: string): void {
     this.reset_state()
     this.time_display_display = document.getElementById('time_display') as HTMLElement
@@ -130,13 +131,12 @@ class play_func {
     this.char_all_spans_as_array_elm = []
     this.essenced_spans_for_comparison = []
     this.char_spans = []
-    window.addEventListener('keydown', this.handle_keydown_for_play_bound)
-    // set chort cut listener
-    short_cut_ins.able_short_cut()
+    window.addEventListener('keydown', this.handle_keydown_for_play_ground)
+
     this.fetch_char_spans_ignore_space_after_line_break_as_elm()
     // add uthyped class to all spans
-    console.log(this.essenced_spans_for_comparison)
-    console.log('init')
+    // console.log(this.essenced_spans_for_comparison)
+    // console.log('init')
     this.add_untyped_class_to_all_spans()
     this.add_cursor_to_first_char()
   }
@@ -165,7 +165,7 @@ class play_func {
 
   public delete(): void {
     this.reset_state()
-    window.removeEventListener('keydown', this.handle_keydown_for_play_bound)
+    window.removeEventListener('keydown', this.handle_keydown_for_play_ground)
     // delete chort cut listener
     short_cut_ins.disable_chort_cut()
 
@@ -280,10 +280,28 @@ class play_func {
     })
   }
 
-  public next_code(): void {
+  public async next_code(): Promise<void> {
     is_dislay_result_view.value = false
     code_data().code_point++
-    setTimeout(() => {
+
+    const store_instance = code_data()
+
+    const pointer: number = store_instance.code_point as number;
+
+    const lang: string = store_instance.code_lang as keyof store_code_type;
+
+    const code: string = store_instance.code_data_obj?.[lang as keyof store_code_type]?.[pointer]?.code as string;
+
+    
+    if (code === undefined) {
+      // init now lang code store
+      await code_data().one_lang_update_stored_code(lang, config.one_lang_update_mount)
+      code_data().code_point = 0
+    }
+
+    setTimeout(async () => {
+      //add 1  to code_point in below function
+
       code_load()
     }, 100)
   }

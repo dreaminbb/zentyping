@@ -3,6 +3,7 @@ import { defineComponent, onMounted } from 'vue'
 import result_display from '@/components/results_display.vue'
 import code_switch_bar from '@/components/code_switch_bar.vue'
 import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
+import { ref } from 'vue'
 import { store_code_type } from '@/interface'
 import { code_load } from '@/module/code_load'
 import { code_data } from '@/store/store'
@@ -23,6 +24,8 @@ export default defineComponent({
       }
     })
 
+    const code_play_elm_key = ref(0)
+
     // If split code by line break. This line break are romoved. So this func readd line break.
     function add_line_break_to_code_after_spliting(
       splited_code: Array<string>
@@ -42,28 +45,26 @@ export default defineComponent({
       return return_code
     }
 
-    const store_instance = code_data()
-    const pointer: number = store_instance.code_point as number
+    function rerendering_code_display_elm(): void {
+      code_play_elm_key.value++
+    }
 
-    const lang: string = store_instance.code_lang as keyof store_code_type
-
-    const dynamic_code: string =
-      store_instance.code_data_obj?.[lang as keyof store_code_type]?.[pointer]?.code ?? '404'
 
     return {
-      dynamic_code,
       result_display,
       code_switch_bar,
       result_data_ref_obj,
       is_dislay_result_view,
       code_data,
-      add_line_break_to_code_after_spliting
+      code_play_elm_key,
+      add_line_break_to_code_after_spliting,
+      rerendering_code_display_elm
     }
   }
 })
 </script>
 <template>
-  <main id="code_play_main_container" v-if="!is_dislay_result_view">
+  <main id="code_play_main_container" v-if="!is_dislay_result_view" :key="code_play_elm_key">
     <div id="play_info_display_container">
       <div id="time_display" ref="ref_time_display"></div>
     </div>
@@ -71,7 +72,11 @@ export default defineComponent({
       <div id="code_display_window" ref="ref_play_code_display_container">
         <span
           v-for="(char, index) in add_line_break_to_code_after_spliting(
-            String(dynamic_code).split('\n')
+            String(
+              code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
+                code_data().code_point
+              ]?.code ?? ''
+            ).split('\n')
           )"
           :key="index"
           ref="char_spans"
