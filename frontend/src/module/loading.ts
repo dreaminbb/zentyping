@@ -1,3 +1,6 @@
+import { code_data } from "@/store/store"
 
-export function loading_setup(): void {
-}
+
+// export async function loading_setup(): Promise<void> {
+//                 await code_data().initialize()
+// }

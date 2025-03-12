@@ -1,5 +1,8 @@
-class config{
-                site_name:string = 'zenn type'
+class config {
+                all_code_each_mount = 7
+
+
 }
 
-export default new config();
+const ins = new config()
+export default ins

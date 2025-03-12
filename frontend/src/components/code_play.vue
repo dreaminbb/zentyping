@@ -3,6 +3,7 @@ import { defineComponent, onMounted } from 'vue'
 import result_display from '@/components/results_display.vue'
 import code_switch_bar from '@/components/code_switch_bar.vue'
 import { result_data_ref_obj, is_dislay_result_view } from '@/module/play_func'
+import { store_code_type } from '@/interface'
 import { code_load } from '@/module/code_load'
 import { code_data } from '@/store/store'
 
@@ -14,7 +15,7 @@ export default defineComponent({
   },
 
   setup() {
-    onMounted(() => {
+    onMounted(async () => {
       try {
         code_load()
       } catch (e) {
@@ -27,18 +28,30 @@ export default defineComponent({
       splited_code: Array<string>
     ): Array<string> | void {
       if (!splited_code.length) return
+
       const line_index: number = splited_code.length - 1
       const return_code: Array<string> = []
+
       for (let i = 0; i < line_index; i++) {
         const tmp: Array<string> = (splited_code[i] ?? '').split('')
         tmp.push('\n')
         return_code.push(tmp.join(''))
       }
+
       return_code.push(splited_code[line_index] ?? '')
       return return_code
     }
 
+    const store_instance = code_data()
+    const pointer: number = store_instance.code_point as number
+
+    const lang: string = store_instance.code_lang as keyof store_code_type
+
+    const dynamic_code: string =
+      store_instance.code_data_obj?.[lang as keyof store_code_type]?.[pointer]?.code ?? '404'
+
     return {
+      dynamic_code,
       result_display,
       code_switch_bar,
       result_data_ref_obj,
@@ -58,11 +71,7 @@ export default defineComponent({
       <div id="code_display_window" ref="ref_play_code_display_container">
         <span
           v-for="(char, index) in add_line_break_to_code_after_spliting(
-            String(
-              (code_data().code_data_obj[
-                code_data().code_lang as 'python' | 'rust' | 'typescript'
-              ]?.[code_data().code_point]?.code as string) ?? '404'
-            ).split('\n')
+            String(dynamic_code).split('\n')
           )"
           :key="index"
           ref="char_spans"
