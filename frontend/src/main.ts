@@ -21,7 +21,7 @@ const pinia = createPinia()
 app.use(router)
 app.use(pinia)
 // await loading_setup()
-await code_data().initialize()
+ code_data().initialize()
 
 app.component('font-awesome-icon', FontAwesomeIcon)
 
