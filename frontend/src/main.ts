@@ -17,17 +17,14 @@ library.add(fas as IconPack, far as IconPack, fab as IconPack)
 const app = createApp(App)
 const pinia = createPinia()
 
-app.use(router)
+
 app.use(pinia)
-const store = code_data()
+app.use(router)
+app.component('font-awesome-icon', FontAwesomeIcon)
 
-store.initialize().then(() => {
-  store.init_store()
-  app.component('font-awesome-icon', FontAwesomeIcon)
+code_data().initialize().then(() => {
   app.mount('#app')
-}).catch((e) => {
-  console.error(e)
-  throw e
+}).catch((error) => {
+  console.log(error)
 })
-
 

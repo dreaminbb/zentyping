@@ -37,6 +37,7 @@
     --nav-icon-2: var(--ctp-red);
     --nav-icon-3: var(--ctp-green);
     --nav-icon-4: var(--ctp-maroon);
+    --play-code-border: var(--ctp-lavender);
     --play-non-typed-color: var(--ctp-subtext1);
     --play-cursor-color: var(--ctp-text);
     --play-correct-color: var(--ctp-mauve);

@@ -25,7 +25,6 @@ export default defineComponent({
     })
 
     const code_play_elm_key = ref(0)
-
     // If split code by line break. This line break are romoved. So this func readd line break.
     function add_line_break_to_code_after_spliting(
       splited_code: Array<string>
@@ -48,7 +47,6 @@ export default defineComponent({
     function rerendering_code_display_elm(): void {
       code_play_elm_key.value++
     }
-
 
     return {
       result_display,
@@ -115,7 +113,7 @@ export default defineComponent({
   margin: 30px auto;
   bottom: 0;
   height: 100%;
-  width: 60%;
+  width: 55%;
   font-size: 2rem;
 }
 
@@ -136,18 +134,26 @@ export default defineComponent({
 
 #code_display_container {
   width: 100%;
-  height: 100%;
-  font-size: 1.5rem;
-  font-family: 'Courier New', Courier, monospace;
+  height: 90%;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
   border-radius: 15px;
-  align-items: center;
+  align-items: top;
   justify-content: center;
 }
 
 #code_display_window {
-  width: 80%;
-  height: 80%;
-  margin: 10% auto;
+  width: 97%;
+  height: 100%;
+  margin: 3% auto;
+}
+
+.each_line_elm {
+  width: 100%;
+  margin: 0;
+  padding-top:  10px;
+  display: flex;
+ text-align: left;
 }
 
 #type_input {
