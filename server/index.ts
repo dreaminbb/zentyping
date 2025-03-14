@@ -17,11 +17,10 @@ app.use('/static', express.static(path.join(__dirname, 'static')))
 
 const is_production: boolean = config.PRODUCTION === 'true'
 console.log('is production', is_production)
-console.log(typeof is_production)
 
 const allowedOrigins = is_production
   ? [process.env.SITE_ORIGIN] // 本番環境
-  : ['http://localhost:8000', 'http://127.0.0.1', process.env.SITE_ORIGIN]; // 開発環境
+  : ['http://localhost:8000', process.env.SITE_ORIGIN]; // 開発環境
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -35,7 +34,7 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400
 };
@@ -44,14 +43,14 @@ const corsOptions = {
 
 //app.use((req, res, next) => {
 //	if(!is_production){
-  //const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  //const geo = geoip.lookup(ip);
+//const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+//const geo = geoip.lookup(ip);
 
-  //if (geo && geo.country === "JP") {
-    //next(); // 日本なら通す
- // } else {
-   // res.status(403).send("Access denied");
-  //}
+//if (geo && geo.country === "JP") {
+//next(); // 日本なら通す
+// } else {
+// res.status(403).send("Access denied");
+//}
 //	}
 //});
 
