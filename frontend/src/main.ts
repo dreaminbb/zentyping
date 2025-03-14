@@ -8,7 +8,6 @@ import routes from './router'; import { fas } from '@fortawesome/free-solid-svg-
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 import { code_data } from './store/store';
-// import { loading_setup } from '@/module/loading'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,9 +19,15 @@ const pinia = createPinia()
 
 app.use(router)
 app.use(pinia)
-// await loading_setup()
- code_data().initialize()
+const store = code_data()
 
-app.component('font-awesome-icon', FontAwesomeIcon)
+store.initialize().then(() => {
+  store.init_store()
+  app.component('font-awesome-icon', FontAwesomeIcon)
+  app.mount('#app')
+}).catch((e) => {
+  console.error(e)
+  throw e
+})
 
-app.mount('#app')
+

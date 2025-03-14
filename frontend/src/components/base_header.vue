@@ -14,7 +14,7 @@ export default defineComponent({
 <template>
   <header>
     <h1>
-      <header id="site_name">{{ SITE_SAME }}<i class="fa-solid fa-code"></i></header>
+      <header id="site_name">{{ SITE_SAME }} <i class="fa-solid fa-code"></i></header>
     </h1>
     <nav>
       <div>
