@@ -68,29 +68,19 @@ export default defineComponent({
     </div>
     <code id="code_display_container">
       <div id="code_display_window" ref="ref_play_code_display_container">
-        <span
-          v-for="(char, index) in add_line_break_to_code_after_spliting(
-            String(
-              code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
-                code_data().code_point
-              ]?.code ?? ''
-            ).split('\n')
-          )"
-          :key="index"
-          ref="char_spans"
-          class="each_line_elm"
-        >
-          <span
-            v-for="(each_char, each_index) in char.split('')"
-            :key="each_index"
-            :class="{
-              each_char_elm: true,
-              untyped: true,
-              space_elm: each_char === ' ',
-              line_break_elm: each_char === '\n'
-            }"
-            >{{ each_char === ' ' ? '\u00A0' : each_char }}</span
-          >
+        <span v-for="(char, index) in add_line_break_to_code_after_spliting(
+          String(
+            code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
+              code_data().code_point
+            ]?.code ?? ''
+          ).split('\n')
+        )" :key="index" ref="char_spans" class="each_line_elm">
+          <span v-for="(each_char, each_index) in char.split('')" :key="each_index" :class="{
+            each_char_elm: true,
+            untyped: true,
+            space_elm: each_char === ' ',
+            line_break_elm: each_char === '\n'
+          }">{{ each_char === ' ' ? '\u00A0' : each_char }}</span>
         </span>
       </div>
     </code>
@@ -102,10 +92,12 @@ export default defineComponent({
 </template>
 
 <style>
+/*change font size at global.css*/
+
 #code_play_main_container {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 10% 80% 10%;
+  grid-template-rows: 8% 84% 8%;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   justify-content: center;
@@ -114,7 +106,6 @@ export default defineComponent({
   bottom: 0;
   height: 100%;
   width: 55%;
-  font-size: 2rem;
 }
 
 #play_info_display_container {
@@ -135,7 +126,6 @@ export default defineComponent({
 #code_display_container {
   width: 100%;
   height: 90%;
-  font-size: 2.2rem;
   letter-spacing: 2px;
   border-radius: 15px;
   align-items: top;
@@ -143,17 +133,17 @@ export default defineComponent({
 }
 
 #code_display_window {
-  width: 97%;
+  width: 98%;
   height: 100%;
-  margin: 3% auto;
+  margin: 2% auto;
 }
 
 .each_line_elm {
   width: 100%;
   margin: 0;
-  padding-top:  10px;
+  padding-top: 10px;
   display: flex;
- text-align: left;
+  text-align: left;
 }
 
 #type_input {
