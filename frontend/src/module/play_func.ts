@@ -24,6 +24,7 @@ class play_func {
   public result_data: result_data_itf
   private char_index: number
   private timer_score_watcher_func: NodeJS.Timer | number
+  private check_afk_typing_timer_func: NodeJS.Timer | number
   public timer_func: NodeJS.Timer | number
   public line_index: number
   public char_spans: Array<HTMLSpanElement>
@@ -31,6 +32,7 @@ class play_func {
   private time_display_display: HTMLElement | null
   public wpm_every_second_arr: Array<number>
   public acc_every_secend_arr: Array<number>
+  public raw_code: string
   public play_code_display_container: HTMLElement | null
   private handle_keydown_for_play_ground: (e: KeyboardEvent) => void
   private ignoredKeys: Array<string> = [
@@ -68,6 +70,7 @@ class play_func {
   constructor() {
     this.user_input = ''
     this.line_break = '\n'
+    this.raw_code = ''
     this.char_all_spans_as_array_elm = []
     this.is_playing = false
     this.time_value = 0.0
@@ -75,6 +78,7 @@ class play_func {
     this.type_counter = 0
     this.line_index = 0
     this.timer_func = 0
+    this.check_afk_typing_timer_func = 0
     this.timer_score_watcher_func = 0
     this.result_data = { wpm: 0, acc: 0, time: 0, wpm_arr: [] }
     this.essenced_spans_for_comparison = []
@@ -127,6 +131,7 @@ class play_func {
     this.time_value = 0.0
     this.char_index = 0
     this.line_index = 0
+    this.raw_code = code
     this.time_display_display.textContent = '0.0s'
     this.char_all_spans_as_array_elm = []
     this.essenced_spans_for_comparison = []
@@ -134,7 +139,7 @@ class play_func {
     window.addEventListener('keydown', this.handle_keydown_for_play_ground)
 
     this.fetch_char_spans_ignore_space_after_line_break_as_elm()
-    // add uthyped class to all spans
+    // add utyped class to all spans
     // console.log(this.essenced_spans_for_comparison)
     // console.log('init')
     this.add_untyped_class_to_all_spans()
@@ -173,11 +178,19 @@ class play_func {
     this.play_code_display_container = document.getElementById(
       'code_display_container'
     ) as HTMLElement
+    if (!this.play_code_display_container || !this.time_display_display) {
+      throw new Error('something is null')
+    }
+    this.time_display_display.textContent = '0.0s'
+
     if (this.timer_func) {
       clearInterval(this.timer_func)
     }
     if (this.timer_score_watcher_func) {
       clearInterval(this.timer_score_watcher_func)
+    }
+    if (this.check_afk_typing_timer_func) {
+      clearInterval(this.check_afk_typing_timer_func)
     }
 
     if (!this.play_code_display_container || !this.time_display_display) {
@@ -191,6 +204,20 @@ class play_func {
     this.char_all_spans_as_array_elm = []
     this.essenced_spans_for_comparison = []
     this.char_spans = []
+  }
+
+  private check_afk_after_every_type(): void {
+    this.check_afk_typing_timer_func = setTimeout(() => {
+      this.is_playing = false
+      this.delete()
+      const code:string = this.raw_code
+      this.init(code)
+      short_cut_ins.init()
+    }, config.type_afk_limit * 1000)
+  }
+
+  private break_afk_check(): void {
+    clearTimeout(this.check_afk_typing_timer_func)
   }
 
   private start_timer(): void {
@@ -292,7 +319,7 @@ class play_func {
 
     const code: string = store_instance.code_data_obj?.[lang as keyof store_code_type]?.[pointer]?.code as string;
 
-    
+
     if (code === undefined) {
       // init now lang code store
       await code_data().one_lang_update_stored_code(lang, config.one_lang_update_mount)
@@ -320,6 +347,8 @@ class play_func {
     if (e.key === 'Backspace' && this.char_index === 0) return
 
     this.type_counter++
+    this.break_afk_check()
+    this.check_afk_after_every_type()
     // console.log(this.essenced_spans_for_comparison)
 
     // It works only first type.

@@ -48,9 +48,20 @@ Comparing method in function of comparison_input_and_add_class_to_span.
 
 
 # Timer 
-No explain feel code 👨‍💻😎 (write later
+No explain feel code 👨‍💻😎 (write later)
 
+# If user does't type long time is play session stop timer and initialize every value need for playing
 
+When timer started check the timer and how many char were typed.
+This is the condition  to decide user stop typing.
+
+*If user doesn't type any char while n seconds (value on config.ts)*
+
+n ~= 20
+
+*function which check this condition* -> `check_afk_after_every_type`
+
+When run this func ? -> after every type
 
 # Result
 

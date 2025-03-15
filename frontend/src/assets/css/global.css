@@ -142,7 +142,7 @@ header nav div {
 
 .chosen_switch i {
                 color: var(--play-lang-switch-elm-chosen-bg);
-}
+}               
 
 .code_change_fm {
                 border: 1px solid var(--header-text-color);
