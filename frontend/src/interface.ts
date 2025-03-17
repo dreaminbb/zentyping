@@ -1,7 +1,7 @@
 export interface code_obj {
     code: string,
     lang: string,
-    url: string,
+    author: string,
 }
 
 export interface store_code_type {

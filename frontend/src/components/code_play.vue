@@ -7,10 +7,12 @@ import { ref } from 'vue'
 import { store_code_type } from '@/interface'
 import { code_load } from '@/module/code_load'
 import { code_data } from '@/store/store'
+import code_author from '@/components/code_author.vue'
 
 export default defineComponent({
   name: 'code_play',
   components: {
+    code_author,
     result_display,
     code_switch_bar
   },
@@ -51,6 +53,7 @@ export default defineComponent({
     return {
       result_display,
       code_switch_bar,
+      code_author,
       result_data_ref_obj,
       is_dislay_result_view,
       code_data,
@@ -65,22 +68,40 @@ export default defineComponent({
   <main id="code_play_main_container" v-if="!is_dislay_result_view" :key="code_play_elm_key">
     <div id="play_info_display_container">
       <div id="time_display" ref="ref_time_display"></div>
+      <code_author
+        :key="code_data().code_point"
+        :author="
+          code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
+            code_data().code_point
+          ]?.author as string
+        "
+      />
     </div>
     <code id="code_display_container">
       <div id="code_display_window" ref="ref_play_code_display_container">
-        <span v-for="(char, index) in add_line_break_to_code_after_spliting(
-          String(
-            code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
-              code_data().code_point
-            ]?.code ?? ''
-          ).split('\n')
-        )" :key="index" ref="char_spans" class="each_line_elm">
-          <span v-for="(each_char, each_index) in char.split('')" :key="each_index" :class="{
-            each_char_elm: true,
-            untyped: true,
-            space_elm: each_char === ' ',
-            line_break_elm: each_char === '\n'
-          }">{{ each_char === ' ' ? '\u00A0' : each_char }}</span>
+        <span
+          v-for="(char, index) in add_line_break_to_code_after_spliting(
+            String(
+              code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
+                code_data().code_point
+              ]?.code ?? ''
+            ).split('\n')
+          )"
+          :key="index"
+          ref="char_spans"
+          class="each_line_elm"
+        >
+          <span
+            v-for="(each_char, each_index) in char.split('')"
+            :key="each_index"
+            :class="{
+              each_char_elm: true,
+              untyped: true,
+              space_elm: each_char === ' ',
+              line_break_elm: each_char === '\n'
+            }"
+            >{{ each_char === ' ' ? '\u00A0' : each_char }}</span
+          >
         </span>
       </div>
     </code>
