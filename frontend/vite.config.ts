@@ -15,9 +15,6 @@ export default defineConfig({
   server: {
     port: 8000
   },
-  build: {
-    outDir: '../server/static'
-  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
