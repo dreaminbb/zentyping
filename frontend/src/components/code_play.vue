@@ -7,10 +7,12 @@ import { ref } from 'vue'
 import { store_code_type } from '@/interface'
 import { code_load } from '@/module/code_load'
 import { code_data } from '@/store/store'
+import code_author from '@/components/code_author.vue'
 
 export default defineComponent({
   name: 'code_play',
   components: {
+    code_author,
     result_display,
     code_switch_bar
   },
@@ -51,6 +53,7 @@ export default defineComponent({
     return {
       result_display,
       code_switch_bar,
+      code_author,
       result_data_ref_obj,
       is_dislay_result_view,
       code_data,
@@ -65,6 +68,14 @@ export default defineComponent({
   <main id="code_play_main_container" v-if="!is_dislay_result_view" :key="code_play_elm_key">
     <div id="play_info_display_container">
       <div id="time_display" ref="ref_time_display"></div>
+      <code_author
+        :key="code_data().code_point"
+        :author="
+          code_data().code_data_obj?.[code_data().code_lang as keyof store_code_type]?.[
+            code_data().code_point
+          ]?.author as string
+        "
+      />
     </div>
     <code id="code_display_container">
       <div id="code_display_window" ref="ref_play_code_display_container">
@@ -102,10 +113,12 @@ export default defineComponent({
 </template>
 
 <style>
+/*change font size at global.css*/
+
 #code_play_main_container {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 10% 80% 10%;
+  grid-template-rows: 8% 84% 8%;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   justify-content: center;
@@ -114,7 +127,6 @@ export default defineComponent({
   bottom: 0;
   height: 100%;
   width: 55%;
-  font-size: 2rem;
 }
 
 #play_info_display_container {
@@ -135,7 +147,6 @@ export default defineComponent({
 #code_display_container {
   width: 100%;
   height: 90%;
-  font-size: 2.2rem;
   letter-spacing: 2px;
   border-radius: 15px;
   align-items: top;
@@ -143,17 +154,17 @@ export default defineComponent({
 }
 
 #code_display_window {
-  width: 97%;
+  width: 98%;
   height: 100%;
-  margin: 3% auto;
+  margin: 2% auto;
 }
 
 .each_line_elm {
   width: 100%;
   margin: 0;
-  padding-top:  10px;
+  padding-top: 10px;
   display: flex;
- text-align: left;
+  text-align: left;
 }
 
 #type_input {

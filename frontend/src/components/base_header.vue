@@ -18,7 +18,7 @@ export default defineComponent({
     </h1>
     <nav>
       <div>
-        <div><font-awesome-icon class="nav_icon1" icon="crown" /></div>
+        <div><font-awesome-icon class="nav_icon1" icon="book" /></div>
       </div>
       <div>
         <div><font-awesome-icon class="nav_icon2" icon="gear" /></div>
