@@ -1,0 +1,62 @@
+[
+                {
+                                "id": 1,
+                                "lang": "python",
+                                "code": "def add_new_user(username, email, password):\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"INSERT INTO users (username, \n        email, password) VALUES (?, ?, ?)\", (username, email, password))\n        conn.commit()\n        print(f\"User {username} added successfully.\")\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 2,
+                                "lang": "python",
+                                "code": "def update_user_info(user_id, new_email):\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"UPDATE users SET email = ? WHERE id = \", (new_email, user_id))\n        conn.commit()\n        print(f\"User {user_id} updated successfully.\")\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 3,
+                                "lang": "python",
+                                "code": "def get_user_by_id(user_id):\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"SELECT * FROM users WHERE id = \", (user_id,))\n        user = cursor.fetchone()\n        if user:\n            print(f\"Found user: {user}\")\n            return user\n        else:\n            print(f\"No user found with ID {user_id}\")\n            return None\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n        return None\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 4,
+                                "lang": "python",
+                                "code": "def list_all_users():\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"SELECT * FROM users\")\n        users = cursor.fetchall()\n        print(f\"Found {len(users)} users.\")\n        for user in users:\n            print(user)\n        return users\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n        return []\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 5,
+                                "lang": "python",
+                                "code": "def check_user_exists(username):\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"SELECT COUNT(*) FROM users WHERE username = ?\", (username,))\n        count = cursor.fetchone()[0]\n        exists = count > 0\n        print(f\"User {username} exists: {exists}\")\n        return exists\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n        return False\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 6,
+                                "lang": "python",
+                                "code": "def count_total_users():\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"SELECT COUNT(*) FROM users\")\n        count = cursor.fetchone()[0]\n        print(f\"Total users: {count}\")\n        return count\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n        return 0\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 7,
+                                "lang": "python",
+                                "code": "def backup_database():\n    conn = sqlite3.connect('database.db')\n    try:\n        backup_file = f'backup_{datetime.now().strftime(\"%Y%m%d_%H%M%S\")}.db'\n        backup_conn = sqlite3.connect(backup_file)\n        conn.backup(backup_conn)\n        backup_conn.close()\n        print(f\"Database backed up to {backup_file}\")\n        return True\n    except sqlite3.Error as e:\n        print(f\"Backup failed: {e}\")\n        return False\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 8,
+                                "lang": "python",
+                                "code": "def create_users_table():\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute('''CREATE TABLE IF NOT EXISTS users (\n                         id INEGER PRIMARY KEY,\n                         username TEXT NOT NULL UNIQUE,\n                         email TEXT NOT NULL,\n                         password TEXT NOT NULL,\n                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n                         )''')\n        conn.commit()\n        print(\"Users table created successfully.\")\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 9,
+                                "lang": "python",
+                                "code": "def search_users_by_name(name_pattern):\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"SELECT * FROM users WHERE username LIKE ?\", (f'%{name_pattern}%',))\n        users = cursor.fetchall()\n        print(f\"Found {len(users)} users matching '{name_pattern}'\")\n        for user in users:\n            print(user)\n        return users\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n        return []\n    finally:\n        conn.close()",
+                                "author": "AI"
+                },
+                {
+                                "id": 10,
+                                "lang": "python",
+                                "code": "def delete_inactive_users(days_inactive):\n    conn = sqlite3.connect('database.db')\n    cursor = conn.cursor()\n    try:\n        cursor.execute(\"DELETE FROM users WHERE last_login < datetime('now', ?)\", (f'-{days_inactive} days',))\n        deleted_count = cursor.rowcount\n        conn.commit()\n        print(f\"Deleted {deleted_count} inactive users.\")\n        return deleted_count\n    except sqlite3.Error as e:\n        print(f\"An error occurred: {e}\")\n        return 0\n    finally:\n        conn.close()",
+                                "author": "AI"
+                }
+]

@@ -1,0 +1,62 @@
+[
+                {
+                                "id": 1,
+                                "lang": "rust",
+                                "code": "fn delete_inactive_users(days_inactive: u32) -> Result<usize, rusqlite::Error> {\n    let conn = rusqlite::Connection::open(\"database.db\")?;\n    let days = format!(\"-{} days\", days_inactive);\n    let affected = conn.execute(\n        \"DELETE FROM users WHERE last_login < datetime('now', ?)\",\n        [days]\n    )?;\n    println!(\"Deleted {} inactive users.\", affected);\n    Ok(affected)\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 2,
+                                "lang": "rust",
+                                "code": "fn read_config_file(path: &str) -> Result<Config, std::io::Error> {\n    let content = std::fs::read_to_string(path)?;\n    let config: Config = serde_json::from_str(&content)\n        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;\n    println!(\"Loaded configuration from {}\", path);\n    Ok(config)\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 3,
+                                "lang": "rust",
+                                "code": "struct User {\n    id: u64,\n    username: String,\n    email: String,\n    active: bool,\n}\n\nimpl User {\n    fn new(id: u64, username: &str, email: &str) -> Self {\n        User {\n            id,\n            username: username.to_string(),\n            email: email.to_string(),\n            active: true,\n        }\n    }\n    \n    fn deactivate(&mut self) {\n        self.active = false;\n        println!(\"User {} has been deactivated\", self.username);\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 4,
+                                "lang": "rust",
+                                "code": "fn process_data<T: AsRef<[u8]>>(data: T) -> Vec<u8> {\n    let bytes = data.as_ref();\n    let mut result = Vec::with_capacity(bytes.len());\n    \n    for &byte in bytes {\n        result.push(byte.wrapping_add(1));\n    }\n    \n    println!(\"Processed {} bytes of data\", result.len());\n    result\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 5,
+                                "lang": "rust",
+                                "code": "fn download_file(url: &str, path: &str) -> Result<(), Box<dyn std::error::Error>> {\n    let response = reqwest::blocking::get(url)?\n        .error_for_status()?;\n    \n    let mut file = std::fs::File::create(path)?;\n    let content = response.bytes()?;\n    std::io::copy(&mut content.as_ref(), &mut file)?;\n    \n    println!(\"Downloaded {} to {}\", url, path);\n    Ok(())\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 6,
+                                "lang": "rust",
+                                "code": "fn calculate_statistics(numbers: &[i32]) -> (f64, i32, i32) {\n    if numbers.is_empty() {\n        return (0.0, 0, 0);\n    }\n    \n    let sum: i32 = numbers.iter().sum();\n    let avg = sum as f64 / numbers.len() as f64;\n    let min = *numbers.iter().min().unwrap();\n    let max = *numbers.iter().max().unwrap();\n    \n    println!(\"Statistics - Avg: {}, Min: {}, Max: {}\", avg, min, max);\n    (avg, min, max)\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 7,
+                                "lang": "rust",
+                                "code": "fn process_in_parallel<T, F>(items: Vec<T>, f: F) -> Vec<()>\nwhere\n    T: Send + 'static,\n    F: Fn(T) + Send + Sync + 'static,\n{\n    use std::sync::Arc;\n    use std::thread;\n    \n    let func = Arc::new(f);\n    let mut handles = vec![];\n    \n    for item in items {\n        let func_clone = Arc::clone(&func);\n        let handle = thread::spawn(move || {\n            func_clone(item);\n        });\n        handles.push(handle);\n    }\n    \n    handles.into_iter().map(|h| h.join().unwrap()).collect()\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 8,
+                                "lang": "rust",
+                                "code": "fn find_matching_files(dir: &str, pattern: &str) -> Result<Vec<String>, std::io::Error> {\n    let mut results = Vec::new();\n    let regex = regex::Regex::new(pattern).map_err(|e| {\n        std::io::Error::new(std::io::ErrorKind::InvalidInput, e)\n    })?;\n    \n    for entry in std::fs::read_dir(dir)? {\n        let entry = entry?;\n        let path = entry.path();\n        if path.is_file() {\n            if let Some(filename) = path.file_name() {\n                if let Some(name) = filename.to_str() {\n                    if regex.is_match(name) {\n                        results.push(path.to_string_lossy().to_string());\n                    }\n                }\n            }\n        }\n    }\n    \n    println!(\"Found {} matching files\", results.len());\n    Ok(results)\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 9,
+                                "lang": "rust",
+                                "code": "enum Message {\n    Quit,\n    Move { x: i32, y: i32 },\n    Write(String),\n    ChangeColor(u8, u8, u8),\n}\n\nfn process_message(msg: Message) {\n    match msg {\n        Message::Quit => {\n            println!(\"Quitting application\");\n        },\n        Message::Move { x, y } => {\n            println!(\"Moving to position ({}, {})\", x, y);\n        },\n        Message::Write(text) => {\n            println!(\"Text message: {}\", text);\n        },\n        Message::ChangeColor(r, g, b) => {\n            println!(\"Changing color to RGB({}, {}, {})\", r, g, b);\n        },\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 10,
+                                "lang": "rust",
+                                "code": "trait Logger {\n    fn log(&self, message: &str);\n}\n\nstruct ConsoleLogger;\nstruct FileLogger(std::fs::File);\n\nimpl Logger for ConsoleLogger {\n    fn log(&self, message: &str) {\n        println!(\"[Console] {}\", message);\n    }\n}\n\nimpl Logger for FileLogger {\n    fn log(&self, message: &str) {\n        use std::io::Write;\n        let timestamp = chrono::Local::now().format(\"%Y-%m-%d %H:%M:%S\");\n        writeln!(&self.0, \"[{}] {}\", timestamp, message)\n            .expect(\"Failed to write to log file\");\n    }\n}\n\nfn run_with_logger<T: Logger>(logger: &T) {\n    logger.log(\"Starting application\");\n    // Application logic here\n    logger.log(\"Shutting down\");\n}",
+                                "author": "AI"
+                }
+]

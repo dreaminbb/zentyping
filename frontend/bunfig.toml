@@ -1,0 +1,5 @@
+[build]
+entrypoints = ["./src/main.ts"]
+outdir = "./static"
+minify = true
+sourcemap = true

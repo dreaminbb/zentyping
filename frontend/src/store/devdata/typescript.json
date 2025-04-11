@@ -1,0 +1,62 @@
+[
+                {
+                                "id": 8,
+                                "lang": "typescript",
+                                "code": "async function addNewUser(username: string, email: string, password: string): Promise<void> {\n    const db = await openDatabase('database.db');\n    try {\n        await db.run(\n            \"INSERT INTO users (username, email, password) VALUES (?, ?, ?)\",\n            [username, email, password]\n        );\n        console.log(`User ${username} added successfully.`);\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 9,
+                                "lang": "typescript",
+                                "code": "async function updateUserInfo(userId: number, newEmail: string): Promise<void> {\n    const db = await openDatabase('database.db');\n    try {\n        await db.run(\n            \"UPDATE users SET email = ? WHERE id = \", \n            [newEmail, userId]\n        );\n        console.log(`User ${userId} updated successfully.`);\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 10,
+                                "lang": "typescript",
+                                "code": "async function getUserById(userId: number): Promise<User | null> {\n    const db = await openDatabase('database.db');\n    try {\n        const user = await db.get(\"SELECT * FROM users WHERE id = \", [userId]);\n        if (user) {\n            console.log(`Found user: ${JSON.stringify(user)}`);\n            return user;\n        } else {\n            console.log(`No user found with ID ${userId}`);\n            return null;\n        }\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n        return null;\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 11,
+                                "lang": "typescript",
+                                "code": "async function listAllUsers(): Promise<User[]> {\n    const db = await openDatabase('database.db');\n    try {\n        const users = await db.all(\"SELECT * FROM users\");\n        console.log(`Found ${users.length} users.`);\n        users.forEach(user => console.log(user));\n        return users;\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n        return [];\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 12,
+                                "lang": "typescript",
+                                "code": "async function checkUserExists(username: string): Promise<boolean> {\n    const db = await openDatabase('database.db');\n    try {\n        const result = await db.get(\n            \"SELECT COUNT(*) as count FROM users WHERE username = ?\", \n            [username]\n        );\n        const exists = result.count > 0;\n        console.log(`User ${username} exists: ${exists}`);\n        return exists;\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n        return false;\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 13,
+                                "lang": "typescript",
+                                "code": "async function countTotalUsers(): Promise<number> {\n    const db = await openDatabase('database.db');\n    try {\n        const result = await db.get(\"SELECT COUNT(*) as count FROM users\");\n        const count = result.count;\n        console.log(`Total users: ${count}`);\n        return count;\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n        return 0;\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 4,
+                                "lang": "typescript",
+                                "code": "async function backupDatabase(): Promise<boolean> {\n    const db = await openDatabase('database.db');\n    try {\n        const now = new Date();\n        const timestamp = now.toISOString().replace(/[:\\.-]/g, \"\");\n        const backupFile = `backup_${timestamp}.db`;\n        \n        await db.run(`VACUUM INTO '${backupFile}'`);\n        console.log(`Database backed up to ${backupFile}`);\n        return true;\n    } catch (e) {\n        console.error(`Backup failed: ${e}`);\n        return false;\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 5,
+                                "lang": "typescript",
+                                "code": "async function createUsersTable(): Promise<void> {\n    const db = await openDatabase('database.db');\n    try {\n        await db.run(`CREATE TABLE IF NOT EXISTS users (\n            id INEGER PRIMARY KEY,\n            username TEXT NOT NULL UNIQUE,\n            email TEXT NOT NULL,\n            password TEXT NOT NULL,\n            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n        )`);\n        console.log(\"Users table created successfully.\");\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 6,
+                                "lang": "typescript",
+                                "code": "async function searchUsersByName(namePattern: string): Promise<User[]> {\n    const db = await openDatabase('database.db');\n    try {\n        const users = await db.all(\n            \"SELECT * FROM users WHERE username LIKE ?\", \n            [`%${namePattern}%`]\n        );\n        console.log(`Found ${users.length} users matching '${namePattern}'`);\n        users.forEach(user => console.log(user));\n        return users;\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n        return [];\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                },
+                {
+                                "id": 7,
+                                "lang": "typescript",
+                                "code": "async function deleteInactiveUsers(daysInactive: number): Promise<number> {\n    const db = await openDatabase('database.db');\n    try {\n        const result = await db.run(\n            \"DELETE FROM users WHERE last_login < datetime('now', ?)\", \n            [`-${daysInactive} days`]\n        );\n        const deletedCount = result.changes || 0;\n        console.log(`Deleted ${deletedCount} inactive users.`);\n        return deletedCount;\n    } catch (e) {\n        console.error(`An error occurred: ${e}`);\n        return 0;\n    } finally {\n        await db.close();\n    }\n}",
+                                "author": "AI"
+                }
+]

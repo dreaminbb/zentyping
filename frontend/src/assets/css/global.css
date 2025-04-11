@@ -1,0 +1,206 @@
+@import './catppuccin.css';
+@import "https://www.nerdfonts.com/assets/css/webfont.css";
+@import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css";
+
+* {
+                font-family: monospace;
+}
+
+body {
+                background: var(--primary-background-color);
+                font-family: monospace;
+                margin: 0;
+                padding: 0;
+}
+
+#main_container {
+                height: 100vh;
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-template-rows: 10% 80% 10%;
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+}
+
+header {
+                background: var(--primary-background-color);
+                color: var(--header-text-color);
+                display: flex;
+                align-items: center;
+                padding: 0 20px;
+}
+
+header h1 {
+                width: 50%;
+                left: 0;
+                display: flex;
+                font-size: 3rem;
+                letter-spacing: 5px;
+                justify-content: center;
+                align-items: center;
+}
+
+header h1 #site_name {
+                text-align: center;
+                text-decoration: none;
+                align-items: center;
+}
+
+header nav {
+                width: 40%;
+                display: flex;
+                justify-content: space-evenly;
+                align-items: center;
+}
+
+header nav #user_name_display {
+                display: flex;
+                font-size: 2rem;
+                color: var(--header-text-color);
+                text-align: center;
+                text-decoration: none;
+}
+
+.nav_icon1 {
+                color: var(--nav-icon-1);
+}
+
+.nav_icon_github {
+                font-size: 2rem;
+                color: var(--nav-icon-github);
+}
+
+.nav_icon2 {
+                color: var(--nav-icon-2);
+}
+
+.nav_icon3 {
+                color: var(--nav-icon-3);
+}
+
+.nav_icon4 {
+                color: var(--nav-icon-4);
+}
+
+header nav div {
+                text-decoration: none;
+                font-size: 1.8rem;
+}
+
+header nav #user_name_display img {
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+                margin-left: 10px;
+}
+
+.each_line_elm {
+                display: block;
+}
+
+.each_char_elm {
+                position: relative;
+                display: inline-block;
+                color: var(--play-non-typed-color);
+}
+
+/** cursor class **/
+.current_type_char::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: var(--play-cursor-color);
+                opacity: 0.5;
+}
+
+.untyped {
+                background: var(--primary-background-color);
+                color: var(--play-non-typed-color);
+}
+
+.correct {
+                color: var(--play-correct-color);
+}
+
+.incorrect_space {
+                background: red;
+}
+
+.incorrect {
+                background: var(--play-incorrect-color);
+}
+
+.line_break_elm::before {
+                content: '\f177';
+                font-weight: 800;
+                font-size: 1rem;
+                font-family: 'Font Awesome 5 Free';
+}
+
+#code_display_container {
+                border: solid 2px var(--play-code-border);
+}
+
+.lang_switch_fm {
+                border: 1px solid var(--play-lang-switch-elm-border);
+}
+
+.lang_switch_fm i {
+                padding: 0;
+                margin: 0;
+                color: var(--play-lang-switch-elm-char);
+}
+
+
+.chosen_switch {
+                border: 1px solid var(--play-lang-switch-elm-border);
+}
+
+.chosen_switch i {
+                color: var(--play-lang-switch-elm-chosen-bg);
+}
+
+.code_change_fm {
+                border: 1px solid var(--header-text-color);
+}
+
+.code_change_fm #code_change_icon {
+                color: var(--nav-icon-1);
+}
+
+#header_container {
+                position: absolute;
+                top: 0;
+                display: flex;
+                justify-content: space-between;
+
+}
+
+
+@media screen and (max-width: 1280px) {
+
+                #code_play_main_container {
+                                font-size: 1.5rem;
+                }
+
+
+                #code_display_container {
+                                font-size: 1.8rem;
+                }
+}
+
+
+@media screen and (min-width: 1281px) {
+
+                #code_play_main_container {
+                                font-size: 2rem;
+                }
+
+
+                #code_display_container {
+                                font-size: 2rem;
+                }
+}
