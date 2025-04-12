@@ -36,7 +36,7 @@ export default defineComponent({
 
       <div>
         <a
-          href="https://github.com/dreaminbb/zentyping.com/"
+          href="https://github.com/dreaminbb/zentyping/"
           target="_blank"
           rel="noopener noreferrer"
         >
