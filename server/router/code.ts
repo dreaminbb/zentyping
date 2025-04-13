@@ -5,7 +5,6 @@ import { config } from "../config";
 
 const router = Router();
 
-// todo UUIDを生成
 
 router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
 
@@ -106,5 +105,19 @@ router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
                                 code: random_codes
                 })
 })
+
+
+
+// This router is for save code written by user
+// Before save code, check syntax error of code
+// but typescript can't check other language syntax error
+router.post('/save', async (req: Request, res: Response): Promise<any> => {
+                
+                const lang: string = req.body.lang
+                const code: string = req.body.code
+                const user_github_uid: string = req.body.user_github_uid
+
+})
+
 
 export default router
