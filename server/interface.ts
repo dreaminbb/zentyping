@@ -15,6 +15,7 @@ export interface code_data {
                 _id?: string,
                 id: number,
                 code: string,
+                author: string, // author is github uid
                 lang: string,
 }
 

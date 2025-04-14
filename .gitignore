@@ -13,6 +13,7 @@ server/script
 # Environment files
 .env
 db/
+__pycache__
 script
 
 # Dependencies
