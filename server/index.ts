@@ -37,7 +37,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Move CORS middleware to be first in the chain
 
 // * これでdb classの変数にコレクションが追加されたから他のコードからコレクションを使うことができる。
-await db_class.init()
+await db_class.init(config.DB_URL as string, config.DB_NAME as string)
 const add_url: string = config.PRODUCTION ? '' : config.DEV_URL as string
 console.log(add_url, 'add url')
 // app.use(`${add_url}/api/code`, code_router);

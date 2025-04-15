@@ -22,11 +22,11 @@ class db {
                 this.code_collection_obj = null
         }
 
-        async init(): Promise<void> {
+        async init(db_url: string, db_name: string): Promise<void> {
                 if (!config.PRODUCTION) {
                         console.log('init db')
                 }
-                await this.connect_db()
+                await this.connect_db(db_url, db_name)
                 this.python_code_collection = await this.get_collection(config.PYTHON_COLLECTION_NAME as string)
                 this.ts_code_collection = await this.get_collection(config.TS_COLLECTION_NAME as string)
                 this.rust_code_collection = await this.get_collection(config.RUST_COLLECTION_NAME as string)
@@ -47,11 +47,11 @@ class db {
 
 
 
-        async connect_db(): Promise<void> {
+        async connect_db(db_url: string, db_name: string): Promise<void> {
                 try {
-                        const client: MongoClient = new MongoClient(config.DB_URL as string, {});
+                        const client: MongoClient = new MongoClient(db_url as string, {});
                         await client.connect();  // 接続を待機
-                        this.db = client.db(config.DB_NAME as string);
+                        this.db = client.db(db_name as string);
 
                         console.log('Database connection established');
                 } catch (e) {
@@ -100,6 +100,27 @@ class db {
                 } catch (e) {
                         console.error(e)
                         return false
+                }
+        }
+
+        async check_code_author_exist(user_github_uid: string, lang: string): Promise<boolean | undefined> {
+                try {
+
+                        const collection = this.code_collection_obj?.[lang]
+
+                        if (!collection) {
+                                console.error("failed to get collection")
+                                return undefined
+                        }
+                        const result = await collection.find({
+                                'author': user_github_uid
+                        })
+
+                        console.log(result)
+                        return result ? true : false
+                } catch (e) {
+                        console.error(e)
+                        return undefined
                 }
         }
 }

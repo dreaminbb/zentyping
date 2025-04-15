@@ -5,6 +5,7 @@
 .obsidian/
 
 server/static/
+.env.*
 frontend/.env.production
 frontend/.env.development
 server/.env.development
