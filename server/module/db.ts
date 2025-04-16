@@ -1,7 +1,7 @@
 import type { Collection } from "mongoose";
 import { MongoClient } from "mongodb";
 import { config } from "../config";
-import { type code_data, type user } from "../interface";
+import { type code_data, type original_code_data, type user } from "../interface";
 
 class db {
 
@@ -103,7 +103,19 @@ class db {
                 }
         }
 
-        async check_code_author_exist(user_github_uid: string, lang: string): Promise<boolean | undefined> {
+        async check_user_exist(user_github_uid: string): Promise<boolean> {
+                try {
+                        const result = await db_class.user_collection?.findOne({
+                                github_id: user_github_uid
+                        })
+                        return result ? true : false
+                } catch (e) {
+                        console.error(e)
+                        return false
+                }
+        }
+        
+        async check_code_author_exist(user_github_uid: string, lang: string): Promise<{ exist: boolean, code_data?: code_data | undefined } | undefined> {
                 try {
 
                         const collection = this.code_collection_obj?.[lang]
@@ -114,10 +126,15 @@ class db {
                         }
                         const result = await collection.find({
                                 'author': user_github_uid
-                        })
+                        }).toArray()
+                        if (!result || result.length === 0) {
+                                return { exist: false, code_data: undefined };
+                        }
+                        const tmp = result[0];
 
-                        console.log(result)
-                        return result ? true : false
+                        const { _id, ...data } = tmp as original_code_data;
+
+                        return { exist: true, code_data: data as code_data };
                 } catch (e) {
                         console.error(e)
                         return undefined

@@ -2,6 +2,7 @@ import { Router, type Response, type Request } from "express"
 import db_class from "../module/db";
 import { available_code_list, error_code_data } from "../config";
 import { config } from "../config";
+import type { original_code_data } from "../interface";
 
 const router = Router();
 
@@ -93,6 +94,10 @@ router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
                                 { $sample: { size: code_mount as number } }
                 ]).toArray())
 
+                random_codes.forEach((code) => {
+                                delete (code as any)['_id']
+                })
+
                 if (!random_codes) return res.status(500).send({
                                 message: 'server error',
                                 status: 500,
@@ -111,11 +116,52 @@ router.post('/fetch', async (req: Request, res: Response): Promise<any> => {
 // This router is for save code written by user
 // Before save code, check syntax error of code
 // but typescript can't check other language syntax error
-router.post('/save', async (req: Request, res: Response): Promise<any> => {
-                
+router.post('/post', async (req: Request, res: Response): Promise<any> => {
+
                 const lang: string = req.body.lang
                 const code: string = req.body.code
                 const user_github_uid: string = req.body.user_github_uid
+
+                // check is user exist 
+                const user_exist = await db_class.check_user_exist(user_github_uid)
+
+
+                if (!user_exist) {
+                                return res.status(400).send({
+                                                message: 'user not exist',
+                                                status: 400
+                                })
+                }
+
+                await db_class.check_code_author_exist(user_github_uid, lang).then(async (result) => {
+
+                                // error handling
+                                if (result === undefined) {
+                                                return res.status(500).send({
+                                                                message: 'server error at db',
+                                                                status: 500,
+                                                })
+                                }
+
+                                console.log(result, 'result')
+
+                                // if this user havent written code yet
+                                if (result?.exist === false) {
+
+
+
+
+                                } else {
+
+                                                return res.status(200).send({
+                                                                message: 'success',
+                                                                status: 200,
+                                                                exist: result?.exist,
+                                                                code: result?.code_data
+                                                })
+
+                                }
+                })
 
 })
 

@@ -1,5 +1,4 @@
 export interface user {
-                _id?: string,
                 github_id: string,
                 last_login_time: Date,
                 play_info: {
@@ -11,8 +10,16 @@ export interface user {
                                 },
                 }
 }
+
+export interface original_code_data {
+                _id: object,
+                id: number,
+                code: string,
+                author: string, // author is github uid
+                lang: string,
+}
+
 export interface code_data {
-                _id?: string,
                 id: number,
                 code: string,
                 author: string, // author is github uid
