@@ -1,4 +1,5 @@
 export interface code_obj {
+    id: number,
     code: string,
     lang: string,
     author: string,

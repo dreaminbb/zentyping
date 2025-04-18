@@ -5,7 +5,7 @@ So this doc is the name of them and explaining how these end points work.
 
 
 
-# VITE_API_URL_RETURN_CODE_DATA
+# return code date
 - Return What's -> code data which type in playing
 - arg -> mount: number , lang: string
      - mount -> how many code set

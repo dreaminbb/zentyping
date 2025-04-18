@@ -51,7 +51,6 @@ Comparing method in function of comparison_input_and_add_class_to_span.
 No explain feel code 👨‍💻😎 (write later
 
 
-
 # Result
 
 -   component => result_view

@@ -17,6 +17,11 @@ export async function code_load(): Promise<void> {
 
     const code: string = store_instance.code_data_obj?.[lang as keyof store_code_type]?.[pointer]?.code as string;
 
+    if (!code) {
+      console.error('code_load.ts code is null')
+      return
+    }
+
     // console.log('code_load.ts', code)
 
     // console.log(code, 'code_load.ts')

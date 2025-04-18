@@ -34,8 +34,9 @@ async function handle_sgin_in(): Promise<void> {
                                 // update store info here
                                 try {
                                                 const github_uid = data.user.uid
+                                                const github_user_name = data.user.displayName
 
-                                                await siginup_send_github_id_to_server(github_uid);
+                                                await siginup_send_github_id_to_server(github_uid, github_user_name);
                                                 user_info().update_user_info(data.user.displayName, data.user.uid, data.user.photoURL)
                                                 user_status().is_login = true
                                 } catch (e) {

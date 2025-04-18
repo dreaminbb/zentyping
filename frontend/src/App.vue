@@ -22,7 +22,7 @@ export default defineComponent({
 <template>
   <main id="main_container">
     <base_header />
-    <router-view id="router_vieow"></router-view>
+    <router-view></router-view>
     <base_footer />
   </main>
 </template>

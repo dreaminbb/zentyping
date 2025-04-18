@@ -43,7 +43,7 @@ loading_setup().then(() => {
   code_data().initialize().then(() => {
     app.mount('#app')
   }).catch((error) => {
-    console.error('error : some error happened during the initialization of the code data', error)
+    console.error('error :', error)
   })
 })
 

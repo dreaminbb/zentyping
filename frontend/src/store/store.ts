@@ -87,14 +87,14 @@ export const code_data = defineStore('code_data', {
 
     async initialize(): Promise<void> {
       try {
-        const data = await fetch_all_lang_code_from_api(config.all_code_each_mount)
+        // const data = await fetch_all_lang_code_from_api(config.all_code_each_mount)
         //if there is no code_data_obj, hold data as variable and if there is, update it.
 
-        if (!this.code_data_obj) {
-          this.code_data_obj = data as unknown as store_code_type
-        } else {
-          Object.assign(this.code_data_obj, data as unknown as store_code_type)
-        }
+        // if (!this.code_data_obj) {
+        //   this.code_data_obj = data as unknown as store_code_type
+        // } else {
+        //   Object.assign(this.code_data_obj, data as unknown as store_code_type)
+        // }
         // 既存のデータがある場合は直接更新
         // console.log(this.code_data_obj)
 

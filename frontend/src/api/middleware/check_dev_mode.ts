@@ -5,7 +5,6 @@ async function fetch_with_middleware(url: string, method: string, body?: object)
 
                 if (!config.is_production && !config.is_test_with_server) {
                                 console.info('dev mode')
-                                console.log('key', import.meta.env['VITE_API_REQ_KEY'])
                                 return null;
                 }
 
