@@ -1,6 +1,6 @@
 import type { Collection } from "mongoose";
 import { MongoClient } from "mongodb";
-import { config } from "../config";
+import { config, available_code_list } from "../config";
 import { type code_data, type original_code_data, type user } from "../interface";
 
 class db {
@@ -76,10 +76,11 @@ class db {
         }
 
 
-        async create_user(user_github_id: string): Promise<boolean> {
+        async create_user(user_github_id: string, github_user_name: string): Promise<boolean> {
                 try {
                         const result = await db_class.user_collection?.insertOne({
                                 github_id: user_github_id,
+                                github_user_name: github_user_name,
                                 last_login_time: new Date(),
                                 play_info: {
                                         total_play_time: 0,
@@ -103,10 +104,11 @@ class db {
                 }
         }
 
+
         async check_user_exist(user_github_uid: string): Promise<boolean> {
                 try {
-                        const result = await db_class.user_collection?.findOne({
-                                github_id: user_github_uid
+                        const result = await this.user_collection?.findOne({
+                                github_uid: user_github_uid
                         })
                         return result ? true : false
                 } catch (e) {
@@ -114,27 +116,75 @@ class db {
                         return false
                 }
         }
-        
-        async check_code_author_exist(user_github_uid: string, lang: string): Promise<{ exist: boolean, code_data?: code_data | undefined } | undefined> {
+
+        private async fetch_code_author_from_collection(user_github_uid: string, lang: string): Promise<code_data | null> {
+                const collection = this.code_collection_obj?.[lang]
+
+                const result = await collection?.find({
+                        'author': user_github_uid
+                }).toArray()
+                if (!result || result.length === 0) {
+                        return null
+                }
+                const tmp = result[0];
+
+                const { _id, author_uid, ...data } = tmp as original_code_data;
+
+                return data
+        }
+
+        // this function is used to check if the user name is changed and update the db if it is changed
+        // if there is no change, return false , if there is a change return true
+        async if_user_name_changed_update_db_user_github_name(user_github_uid: string, github_user_name: string): Promise<boolean | void> {
                 try {
 
-                        const collection = this.code_collection_obj?.[lang]
+                        const result = await this.user_collection?.findOne({
+                                github_uid: user_github_uid
+                        })
 
-                        if (!collection) {
-                                console.error("failed to get collection")
-                                return undefined
+                        if (result?.github_user_name !== github_user_name) {
+                                console.log('its not same')
+                                await this.user_collection?.updateOne({ github_uid: user_github_uid },
+                                        {
+                                                $set: { github_user_name: github_user_name }
+                                        })
+                                //  todo update code doc author name
+
+                                return true
+                        } else {
+                                console.log('its same')
                         }
-                        const result = await collection.find({
-                                'author': user_github_uid
-                        }).toArray()
-                        if (!result || result.length === 0) {
-                                return { exist: false, code_data: undefined };
+
+
+                } catch (e) {
+                        console.error(e)
+                        return undefined
+                }
+        }
+
+        async fetch_code_use_github_uid(user_github_uid: string): Promise<{ exist: boolean, code_data?: object | null } | undefined> {
+                try {
+
+                        let code_data: {
+                                [key: string]: code_data | null
+                        } = {}
+
+                        for (const lang of available_code_list) {
+                                const result = await this.fetch_code_author_from_collection(user_github_uid, lang)
+                                code_data[lang] = result as code_data | null
                         }
-                        const tmp = result[0];
 
-                        const { _id, ...data } = tmp as original_code_data;
+                        const all_null: boolean = Object.values(code_data).every(value => value === null);
 
-                        return { exist: true, code_data: data as code_data };
+                        if (all_null) {
+                                return {
+                                        exist: false, code_data: null
+                                }
+                        } else {
+
+                                return { exist: true, code_data: code_data as any };
+                        }
+
                 } catch (e) {
                         console.error(e)
                         return undefined

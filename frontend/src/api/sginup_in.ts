@@ -1,10 +1,5 @@
-
-
-//todo : sginup -> save user github id to server.
-
 import { user_info } from "@/store/store"
 import { fetch_with_middleware } from "./middleware/check_dev_mode";
-import config from "@/config";
 
 async function siginup_send_github_id_to_server(id: string): Promise<void> {
 

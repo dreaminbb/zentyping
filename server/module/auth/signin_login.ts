@@ -2,10 +2,10 @@ import type { signined_jwt_payload } from '../../interface'
 import db_class from '../db'
 import { create_token } from './jwt'
 
-async function handle_sign_in(user_github_id: string): Promise<{ status: number, message: string, token?: string }> {
+async function handle_sign_in(user_github_uid: string, user_github_name: string): Promise<{ status: number, message: string, token?: string }> {
 
                 //check if the usrer is already in the database
-                const user_data: boolean = await db_class.user_collection?.findOne({ github_id: user_github_id }) ? true : false
+                const user_data: boolean = await db_class.user_collection?.findOne({ github_id: user_github_uid }) ? true : false
 
 
                 if (user_data) {
@@ -13,9 +13,12 @@ async function handle_sign_in(user_github_id: string): Promise<{ status: number,
 
                                                 //update the user's last login time
                                                 const result = await db_class.user_collection?.updateOne(
-                                                                { github_id: user_github_id },
+                                                                { github_id: user_github_uid },
                                                                 { $set: { last_login_time: new Date() } }
                                                 )
+
+                                                // if username is changed, update the db
+                                                await db_class.if_user_name_changed_update_db_user_github_name(user_github_uid, user_github_name)
 
                                                 if (!result) return {
                                                                 status: 500,
@@ -25,7 +28,7 @@ async function handle_sign_in(user_github_id: string): Promise<{ status: number,
                                                 console.log("user's last login time updated")
 
                                                 const data: signined_jwt_payload = {
-                                                                sub: user_github_id,
+                                                                sub: user_github_uid,
                                                                 iat: Date.now(),
                                                 }
 
@@ -49,11 +52,12 @@ async function handle_sign_in(user_github_id: string): Promise<{ status: number,
                                 // create a new user            
                                 try {
 
-                                                await db_class.create_user(user_github_id)
+                                                await db_class.create_user(user_github_uid , user_github_name)
 
 
                                                 const data: signined_jwt_payload = {
-                                                                sub: user_github_id,
+                                                                sub: user_github_uid,
+                                                                github_user_name: user_github_name,
                                                                 iat: Date.now(),
                                                 }
 

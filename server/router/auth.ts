@@ -32,8 +32,11 @@ router.post('/token', async (req: Request, res: Response): Promise<any> => {
 router.post('/signin', async (req: Request, res: Response): Promise<any> => {
 
                 const user_github_id: string = req.body.github_user_id
-                console.log('\x1b[32m%s\x1b[0m', user_github_id)
-                console.log(req.body)
+                const user_github_name: string = req.body.github_user_name
+                if (!config.PRODUCTION) {
+                                console.log('\x1b[32m%s\x1b[0m', user_github_id)
+                                console.log(req.body)
+                }
 
                 if (user_github_id === null || undefined) {
                                 return res.status(400).send({
@@ -42,7 +45,7 @@ router.post('/signin', async (req: Request, res: Response): Promise<any> => {
                                 })
                 }
 
-                const response = await handle_sign_in(user_github_id)
+                const response = await handle_sign_in(user_github_id, user_github_name)
                 console.log(response)
 
                 if (response.token) {
