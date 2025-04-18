@@ -17,7 +17,7 @@ class format_code {
 
                                                 const formatted = await prettier.format(params, {
                                                                 parser: "typescript",
-                                                                plugins: [require("prettier/parser-typescript")],
+                                                                plugins: [await import("prettier/parser-typescript")],
                                                 });
 
                                                 return this.add_char_line_break(formatted);
@@ -53,7 +53,7 @@ class format_code {
                 async format_rust_code(params: string, date: string): Promise<string | undefined> {
 
                                 const rust_tpm_file_syntax_cherked = path.join(__dirname, `rust_syntax_tmp_${date}.rs`)
-                                
+
 
                                 try {
 

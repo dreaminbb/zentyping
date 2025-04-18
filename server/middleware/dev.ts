@@ -6,6 +6,7 @@ import type { Request, Response } from 'express';
 class dev_middleware {
 
                 dev_mode(req: Request, res: Response, next: Function) {
+                                console.log('token', req.headers.authorization?.split(' ')[1])
                                 console.log(config.PRODUCTION ?? `[${new Date().toISOString()}] ${req.method} ${req.url} ${req.headers['authorization']}`);
                                 console.log(config.PRODUCTION ?? `[${new Date().toISOString()}] ${req.method} ${req.url} ${req.headers.authorization}`);
                                 console.log(req.originalUrl, 'origin', '\n')

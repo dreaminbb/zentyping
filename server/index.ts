@@ -1,5 +1,6 @@
 import express from 'express';
 import { type Request, type Response, type NextFunction } from 'express';
+import path from 'path'
 import morgan from 'morgan'
 import prod_middleware from './middleware/prod';
 import dev_middelware from './middleware/dev';
@@ -7,10 +8,9 @@ import { config } from './config';
 import db_class from './module/db'
 import code_router from './router/code';
 import auth_router from './router/auth'
-import path from 'path'
 export const app = express();
-const index_file: string = path.join(__dirname, "static", "index.html")
 
+const index_file: string = path.join(__dirname, "static", "index.html")
 
 app.use(morgan('combined'))
 app.use(express.json());
@@ -37,11 +37,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Move CORS middleware to be first in the chain
 
 // * これでdb classの変数にコレクションが追加されたから他のコードからコレクションを使うことができる。
-await db_class.init()
+await db_class.init(config.DB_URL as string, config.DB_NAME as string)
 const add_url: string = config.PRODUCTION ? '' : config.DEV_URL as string
-console.log(add_url, 'add url')
-// app.use(`${add_url}/api/code`, code_router);
-// app.use(`${add_url}/api/auth`, auth_router)
+
+if (!config.PRODUCTION) {
+  console.log(add_url, 'add url')
+}
+
 app.use('/api/code', code_router);
 app.use('/api/auth', auth_router)
 

@@ -14,7 +14,6 @@ const from_env = {
         DEV_ROOT_URL:process.env.DEV_ROOT_URL ?? undefined,
         JWT_SECRET_KEY: process.env.JWT_SECRET_KEY as string ?? undefined,
         JWT_EXPIRATION_TIME: process.env.JWT_EXPIRATION_TIME as string ?? undefined,
-        DEV_ALLOW_ORIGIN: process.env.DEV_ALLOW_ORIGIN ?? undefined,
         DEV_URL: process.env.DEV_URL ?? undefined,
         DEVONLY_API_KEY: process.env.DEVONLY_API_KEY ?? undefined,
         JTW_AUTH: process.env.JTW_AUTH === 'true' ? true : false,
